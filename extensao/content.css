@@ -119,7 +119,7 @@
 #dufrio-ext-floating-wrapper {
     position: fixed;
     right: 20px;
-    bottom: 20px;
+    top: 100px;
     z-index: 1000001;
 }
 
