@@ -1,0 +1,1591 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Busca Ar-Condicionado</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⇄</text></svg>">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;800;900&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --green: #FFD000;
+      --border: rgba(255, 255, 255, 0.05);
+      --bg-color: #060B19;
+      --card-bg: #0C152B;
+      --text-secondary: #71717a;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-color);
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding-bottom: 80px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+      text-transform: uppercase;
+      font-style: italic;
+      color: var(--green);
+    }
+
+    .sub-head {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+
+    h2 {
+      font-weight: 900;
+      margin: 48px 0 24px;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      font-size: 18px;
+    }
+
+    .section {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      padding: 16px 32px;
+      color: #fff;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      font-family: 'Inter', sans-serif;
+    }
+
+    button:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    button.selecionado {
+      background: var(--green);
+      color: #000;
+      border-color: var(--green);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(155, 226, 13, 0.3);
+    }
+
+    .tipo-btn {
+      width: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 24px 16px;
+    }
+
+    .tipo-btn.selecionado {
+      background: var(--green);
+      color: #000;
+      border-color: var(--green);
+    }
+
+    .tipo-btn img {
+      width: 140px;
+      mix-blend-mode: lighten;
+      filter: contrast(1.6) brightness(0.7) drop-shadow(0 0 4px rgba(75, 216, 255, 0.2));
+      transition: transform 0.3s ease, filter 0.3s ease;
+    }
+
+    .tipo-btn:hover img {
+      transform: scale(1.05);
+      filter: contrast(1.8) brightness(0.9) drop-shadow(0 0 8px rgba(75, 216, 255, 0.4));
+    }
+
+    .tipo-btn.selecionado img {
+      filter: contrast(1.8) brightness(1.1);
+      mix-blend-mode: normal;
+      /* remove the lighten on green bg for better view or keep it if png handles it */
+    }
+
+    #resultados {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 32px;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+    }
+
+    .card strong {
+      font-weight: 800;
+      font-size: 16px;
+      margin-bottom: 24px;
+      display: block;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+    }
+
+    .card a {
+      text-decoration: none;
+      width: 100%;
+    }
+
+    .card button {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      border: 1px solid var(--border);
+    }
+
+    .card button:hover {
+      background: var(--green);
+      color: #000;
+      border-color: var(--green);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(155, 226, 13, 0.25);
+    }
+
+    /* Styles for the multiple compare section */
+    .compare-section {
+      margin-top: 60px;
+      padding-top: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .compare-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .compare-actions button {
+      padding: 10px 20px;
+      font-size: 10px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-weight: 800;
+      box-shadow: none;
+    }
+
+    .compare-actions button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .tech-btn {
+      --b: 1px;
+      --s: 12px;
+      position: relative;
+      padding: 12px 20px;
+      color: var(--btn-color);
+      background: #080808;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: var(--b) solid transparent;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .tech-btn:not(.solid):hover {
+      background: #111;
+      transform: translateY(-2px);
+    }
+
+    .tech-btn.solid {
+      background: var(--btn-color);
+      color: #000;
+      border-color: var(--btn-color);
+    }
+
+    .tech-btn.solid:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
+
+    .tech-btn:not(.solid)::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 4px;
+      padding: var(--b);
+      background: linear-gradient(90deg, var(--btn-color) var(--s), transparent 0 calc(100% - var(--s)), var(--btn-color) 0) border-box,
+        linear-gradient(0deg, var(--btn-color) var(--s), transparent 0 calc(100% - var(--s)), var(--btn-color) 0) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .badge-store {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .badge-dufrio {
+      background: #0056b3;
+      color: white;
+    }
+
+    .badge-leveros {
+      background: #009038;
+      color: white;
+    }
+
+    .badge-centralar {
+      background: #005ca8;
+      color: white;
+    }
+
+    .filter-section {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 32px;
+      padding: 24px;
+      background: linear-gradient(145deg, #111111, #0C152B);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 16px;
+      text-align: left;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.02), 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .filter-section p {
+      margin: 0 0 12px 0;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+    }
+
+    .filter-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .filter-badges:last-child {
+      margin-bottom: 0;
+    }
+
+    .filter-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #777;
+      transition: all 0.2s;
+      user-select: none;
+      opacity: 0.5;
+      filter: grayscale(100%);
+    }
+
+    .filter-badge:hover {
+      background: #222;
+    }
+
+    .filter-badge.active {
+      color: #fff;
+      background: #2a2a2a;
+      /* Cor clara padrão para marcas e lojas genéricas */
+      border-color: #333;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      opacity: 1;
+      filter: grayscale(0%);
+    }
+
+    .filter-badge.active[data-filter="premium"] {
+      background: #b08d57;
+    }
+
+    .filter-badge.active[data-filter="boa"] {
+      background: #00b050;
+    }
+
+    .filter-badge.active[data-filter="inter"] {
+      background: #ffc000;
+    }
+
+    .filter-badge.active[data-filter="basica"] {
+      background: #ff0000;
+    }
+
+    .filter-badge.active[data-filter="sf"] {
+      background: #4ba3e3;
+    }
+
+    .filter-badge.active[data-filter="qf"] {
+      background: #e36a4b;
+    }
+
+    .compare-copy-btn {
+      width: auto !important;
+      margin: 32px auto 0 !important;
+      background: var(--green) !important;
+      color: #000 !important;
+    }
+
+    .badge-inline {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      vertical-align: middle;
+      opacity: 0.8;
+      margin-left: 8px;
+    }
+
+    .badge-inline.dufrio {
+      background: #0056b3;
+      color: white;
+    }
+
+    .badge-inline.leveros {
+      background: #009038;
+      color: white;
+    }
+
+    .badge-inline.centralar {
+      background: #005ca8;
+      color: white;
+    }
+
+    .fake-textarea {
+      width: 100%;
+      max-width: 800px;
+      height: 300px;
+      background: #0d0d0d;
+      color: #e0e0e0;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      margin-bottom: 32px;
+      overflow-y: auto;
+      line-height: 1.6;
+      text-align: left;
+      white-space: pre-wrap;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Cards Visuais do Comparador */
+    #visual-cards-container {
+      display: none;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+      width: 100%;
+      max-width: 1400px;
+      /* Aumentado para permitir 4 ou mais cards em monitores ultrawide */
+      padding-bottom: 40px;
+    }
+
+    .visual-card {
+      background: #111;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      overflow: hidden;
+      /* Garante que a imagem respeite o border-radius */
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .visual-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      background: #161616;
+    }
+
+    .vc-img-box {
+      width: 100%;
+      /* Altura definida pelo aspect-ratio para imagens de ar condicionado que geralmente sao 16:9 ou 4:3 largas */
+      aspect-ratio: 4 / 3;
+      background: #fff;
+      /* Fundo branco pra mesclar melhor com as fotos que originalmente tem fundo branco */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      border-bottom: 2px solid #1a1a1a;
+    }
+
+    .vc-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      /* O contain com o aspect-ratio acima garante que a imagem preenche a largura e dita a naturalidade da caixa */
+      transition: transform 0.2s ease;
+    }
+
+    .vc-img-box:hover img {
+      transform: scale(1.05);
+    }
+
+    .vc-text-box {
+      padding: 14px 16px;
+      /* Padding movido para cá para afastar o texto das bordas */
+      transition: background-color 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .vc-text-box:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .vc-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ccc;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .vc-spot {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .vc-install {
+      font-size: 12px;
+      color: #777;
+      font-weight: 400;
+    }
+
+    .badge-store-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      backdrop-filter: blur(4px);
+      z-index: 2;
+    }
+
+    .form-step {
+      display: none;
+    }
+
+    .form-step.visible {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: slideUpFade 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      margin-top: 16px;
+    }
+
+    @keyframes slideUpFade {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 24px 16px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .sub-head {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+      }
+
+      .section {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .tipo-btn,
+      .section button {
+        width: 100%;
+      }
+
+      .tipo-btn {
+        padding: 16px;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .tipo-btn img {
+        width: 100px;
+      }
+
+      #resultados {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+    <h1>Busca Ar-Condicionado</h1>
+    <div class="sub-head" style="margin-bottom: 24px;">Buscador de preços de ar condicionado.</div>
+
+    <div class="form-step visible" id="step-tipos">
+      <h2 id="titulo-tipos">Selecione o Tipo</h2>
+      <div id="tipos" class="section" style="justify-content: center;"></div>
+    </div>
+
+    <div class="form-step" id="step-btus">
+      <h2 id="titulo-btus">Selecione os BTUs</h2>
+      <div id="btus" class="section" style="justify-content: center;"></div>
+    </div>
+
+    <div class="form-step" id="step-ciclos">
+      <h2 id="titulo-ciclos">Selecione o Ciclo</h2>
+      <div id="ciclos" class="section" style="justify-content: center;"></div>
+    </div>
+
+    <div class="form-step" id="step-resultados" style="padding-bottom: 20px; width: 100%;">
+      <h2 id="titulo-resultados" style="margin-bottom: 12px;">Resultados</h2>
+      <div id="btn-abrir-todas-container" style="display: none; margin-bottom: 32px;">
+        <button id="btn-abrir-todas" class="tech-btn"
+          style="--btn-color: var(--green); padding: 8px 16px; font-size: 10px;">Abrir Todas as Lojas ↗</button>
+      </div>
+      <div id="resultados"
+        style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 800px;">
+      </div>
+    </div>
+
+    <div class="compare-section" id="compare-section">
+      <h2>Comparador Ao Vivo (Da Extensão)</h2>
+      <div class="sub-head">A caixa atualiza sozinha quando você joga os itens da extensão pra cá!</div>
+
+      <div id="caixa-comparador" class="fake-textarea">Nenhum produto enviado pela extensão ainda...</div>
+
+      <div class="filter-section" id="filter-section" style="display: none;">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
+          <h3
+            style="margin: 0; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #fff;">
+            Filtros de Tabela</h3>
+          <div style="display: flex; gap: 8px;">
+            <button class="tech-btn" onclick="limparComparador()"
+              style="--btn-color: #ff4444; padding: 6px 12px; font-size: 9px;">Limpar Lista 🗑️</button>
+            <button id="btn-toggle-all-filters" class="tech-btn"
+              style="--btn-color: #71717a; padding: 6px 12px; font-size: 9px;" onclick="toggleAllFilters()">Desmarcar
+              Todos</button>
+          </div>
+        </div>
+
+        <p>Lojas Encontradas</p>
+        <div class="filter-badges" id="dynamic-store-filters"></div>
+
+        <p>Seleção em Massa por Qualidade</p>
+        <div class="filter-badges">
+          <div class="filter-badge active" style="background:#b08d57; color:#000;" data-macro="premium"
+            onclick="toggleQualityMacro('premium', this)">🔝 Premium</div>
+          <div class="filter-badge active" style="background:#00b050; color:#000;" data-macro="boa"
+            onclick="toggleQualityMacro('boa', this)">🟢 Boa</div>
+          <div class="filter-badge active" style="background:#ffc000; color:#000;" data-macro="inter"
+            onclick="toggleQualityMacro('inter', this)">🟡 Intermediária</div>
+          <div class="filter-badge active" style="background:#ff0000; color:#000;" data-macro="basica"
+            onclick="toggleQualityMacro('basica', this)">🔴 Básica</div>
+        </div>
+
+        <p>Marcas Identificadas</p>
+        <div class="filter-badges" id="dynamic-brand-filters"></div>
+
+        <div id="dynamic-type-container" style="display: none;">
+          <p>Tipos Encontrados</p>
+          <div class="filter-badges" id="dynamic-type-filters"></div>
+        </div>
+
+        <p>Ciclo</p>
+        <div class="filter-badges" id="dynamic-cycle-filters">
+          <div class="filter-badge active" data-filter="sf" onclick="toggleFilter('ciclo', 'sf', this)">❄️ Só Frio</div>
+          <div class="filter-badge active" data-filter="qf" onclick="toggleFilter('ciclo', 'qf', this)">🔥❄️ Quente/Frio
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-actions">
+        <button id="btn-puxar-abas" class="tech-btn" onclick="puxarAbasAbertas(this)"
+          style="--btn-color: #4b9ce3;">Puxar Caixas da Extensão 🔄</button>
+        <button class="tech-btn solid" onclick="copiarCaixa(this)" style="--btn-color: var(--green);">Copiar Texto da
+          Caixa 📋</button>
+        <button class="tech-btn" onclick="gerarCardsVisuais()" style="--btn-color: #b08d57;">Gerar Cards 🖼️</button>
+      </div>
+      <p id="product-counter" style="color: #666; font-size: 13px; margin-top: 10px;"></p>
+
+      <div id="visual-cards-container"></div>
+
+    </div>
+  </div>
+
+  <script>
+    let dados = [], tipoSelecionado = null, btusSelecionado = null, cicloSelecionado = null;
+    let ativoTipo = null, ativoBtu = null, ativoCiclo = null;
+
+    // Estado dos Filtros (Inicializado dinamicamente)
+    let ACTIVE_FILTERS = {
+      loja: {},
+      marca: {},
+      tipo: {},
+      ciclo: { sf: true, qf: true }
+    };
+    let allFiltersActive = true;
+
+    const QUALITY_BRANDS = {
+      premium: ['daikin', 'fujitsu', 'hitachi', 'trane'],
+      boa: ['lg', 'samsung', 'gree', 'carrier', 'midea', 'hisense'],
+      inter: ['springer', 'elgin', 'tcl', 'agratto', 'electrolux'],
+      basica: ['consul', 'brastemp', 'philco', 'eos', 'britânia', 'britania', 'admiral', 'cadence', 'comfee']
+    };
+
+    function extractExplicitBrand(titulo) {
+      if (!titulo) return 'outras';
+      const lowerT = titulo.toLowerCase();
+      for (const [q, marcas] of Object.entries(QUALITY_BRANDS)) {
+        for (const b of marcas) {
+          if (b === 'lg') {
+            if (lowerT.match(/\blg\b/)) return 'lg';
+            continue;
+          }
+          if (lowerT.includes(b)) {
+            return b === 'britânia' ? 'britania' : b;
+          }
+        }
+      }
+      return 'outras';
+    }
+
+    function toggleQualityMacro(qualityKey, btnEl) {
+      const isAlreadyActive = btnEl.classList.contains('active');
+      const macros = document.querySelectorAll('.filter-badge[data-macro]');
+      const activeMacrosCount = Array.from(macros).filter(el => el.classList.contains('active')).length;
+
+      const brands = QUALITY_BRANDS[qualityKey] || [];
+
+      if (!isAlreadyActive && activeMacrosCount === 0) {
+        // Isolamento: Primeiro macro clicado. Desliga todas as marcas globais
+        for (let m in ACTIVE_FILTERS.marca) {
+          ACTIVE_FILTERS.marca[m] = false;
+        }
+        document.querySelectorAll('#dynamic-brand-filters .filter-badge').forEach(el => el.classList.remove('active'));
+
+        // Liga o macro atual
+        btnEl.classList.add('active');
+        brands.forEach(b => {
+          if (ACTIVE_FILTERS.marca[b] !== undefined) {
+            ACTIVE_FILTERS.marca[b] = true;
+            const bndBadge = document.querySelector(`#dynamic-brand-filters .filter-badge[data-filter="${b}"]`);
+            if (bndBadge) bndBadge.classList.add('active');
+          }
+        });
+
+      } else if (!isAlreadyActive && activeMacrosCount > 0) {
+        // Adição: Mais de um macro selecionado. Liga as marcas em conjunto.
+        btnEl.classList.add('active');
+        brands.forEach(b => {
+          if (ACTIVE_FILTERS.marca[b] !== undefined) {
+            ACTIVE_FILTERS.marca[b] = true;
+            const bndBadge = document.querySelector(`#dynamic-brand-filters .filter-badge[data-filter="${b}"]`);
+            if (bndBadge) bndBadge.classList.add('active');
+          }
+        });
+
+      } else if (isAlreadyActive) {
+        // Subtração/Remoção: Desliga o macro e suas respectivas marcas
+        btnEl.classList.remove('active');
+        brands.forEach(b => {
+          if (ACTIVE_FILTERS.marca[b] !== undefined) {
+            ACTIVE_FILTERS.marca[b] = false;
+            const bndBadge = document.querySelector(`#dynamic-brand-filters .filter-badge[data-filter="${b}"]`);
+            if (bndBadge) bndBadge.classList.remove('active');
+          }
+        });
+
+        // Se era o último macro sendo desativado, o comportamento padrão agradável
+        // é voltar a mostrar todas as marcas (reset do filtro)
+        if (activeMacrosCount === 1) {
+          for (let m in ACTIVE_FILTERS.marca) {
+            ACTIVE_FILTERS.marca[m] = true;
+          }
+          document.querySelectorAll('#dynamic-brand-filters .filter-badge').forEach(el => el.classList.add('active'));
+        }
+      }
+
+      renderizarCaixa();
+    }
+
+    function toggleAllFilters() {
+      allFiltersActive = !allFiltersActive;
+      const newVal = allFiltersActive;
+
+      // Altera o objeto de estado geral
+      for (let category in ACTIVE_FILTERS) {
+        for (let key in ACTIVE_FILTERS[category]) {
+          ACTIVE_FILTERS[category][key] = newVal;
+        }
+      }
+
+      // Altera os badges de Loja, Marca, Tipo e Ciclo
+      document.querySelectorAll('.filter-badge:not([data-macro])').forEach(el => {
+        if (newVal) el.classList.add('active');
+        else el.classList.remove('active');
+      });
+
+      // Altera especificamente os macros de qualidade
+      document.querySelectorAll('.filter-badge[data-macro]').forEach(el => {
+        if (newVal) el.classList.add('active');
+        else el.classList.remove('active');
+      });
+
+      const btn = document.getElementById('btn-toggle-all-filters');
+      if (btn) btn.innerText = newVal ? "Desmarcar Todos" : "Marcar Todos";
+
+      renderizarCaixa();
+    }
+
+    function toggleFilter(category, val, element) {
+      ACTIVE_FILTERS[category][val] = !ACTIVE_FILTERS[category][val];
+      if (ACTIVE_FILTERS[category][val]) {
+        element.classList.add('active');
+      } else {
+        element.classList.remove('active');
+      }
+
+      // Se for clique manual em marca, desativa o visual de macro isolado pra n confundir
+      if (category === 'marca') {
+        document.querySelectorAll('.filter-badge[data-macro]').forEach(el => el.classList.remove('active'));
+      }
+      renderizarCaixa();
+    }
+
+    const imagens = {
+      "Hiwall": "img/hi_wall.png",
+      "Hi Wall": "img/hi_wall.png",
+      "Piso Teto": "img/piso_teto.png",
+      "Cassete": "img/cassete.png"
+    };
+
+    fetch("https://opensheet.elk.sh/1LLVFTzxoSakgqnjS_ws7GgYNKdEqP26H0Z7Fe5DEmcc/Página1")
+      .then(r => r.json()).then(j => { dados = j; gerarTipos(); });
+
+    function gerarTipos() {
+      const tipos = [...new Set(dados.map(i => i.Tipo))];
+      const div = document.getElementById("tipos");
+      div.innerHTML = "";
+      tipos.forEach(t => {
+        const b = document.createElement("button");
+        b.className = "tipo-btn";
+        b.innerHTML = `<div class="img-wrapper"><img src="${imagens[t] || ''}"></div><span>${t}</span>`;
+        b.onclick = () => {
+          if (ativoTipo) ativoTipo.classList.remove("selecionado");
+          b.classList.add("selecionado");
+          ativoTipo = b;
+          tipoSelecionado = t;
+
+          document.getElementById('step-ciclos').classList.remove('visible');
+          document.getElementById('step-resultados').classList.remove('visible');
+
+          gerarBTUs();
+
+          const stepBtus = document.getElementById('step-btus');
+          stepBtus.classList.add('visible');
+          setTimeout(() => {
+            stepBtus.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        };
+        div.appendChild(b);
+      });
+    }
+
+    function gerarBTUs() {
+      const btus = [...new Set(dados.filter(i => i.Tipo === tipoSelecionado).map(i => i.BTUs))];
+      const div = document.getElementById("btus");
+      div.innerHTML = "";
+      btus.forEach(b => {
+        const bt = document.createElement("button");
+        let formattedBtu = b;
+        if (typeof b === 'string' && b.includes(' a ')) {
+          const parts = b.split(' a ');
+          formattedBtu = parts.map(p => Number(p).toLocaleString('pt-BR')).join(' a ');
+        } else {
+          formattedBtu = Number(b).toLocaleString('pt-BR');
+        }
+        bt.textContent = formattedBtu + " BTUS";
+
+        bt.onclick = () => {
+          if (ativoBtu) ativoBtu.classList.remove("selecionado");
+          bt.classList.add("selecionado");
+          ativoBtu = bt;
+          btusSelecionado = b;
+
+          document.getElementById('step-resultados').classList.remove('visible');
+
+          gerarCiclos();
+
+          const stepCiclos = document.getElementById('step-ciclos');
+          stepCiclos.classList.add('visible');
+          setTimeout(() => {
+            stepCiclos.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        };
+        div.appendChild(bt);
+      });
+    }
+
+    function gerarCiclos() {
+      const ciclos = [...new Set(dados.filter(i => i.Tipo === tipoSelecionado && i.BTUs == btusSelecionado).map(i => i.Ciclo))];
+      const div = document.getElementById("ciclos");
+      div.innerHTML = "";
+      ciclos.forEach(c => {
+        const bt = document.createElement("button");
+        let cicloTxt = c;
+        if (c.toLowerCase().includes('só frio')) cicloTxt = 'Só Frio ❄️';
+        if (c.toLowerCase().includes('quente/frio')) cicloTxt = 'Quente/Frio 🔥❄️';
+        bt.textContent = cicloTxt;
+        bt.onclick = () => {
+          if (ativoCiclo) ativoCiclo.classList.remove("selecionado");
+          bt.classList.add("selecionado");
+          ativoCiclo = bt;
+          cicloSelecionado = c;
+
+          gerarResultados();
+
+          const stepRes = document.getElementById('step-resultados');
+          stepRes.classList.add('visible');
+          setTimeout(() => {
+            stepRes.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        };
+        div.appendChild(bt);
+      });
+    }
+
+    function gerarResultados() {
+      if (!tipoSelecionado || !btusSelecionado || !cicloSelecionado) return;
+      const res = dados.filter(i => i.Tipo === tipoSelecionado && i.BTUs == btusSelecionado && i.Ciclo === cicloSelecionado);
+      const div = document.getElementById("resultados");
+      div.innerHTML = "";
+
+      const btnTodasContainer = document.getElementById("btn-abrir-todas-container");
+      const btnTodas = document.getElementById("btn-abrir-todas");
+
+      if (res.length > 0) {
+        btnTodasContainer.style.display = 'block';
+        btnTodas.onclick = () => {
+          res.forEach(i => {
+            if (i.Link) window.open(i.Link, '_blank');
+          });
+        };
+      } else {
+        btnTodasContainer.style.display = 'none';
+      }
+
+      res.forEach(i => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<strong>${i.Site}</strong><br><br><a href="${i.Link}" target="_blank"><button>Abrir pesquisa</button></a>`;
+        div.appendChild(card);
+      });
+    }
+
+    // ====== LÓGICA DE INTEGRAÇÃO COM A EXTENSÃO ======
+
+    function updateDynamicFilters(rawData) {
+      let allStores = new Set();
+      let allBrands = new Set();
+      let allTypes = new Set();
+      let hasData = false;
+
+      let dataToProcess = { ...rawData };
+      delete dataToProcess.metadata_title;
+
+      for (const [storeName, products] of Object.entries(dataToProcess)) {
+        if (Array.isArray(products) && products.length > 0) {
+          hasData = true;
+          allStores.add(storeName);
+          products.forEach(p => {
+            const brand = extractExplicitBrand(p.title);
+            allBrands.add(brand);
+            const type = extractProductInfo(p.title).type;
+            const ALLOWED_TYPES = ['Hiwall', 'Piso Teto', 'Cassete'];
+            if (ALLOWED_TYPES.includes(type)) allTypes.add(type);
+          });
+        }
+      }
+
+      ACTIVE_FILTERS = { loja: {}, marca: {}, tipo: {}, ciclo: { sf: true, qf: true } };
+      allFiltersActive = true;
+      const btn = document.getElementById('btn-toggle-all-filters');
+      if (btn) btn.innerText = "Desmarcar Todos";
+
+      allStores.forEach(s => ACTIVE_FILTERS.loja[s] = true);
+      allBrands.forEach(b => ACTIVE_FILTERS.marca[b] = true);
+      allTypes.forEach(t => ACTIVE_FILTERS.tipo[t] = true);
+
+      const containerLoja = document.getElementById('dynamic-store-filters');
+      const containerMarca = document.getElementById('dynamic-brand-filters');
+      const containerTipo = document.getElementById('dynamic-type-filters');
+      const containerTipoWrapper = document.getElementById('dynamic-type-container');
+
+      if (containerLoja && containerMarca) {
+        containerLoja.innerHTML = Array.from(allStores).map(s => `<div class="filter-badge active" data-filter="${s}" onclick="toggleFilter('loja', '${s}', this)">🏬 ${s}</div>`).join('');
+
+        if (allBrands.size > 0) {
+          containerMarca.innerHTML = Array.from(allBrands).sort().map(b => `<div class="filter-badge active" data-filter="${b}" onclick="toggleFilter('marca', '${b}', this)">🏷️ ${b.charAt(0).toUpperCase() + b.slice(1)}</div>`).join('');
+        } else {
+          containerMarca.innerHTML = '';
+        }
+
+        if (containerTipo && containerTipoWrapper) {
+          if (allTypes.size >= 2) {
+            containerTipoWrapper.style.display = 'block';
+            containerTipo.innerHTML = Array.from(allTypes).sort().map(t => `<div class="filter-badge active" data-filter="${t}" onclick="toggleFilter('tipo', '${t}', this)">📦 ${t}</div>`).join('');
+          } else {
+            containerTipoWrapper.style.display = 'none';
+            containerTipo.innerHTML = '';
+          }
+        }
+
+        // Force Cycle badges to active visually since we reset the object to true
+        document.querySelectorAll('#dynamic-cycle-filters .filter-badge').forEach(el => el.classList.add('active'));
+      }
+    }
+
+    let dadosExtensaoBrutos = {};
+    let activeRequest = null;
+    let isSorted = true; // Controla se estamos vendo por loja ou todos unificados e sorteados
+
+    // Escuta a resposta e atualizações automáticas do bridge.js
+    window.addEventListener("message", (event) => {
+      if (event.source !== window || !event.data || event.data.type !== "TWO_RETURN_COMPARADOR_DATA") return;
+
+      const receivedData = event.data.data;
+      dadosExtensaoBrutos = receivedData || {};
+
+      // Se chegou algo da extensão (seja primeira vez ou nova loja), mantemos a lista organizada
+      isSorted = true;
+      updateDynamicFilters(dadosExtensaoBrutos);
+      renderizarCaixa();
+    });
+
+    // Assim que a página abre, limpa tudo para começar uma sessão fresca (pedido do usuário)
+    setTimeout(() => {
+      // Envia o comando para apagar a memória da extensão
+      window.postMessage({ type: "TWO_CLEAR_COMPARADOR_DATA" }, "*");
+      // Garante que a tela comece vazia
+      dadosExtensaoBrutos = {};
+      isSorted = true;
+      updateDynamicFilters(dadosExtensaoBrutos);
+      renderizarCaixa();
+    }, 1000);
+
+    // Helpers para formatar (idênticos à extensão)
+    function extractProductInfo(titleStr) {
+      if (!titleStr) return { btuVal: null, isQF: false, isSF: false, type: 'Ar Condicionado' };
+      const titleLower = titleStr.toLowerCase();
+      let btuVal = null;
+      const btuMatch = titleLower.match(/(\d{1,2}\.?\d{3})\s*btus?/);
+      if (btuMatch) btuVal = parseInt(btuMatch[1].replace('.', ''), 10);
+
+      const isQF = titleLower.includes('quente/frio') || titleLower.includes('quente e frio') || titleLower.includes('quente/ frio') || titleLower.includes('quente / frio') || titleLower.includes('quente frio') || titleLower.includes('q/f');
+      const isSF = titleLower.includes('frio') && !isQF;
+
+      let type = 'Hiwall'; // Padrão assume Hiwall para agrupar nomes genéricos com os explícitos
+      if (titleLower.includes('teto')) type = 'Piso Teto';
+      else if (titleLower.includes('cassete')) type = 'Cassete';
+      else if (titleLower.includes('janela')) type = 'de Janela';
+      else if (titleLower.includes('portátil') || titleLower.includes('portatil')) type = 'Portátil';
+      else if (titleLower.includes('multi')) type = 'Multi Split';
+      else if (titleLower.includes('split') || titleLower.includes('hiwall') || titleLower.includes('hi-wall') || titleLower.includes('hi wall')) type = 'Hiwall';
+
+      return { btuVal, isQF, isSF, type };
+    }
+
+    function generateSmartTitle(productsList) {
+      if (!productsList || productsList.length === 0) return 'Comparativo de Ar Condicionado';
+      const typesStats = {};
+      productsList.forEach(p => {
+        const info = extractProductInfo(p.title);
+        if (!typesStats[info.type]) typesStats[info.type] = { minBtu: Infinity, maxBtu: -Infinity, hasQF: false, hasSF: false };
+        if (info.btuVal) {
+          if (info.btuVal < typesStats[info.type].minBtu) typesStats[info.type].minBtu = info.btuVal;
+          if (info.btuVal > typesStats[info.type].maxBtu) typesStats[info.type].maxBtu = info.btuVal;
+        }
+        if (info.isQF) typesStats[info.type].hasQF = true;
+        if (info.isSF) typesStats[info.type].hasSF = true;
+      });
+
+      const orderedTypes = ['Hiwall', 'Piso Teto', 'Cassete', 'de Janela', 'Portátil', 'Multi Split', 'Ar Condicionado'];
+      const formatInt = (n) => n.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+      let titleLines = [];
+
+      orderedTypes.forEach(t => {
+        if (typesStats[t]) {
+          const stats = typesStats[t];
+          let btuString = "";
+          if (stats.minBtu !== Infinity && stats.maxBtu !== -Infinity) {
+            if (stats.minBtu === stats.maxBtu) btuString = `${formatInt(stats.minBtu)} Btus`;
+            else btuString = `${formatInt(stats.minBtu)} a ${formatInt(stats.maxBtu)} Btus`;
+          }
+          let cicloString = "";
+          let emoji = "";
+          if (stats.hasQF && stats.hasSF) { cicloString = ""; emoji = ""; }
+          else if (stats.hasQF) { cicloString = "Quente/Frio"; emoji = "🔥❄️ "; }
+          else if (stats.hasSF) { cicloString = "Só Frio"; emoji = "❄️ "; }
+
+          const parts = [t];
+          if (btuString) parts.push(btuString);
+          if (cicloString) parts.push(cicloString);
+          titleLines.push(`${emoji}${parts.join(' · ')}`.trim());
+        }
+      });
+      return titleLines.join('\n');
+    }
+
+    // Brands considered Top Tier that deserve bold highlights in messages
+    const HYPER_BRANDS = ['daikin', 'fujitsu', 'hitachi', 'trane', 'lg', 'samsung', 'gree', 'carrier', 'midea', 'hisense'];
+
+    function boldPremiumBrand(title) {
+      if (!title) return title;
+      let formattedTitle = title;
+
+      for (const b of HYPER_BRANDS) {
+        let regex;
+        if (b === 'lg') {
+          regex = new RegExp(`\\b(${b})\\b`, 'i');
+        } else {
+          regex = new RegExp(`(${b})`, 'i');
+        }
+
+        if (regex.test(formattedTitle)) {
+          formattedTitle = formattedTitle.replace(regex, '*$1*');
+          break;
+        }
+      }
+      return formattedTitle;
+    }
+
+    function formatProductText(title, spot, install) {
+      if (!title) return "";
+      let emojiCycle = "❄️";
+      const titleLower = title.toLowerCase();
+      if (titleLower.includes('quente/frio') || titleLower.includes('quente e frio') || titleLower.includes('quente/ frio') || titleLower.includes('quente / frio') || titleLower.includes('quente frio') || titleLower.includes('q/f')) {
+        emojiCycle = "🔥❄️";
+      }
+      const boldedTitle = boldPremiumBrand(title);
+      return `${emojiCycle} ${boldedTitle}\n💰 ${spot}\n💳 ${install}`;
+    }
+
+    function parseSpotPrice(priceStr) {
+      if (!priceStr) return Infinity;
+      const match = priceStr.match(/R\$\s*([\d\.,]+)/);
+      if (match) {
+        let numStr = match[1].replace(/\./g, '').replace(',', '.');
+        return parseFloat(numStr) || Infinity;
+      }
+      return Infinity;
+    }
+
+    // Variável global para guardar o conteúdo de texto limpo para o botão Copiar
+    let clipboardTextClean = "";
+
+    function limparComparador() {
+      // Limpa a interface imediatamente
+      dadosExtensaoBrutos = {};
+      isSorted = true;
+      renderizarCaixa();
+
+      // Pede pra ponte limpar na extensão também pra evitar lista fantasma voltando depois
+      window.postMessage({ type: "TWO_CLEAR_COMPARADOR_DATA" }, "*");
+
+      // Dá um feedback extra pro usuário
+      const btnLimpar = document.querySelector('button[onclick="limparComparador()"]');
+      if (btnLimpar) {
+        const txtOriginal = btnLimpar.innerText;
+        btnLimpar.innerText = "Lista Limpa! ✔️";
+        setTimeout(() => btnLimpar.innerText = txtOriginal, 2000);
+      }
+    }
+
+    function produtoPassaNoFiltro(p) {
+      if (!p || !p.title) return false;
+
+      if (!ACTIVE_FILTERS.loja[p.store]) return false;
+
+      const marca = extractExplicitBrand(p.title);
+      if (!ACTIVE_FILTERS.marca[marca]) return false;
+
+      if (Object.keys(ACTIVE_FILTERS.tipo).length >= 2) {
+        const type = extractProductInfo(p.title).type;
+        if (type && ACTIVE_FILTERS.tipo[type] !== undefined && !ACTIVE_FILTERS.tipo[type]) return false;
+      }
+
+      const tl = p.title.toLowerCase();
+      let cicloType = 'sf'; // default Só Frio
+      if (tl.includes('quente/frio') || tl.includes('quente e frio') || tl.includes('q/f') || tl.includes('quente / frio') || tl.includes('quente frio')) {
+        cicloType = 'qf';
+      }
+
+      if (!ACTIVE_FILTERS.ciclo[cicloType]) return false;
+
+      return true;
+    }
+
+    function renderizarCaixa() {
+      const divCaixa = document.getElementById("caixa-comparador");
+      try {
+        const conteudos = Object.values(dadosExtensaoBrutos);
+
+        // Remove a metadata_title da array de conteudos
+        let dataToProcess = { ...dadosExtensaoBrutos };
+        delete dataToProcess.metadata_title;
+
+        let temProduto = false;
+        Object.values(dataToProcess).forEach(list => { if (Array.isArray(list) && list.length > 0) temProduto = true; });
+
+        if (!temProduto) {
+          document.getElementById('filter-section').style.display = 'none';
+          divCaixa.innerHTML = '<span style="color: #666;">Nenhum produto enviado pela extensão ainda...</span>';
+          document.getElementById('product-counter').innerText = '';
+          clipboardTextClean = "";
+          return;
+        }
+
+        document.getElementById('filter-section').style.display = 'block';
+
+        let htmlOut = "";
+        let plainTextOut = "";
+
+        if (isSorted) {
+          // == MODO: LISTA ÚNICA ORGANIZADA ==
+          let unifiedAndSortedList = [];
+          for (const [storeName, products] of Object.entries(dataToProcess)) {
+            if (Array.isArray(products)) {
+              products.forEach(p => {
+                const tempP = {
+                  store: storeName,
+                  title: p.title || "",
+                  spot: p.spot || "",
+                  install: p.install || "",
+                  _parsedPrice: parseSpotPrice(p.spot)
+                };
+                if (produtoPassaNoFiltro(tempP)) {
+                  unifiedAndSortedList.push(tempP);
+                }
+              });
+            }
+          }
+
+          unifiedAndSortedList.sort((a, b) => a._parsedPrice - b._parsedPrice);
+
+          const titleStr = generateSmartTitle(unifiedAndSortedList);
+          const titleText = titleStr.split('\n').map(l => `*${l}*`).join('\n');
+
+          htmlOut += `<strong>${titleText}</strong>\n\n=====================\n\n`;
+          plainTextOut += `${titleText}\n\n=====================\n\n`;
+
+          const listItemsHtml = unifiedAndSortedList.map(p => {
+            let badgeClass = "dufrio";
+            if (p.store.toLowerCase().includes('leveros')) badgeClass = "leveros";
+            if (p.store.toLowerCase().includes('central ar')) badgeClass = "centralar";
+
+            let emojiCycle = "❄️";
+            const tl = p.title.toLowerCase();
+            if (tl.includes('quente/frio') || tl.includes('quente e frio') || tl.includes('q/f')) emojiCycle = "🔥❄️";
+
+            // HTML version (com a badge discreta injetada na linha da parcela)
+            const htmlItem = `${emojiCycle} ${p.title}\n💰 <span style="color: var(--green); font-weight: bold;">${p.spot}</span>\n💳 <span style="color: #bbb;">${p.install}</span><span class="badge-inline ${badgeClass}">${p.store}</span>`;
+            return htmlItem;
+          });
+
+          htmlOut += listItemsHtml.join('\n\n<span style="color:#555">_____</span>\n\n');
+
+          // Texto plano limpíssimo sem as Lojas
+          const listItemsPlain = unifiedAndSortedList.map(p => formatProductText(p.title, p.spot, p.install));
+          plainTextOut += listItemsPlain.join('\n\n_____\n\n');
+
+          if (unifiedAndSortedList.length === 0) {
+            htmlOut = '<span style="color:#666;">Nenhum produto atende aos filtros atuais...</span>';
+            plainTextOut = '';
+          }
+
+          document.getElementById('product-counter').innerText = `${unifiedAndSortedList.length} aparelhos encontrados`;
+        }
+
+        divCaixa.innerHTML = htmlOut;
+        clipboardTextClean = plainTextOut;
+
+      } catch (e) {
+        divCaixa.innerHTML = '<span style="color:red">Oops, houve um erro ao processar: ' + e.message + '</span>';
+        console.error("Renderer Exception:", e);
+      }
+    }
+
+    function gerarCardsVisuais() {
+      const container = document.getElementById('visual-cards-container');
+      container.style.display = 'grid';
+      container.innerHTML = ''; // Limpa anterior
+
+      // Pega os dados atuais filtrados
+      let dataToProcess = { ...dadosExtensaoBrutos };
+      delete dataToProcess.metadata_title;
+
+      let unifiedAndSortedList = [];
+      for (const [storeName, products] of Object.entries(dataToProcess)) {
+        if (Array.isArray(products)) {
+          products.forEach(p => {
+            const tempP = {
+              store: storeName,
+              title: p.title || "",
+              spot: p.spot || "",
+              install: p.install || "",
+              image: p.image || "",
+              _parsedPrice: parseSpotPrice(p.spot)
+            };
+            if (produtoPassaNoFiltro(tempP)) {
+              unifiedAndSortedList.push(tempP);
+            }
+          });
+        }
+      }
+
+      unifiedAndSortedList.sort((a, b) => a._parsedPrice - b._parsedPrice);
+
+      if (unifiedAndSortedList.length === 0) {
+        container.innerHTML = '<span style="color:#666; grid-column: 1 / -1; text-align: center;">Nenhum card para exibir com os filtros atuais.</span>';
+        return;
+      }
+
+      unifiedAndSortedList.forEach(p => {
+        const cardWrapper = document.createElement('div');
+        cardWrapper.style.display = 'flex';
+        cardWrapper.style.flexDirection = 'column';
+        cardWrapper.style.gap = '8px';
+
+        const card = document.createElement('div');
+        card.className = 'visual-card';
+
+        // Determina a cor da loja
+        let bgLoja = "#000"; let textLoja = "#fff";
+        let sn = p.store.toLowerCase();
+        if (sn.includes('dufrio')) { bgLoja = "#0038A8"; }
+        else if (sn.includes('leveros')) { bgLoja = "#56B141"; }
+        else if (sn.includes('central ar')) { bgLoja = "#ff5722"; } // Laranja Central Ar
+
+        const imgBox = document.createElement('div');
+        imgBox.className = 'vc-img-box';
+        imgBox.style.position = 'relative';
+        imgBox.title = "Clique para copiar essa imagem";
+
+        const storeBadge = document.createElement('div');
+        storeBadge.style.position = 'absolute';
+        storeBadge.style.bottom = '-1px'; // Override the 1px card border
+        storeBadge.style.left = '-1px'; // Override the 1px card border
+        storeBadge.style.background = bgLoja;
+        storeBadge.style.color = textLoja;
+        storeBadge.style.padding = '4px 10px';
+        storeBadge.style.borderTopRightRadius = '12px';
+        storeBadge.style.borderBottomLeftRadius = '12px'; // Matches card border-radius perfectly
+        storeBadge.style.fontSize = '10px';
+        storeBadge.style.fontWeight = '900';
+        storeBadge.style.textTransform = 'uppercase';
+        storeBadge.style.zIndex = '5';
+        storeBadge.innerText = p.store;
+
+        const imgEl = document.createElement('img');
+        imgEl.src = p.image;
+        if (!sn.includes('central ar')) imgEl.crossOrigin = "Anonymous";
+
+        imgBox.appendChild(imgEl);
+
+        const textBox = document.createElement('div');
+        textBox.className = 'vc-text-box';
+        textBox.title = "Clique para copiar as info de venda";
+
+        let emojiCycle = "❄️";
+        if (p.title.toLowerCase().includes('quente/frio') || p.title.toLowerCase().includes('q/f')) emojiCycle = "🔥❄️";
+
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'vc-title';
+        titleDiv.innerText = `${emojiCycle} ${p.title}`;
+
+        const spotDiv = document.createElement('div');
+        spotDiv.className = 'vc-spot';
+        spotDiv.innerText = `💰 ${p.spot}`;
+
+        const instDiv = document.createElement('div');
+        instDiv.className = 'vc-install';
+        instDiv.innerText = `💳 ${p.install}`;
+
+        textBox.appendChild(titleDiv);
+        textBox.appendChild(spotDiv);
+        textBox.appendChild(instDiv);
+
+        card.style.position = 'relative';
+        textBox.style.paddingBottom = '32px'; // Prevent install price from overlapping badge
+
+        card.appendChild(imgBox);
+        card.appendChild(textBox);
+        card.appendChild(storeBadge);
+
+        // --- BOTAO DE INTEGRACAO COM O SITE ---
+        const pubBtn = document.createElement('button');
+        pubBtn.innerText = "Enviar p/ Site 🚀";
+        pubBtn.style.background = '#8B5CF6'; // Violet
+        pubBtn.style.color = '#fff';
+        pubBtn.style.border = 'none';
+        pubBtn.style.padding = '10px 10px';
+        pubBtn.style.borderRadius = '6px';
+        pubBtn.style.fontSize = '12px';
+        pubBtn.style.fontWeight = 'bold';
+        pubBtn.style.cursor = 'pointer';
+        pubBtn.style.width = '100%';
+        pubBtn.onclick = () => enviarProSite(p, pubBtn);
+        
+        cardWrapper.appendChild(card);
+        cardWrapper.appendChild(pubBtn);
+
+        container.appendChild(cardWrapper);
+
+        // --- AÇÕES DO CLIQUE (Copiar) ---
+        textBox.onclick = () => {
+          const textToCopy = formatProductText(p.title, p.spot, p.install);
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalBg = textBox.style.backgroundColor;
+            textBox.style.backgroundColor = 'rgba(195, 255, 0, 0.2)'; // Fundo var(--green) opaco
+            setTimeout(() => textBox.style.backgroundColor = originalBg, 500);
+          });
+        };
+
+        imgBox.onclick = async () => {
+          if (sn.includes('central ar')) {
+            // Copiar apenas o link como texto se for Central Ar devido a sua estrutura Blob URL
+            navigator.clipboard.writeText(p.image).then(() => {
+              const originalBorder = imgBox.style.border;
+              imgBox.style.border = '3px solid #ffc107'; // Yellow Alert URL copied
+              setTimeout(() => imgBox.style.border = originalBorder, 500);
+            });
+          } else {
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = imgEl.naturalWidth || imgEl.width;
+              canvas.height = imgEl.naturalHeight || imgEl.height;
+              const ctx = canvas.getContext('2d');
+
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(imgEl, 0, 0);
+
+              canvas.toBlob(blob => {
+                if (!blob) throw new Error("CORS bloq");
+                const item = new ClipboardItem({ "image/png": blob });
+                navigator.clipboard.write([item]).then(() => {
+                  const originalBorder = imgBox.style.border;
+                  imgBox.style.border = '3px solid #c3ff00';
+                  setTimeout(() => imgBox.style.border = originalBorder, 500);
+                }).catch(err => copyImageFallback());
+              }, "image/png");
+
+            } catch (err) {
+              copyImageFallback();
+            }
+          }
+
+          function copyImageFallback() {
+            navigator.clipboard.writeText(p.image).then(() => {
+              const originalBorder = imgBox.style.border;
+              imgBox.style.border = '3px solid #ffc107';
+              setTimeout(() => imgBox.style.border = originalBorder, 500);
+            });
+          }
+        };
+      });
+
+      // Rola a pagina para os cards
+
+    }
+
+    function puxarAbasAbertas(btnElement) {
+      window.postMessage({ type: "TWO_PULL_TABS" }, "*");
+      const old = "Puxar Caixas da Extensão 🔄";
+      btnElement.innerText = "Puxando das Caixas... ⏳";
+      setTimeout(() => {
+        if (btnElement.innerText === "Puxando das Caixas... ⏳") {
+          btnElement.innerText = old;
+        }
+      }, 3000);
+    }
+
+    window.addEventListener("message", (event) => {
+      // Intercepta a resposta de sucesso do pull tabs apenas para UI feedbak
+      if (event.source === window && event.data && event.data.type === "TWO_PULL_TABS_SUCCESS") {
+        const btnElement = document.getElementById("btn-puxar-abas");
+        if (btnElement) {
+          const response = event.data.response;
+          if (response && response.success) {
+            btnElement.innerText = "Encontradas " + response.count + " Lojas ✔️";
+          } else {
+            btnElement.innerText = "Nenhuma caixa aberta! ❌";
+          }
+          setTimeout(() => btnElement.innerText = "Puxar Caixas da Extensão 🔄", 3000);
+        }
+      }
+    });
+
+    function copiarCaixa(btnElement) {
+      if (!clipboardTextClean || clipboardTextClean.trim() === "") {
+        alert("A caixa está vazia!");
+        return;
+      }
+
+      // COPIA O TEXTO LIMPO PRE-CALCULADO
+      navigator.clipboard.writeText(clipboardTextClean).then(() => {
+        const old = btnElement.innerText;
+        btnElement.innerText = "Texto Copiado! ✔️";
+        setTimeout(() => btnElement.innerText = old, 3000);
+      });
+    }
+
+    async function enviarProSite(produto, btnElement) {
+      const oldText = btnElement.innerText;
+      btnElement.innerText = "Enviando... ⏳";
+      btnElement.disabled = true;
+
+      try {
+        const resposta = await fetch("http://localhost:3000/adicionar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(produto)
+        });
+
+        const obj = await resposta.json();
+
+        if (resposta.status === 409) {
+          btnElement.innerText = "⚠️ Já está no Site!";
+          btnElement.style.background = "#F59E0B"; // Laranja
+        } else if (resposta.ok) {
+          btnElement.innerText = "✅ Publicado no Ar!";
+          btnElement.style.background = "#10B981"; // Verde
+        } else {
+          throw new Error(obj.erro || "Erro na API");
+        }
+      } catch (err) {
+        console.error(err);
+        btnElement.innerText = "❌ Falha. Motor ON?";
+        btnElement.style.background = "#EF4444"; // Vermelho
+      }
+
+      setTimeout(() => {
+        if (!btnElement.innerText.includes("✅") && !btnElement.innerText.includes("⚠️")) {
+          btnElement.innerText = oldText;
+          btnElement.style.background = "#8B5CF6";
+          btnElement.disabled = false;
+        }
+      }, 5000);
+    }
+
+  </script>
+
+</body>
+
+</html>
