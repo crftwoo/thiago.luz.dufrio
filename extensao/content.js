@@ -679,8 +679,14 @@
             textContainer.style.cursor = 'pointer';
             textContainer.title = 'Clique para copiar o texto inteiro';
 
+            let emojiCycle = "❄️";
+            const tl = p.title.toLowerCase();
+            if (tl.includes('quente/frio') || tl.includes('quente e frio') || tl.includes('q/f') || tl.includes('quente / frio') || tl.includes('quente frio')) {
+                emojiCycle = "🔥❄️";
+            }
+
             const title = document.createElement('div');
-            title.innerText = '❄️ ' + p.title;
+            title.innerText = emojiCycle + ' ' + p.title;
             title.className = 'dufrio-ext-title';
 
             const spot = document.createElement('div');
