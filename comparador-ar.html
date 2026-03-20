@@ -46,7 +46,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    h1 { font-style: italic; letter-spacing: -2px; 
+    h1 {
       font-size: 32px;
       font-weight: 900;
       margin-bottom: 8px;
@@ -130,6 +130,12 @@
 
     .tipo-btn:hover img {
       transform: scale(1.05);
+    }
+
+    .tipo-btn.selecionado {
+      background: var(--dufrio-azul);
+      color: #fff;
+      border-color: var(--dufrio-azul);
     }
 
     #resultados {
@@ -237,10 +243,6 @@
       color: #fff;
       border-color: var(--btn-color, var(--dufrio-azul));
     }
-    
-    .tech-btn.solid[style*="--green"] {
-      color: #000;
-    }
 
     .tech-btn.solid:hover {
       filter: brightness(1.05);
@@ -259,9 +261,7 @@
       margin-bottom: 12px;
     }
 
-    .badge-dufrio { background: #102E82; color: white; margin-bottom: 0; }
-    
-    
+    .badge-dufrio { background: #102E82; color: white; }
 
     .filter-section {
       width: 100%;
@@ -292,10 +292,6 @@
       margin-bottom: 16px;
     }
 
-    .filter-badges:last-child {
-      margin-bottom: 0;
-    }
-
     .filter-badge {
       display: inline-block;
       padding: 6px 12px;
@@ -303,17 +299,13 @@
       font-size: 11px;
       font-weight: 700;
       cursor: pointer;
-      background: #f1f5f9;
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      color: #71717a;
       transition: all 0.2s;
       user-select: none;
       opacity: 0.6;
       filter: grayscale(100%);
-    }
-
-    .filter-badge:hover {
-      background: #e2e8f0;
     }
 
     .filter-badge.active {
@@ -352,9 +344,9 @@
       margin-left: 8px;
     }
 
-    .badge-inline.dufrio { background: #0056b3; color: white; }
-    .badge-inline.leveros { background: #009038; color: white; }
-    .badge-inline.centralar { background: #005ca8; color: white; }
+    .badge-inline.dufrio { background: #0038A8; color: white; }
+    .badge-inline.leveros { background: #56B141; color: white; }
+    .badge-inline.centralar { background: #ff5722; color: white; }
 
     .fake-textarea {
       width: 100%;
@@ -374,6 +366,7 @@
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
 
+    /* Cards Visuais do Comparador (Vertical) */
     #visual-cards-container {
       display: none;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -384,52 +377,56 @@
       padding-bottom: 40px;
     }
 
-    
     .visual-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 12px;
       overflow: hidden;
       display: flex;
-      flex-direction: row; /* Horizontal */
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      margin-bottom: 0;
+      flex-direction: column;
+      transition: all 0.2s ease;
     }
+
     .visual-card:hover {
-      transform: translateY(-4px);
       border-color: var(--dufrio-azul-claro);
+      background: #fff;
+      transform: translateY(-2px);
       box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
     }
+
     .vc-img-box {
-      width: 160px; /* Fixed width for horizontal layout */
-      height: 160px;
-      padding: 15px;
+      width: 100%;
+      aspect-ratio: 4 / 3;
       background: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-right: 1px solid var(--border);
-      flex-shrink: 0;
+      position: relative;
+      border-bottom: 1px solid var(--border);
     }
+
     .vc-img-box img {
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
+      transition: transform 0.2s ease;
     }
+
+    .vc-img-box:hover img {
+      transform: scale(1.05);
+    }
+
     .vc-text-box {
-      padding: 20px;
-      flex: 1;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      text-align: left; /* Left align text */
-      justify-content: center;
+      gap: 6px;
+      text-align: left;
     }
+
     .vc-title { font-size: 13px; font-weight: 800; color: var(--text-main); line-height: 1.4; }
     .vc-spot { font-size: 18px; font-weight: 900; color: var(--dufrio-azul); }
     .vc-install { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
-
 
     .badge-store-overlay {
       position: absolute;
@@ -438,10 +435,9 @@
       font-size: 10px;
       padding: 3px 8px;
       border-radius: 6px;
-      background: rgba(255, 255, 255, 0.95);
-      color: #000;
-      font-weight: 800;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: rgba(16, 46, 130, 0.9);
+      color: white;
+      font-weight: 900;
       z-index: 2;
     }
 
@@ -464,7 +460,7 @@
 
     @media (max-width: 768px) {
       body { padding: 24px 16px; }
-      h1 { font-style: italic; letter-spacing: -2px;  font-size: 28px; }
+      h1 { font-size: 28px; }
       .sub-head { margin-bottom: 24px; padding-bottom: 16px; }
       .section { flex-direction: column; gap: 12px; }
       .tipo-btn, .section button { width: 100%; }
@@ -473,55 +469,118 @@
       #resultados { grid-template-columns: 1fr; }
       .card { padding: 24px; }
     }
-  
-    
-    .visual-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: row; /* Horizontal */
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      margin-bottom: 0;
-    }
-    .visual-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--dufrio-azul-claro);
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    }
-    .vc-img-box {
-      width: 160px; /* Fixed width for horizontal layout */
-      height: 160px;
-      padding: 15px;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-right: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    .vc-img-box img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-    .vc-text-box {
-      padding: 20px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      text-align: left; /* Left align text */
-      justify-content: center;
-    }
-    .vc-title { font-size: 13px; font-weight: 800; color: var(--text-main); line-height: 1.4; }
-    .vc-spot { font-size: 18px; font-weight: 900; color: var(--dufrio-azul); }
-    .vc-install { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
   </style>
+</head>
+
+<body>
+
+  <div class="container" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+    <h1>Busca Ar-Condicionado</h1>
+    <div class="sub-head" style="margin-bottom: 24px;">Buscador de preços de ar condicionado.</div>
+
+    <div class="form-step visible" id="step-tipos">
+      <h2 id="titulo-tipos">Selecione o Tipo</h2>
+      <div id="tipos" class="section" style="justify-content: center;"></div>
+    </div>
+
+    <div class="form-step" id="step-btus">
+      <h2 id="titulo-btus">Selecione os BTUs</h2>
+      <div id="btus" class="section" style="justify-content: center;"></div>
+    </div>
+
+    <div class="form-step" id="step-ciclos">
+      <h2 id="titulo-ciclos">Selecione o Ciclo</h2>
+      <div id="ciclos" class="section" style="justify-content: center;"></div>
+    </div>
+
+    <div class="form-step" id="step-resultados" style="padding-bottom: 20px; width: 100%;">
+      <h2 id="titulo-resultados" style="margin-bottom: 12px;">Resultados</h2>
+      <div id="btn-abrir-todas-container" style="display: none; margin-bottom: 32px;">
+        <button id="btn-abrir-todas" class="tech-btn"
+          style="--btn-color: var(--green); padding: 8px 16px; font-size: 10px;">Abrir Todas as Lojas ↗</button>
+      </div>
+      <div id="resultados"
+        style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 800px;">
+      </div>
+    </div>
+
+    <div class="compare-section" id="compare-section">
+      <h2>Comparador Ao Vivo (Da Extensão)</h2>
+      <div class="sub-head">A caixa atualiza sozinha quando você joga os itens da extensão pra cá!</div>
+
+      <div id="caixa-comparador" class="fake-textarea">Nenhum produto enviado pela extensão ainda...</div>
+
+      <div class="filter-section" id="filter-section" style="display: none;">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
+          <h3
+            style="margin: 0; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #fff;">
+            Filtros de Tabela</h3>
+          <div style="display: flex; gap: 8px;">
+            <button class="tech-btn" onclick="limparComparador()"
+              style="--btn-color: #ff4444; padding: 6px 12px; font-size: 9px;">Limpar Lista 🗑️</button>
+            <button id="btn-toggle-all-filters" class="tech-btn"
+              style="--btn-color: #71717a; padding: 6px 12px; font-size: 9px;" onclick="toggleAllFilters()">Desmarcar
+              Todos</button>
+          </div>
+        </div>
+
+        <p>Lojas Encontradas</p>
+        <div class="filter-badges" id="dynamic-store-filters"></div>
+
+        <p>Seleção em Massa por Qualidade</p>
+        <div class="filter-badges">
+          <div class="filter-badge active" style="background:#b08d57; color:#000;" data-macro="premium"
+            onclick="toggleQualityMacro('premium', this)">🔝 Premium</div>
+          <div class="filter-badge active" style="background:#00b050; color:#000;" data-macro="boa"
+            onclick="toggleQualityMacro('boa', this)">🟢 Boa</div>
+          <div class="filter-badge active" style="background:#ffc000; color:#000;" data-macro="inter"
+            onclick="toggleQualityMacro('inter', this)">🟡 Intermediária</div>
+          <div class="filter-badge active" style="background:#ff0000; color:#000;" data-macro="basica"
+            onclick="toggleQualityMacro('basica', this)">🔴 Básica</div>
+        </div>
+
+        <p>Marcas Identificadas</p>
+        <div class="filter-badges" id="dynamic-brand-filters"></div>
+
+        <div id="dynamic-type-container" style="display: none;">
+          <p>Tipos Encontrados</p>
+          <div class="filter-badges" id="dynamic-type-filters"></div>
+        </div>
+
+        <p>Ciclo</p>
+        <div class="filter-badges" id="dynamic-cycle-filters">
+          <div class="filter-badge active" data-filter="sf" onclick="toggleFilter('ciclo', 'sf', this)">❄️ Só Frio</div>
+          <div class="filter-badge active" data-filter="qf" onclick="toggleFilter('ciclo', 'qf', this)">🔥❄️ Quente/Frio
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-actions">
+        <button id="btn-puxar-abas" class="tech-btn" onclick="puxarAbasAbertas(this)"
+          style="--btn-color: #4b9ce3;">Puxar Caixas da Extensão 🔄</button>
+        <button class="tech-btn solid" onclick="copiarCaixa(this)" style="--btn-color: var(--green);">Copiar Texto da
+          Caixa 📋</button>
+        <button class="tech-btn" onclick="gerarCardsVisuais()" style="--btn-color: #b08d57;">Gerar Cards 🖼️</button>
+      </div>
+      <p id="product-counter" style="color: #666; font-size: 13px; margin-top: 10px;"></p>
+
+      <div id="visual-cards-container"></div>
+
+    </div>
+  </div>
 
   <script>
+    let dados = [], tipoSelecionado = null, btusSelecionado = null, cicloSelecionado = null;
+    let ativoTipo = null, ativoBtu = null, ativoCiclo = null;
+
+    // Estado dos Filtros (Inicializado dinamicamente)
+    let ACTIVE_FILTERS = {
+      loja: {},
+      marca: {},
+      tipo: {},
+      ciclo: { sf: true, qf: true }
+    };
     let allFiltersActive = true;
 
     const QUALITY_BRANDS = {
@@ -651,15 +710,14 @@
       renderizarCaixa();
     }
 
-    const cacheBuster = "?v=" + new Date().getTime();
     const imagens = {
-      "Hiwall": "img/hi_wall.jpg" + cacheBuster,
-      "Hi Wall": "img/hi_wall.jpg" + cacheBuster,
-      "Piso Teto": "img/piso_teto.jpg" + cacheBuster,
-      "Cassete": "img/cassete.jpg" + cacheBuster
+      "Hiwall": "img/hi_wall.png",
+      "Hi Wall": "img/hi_wall.png",
+      "Piso Teto": "img/piso_teto.png",
+      "Cassete": "img/cassete.png"
     };
 
-    fetch("https://opensheet.elk.sh/1ml7XpwZfzM4ElRJb4G62b93VMqUw3jeprTtgxdigiD8/Sheet1")
+    fetch("https://opensheet.elk.sh/1LLVFTzxoSakgqnjS_ws7GgYNKdEqP26H0Z7Fe5DEmcc/Página1")
       .then(r => r.json()).then(j => { dados = j; gerarTipos(); });
 
     function gerarTipos() {
@@ -1080,8 +1138,8 @@
 
           const listItemsHtml = unifiedAndSortedList.map(p => {
             let badgeClass = "dufrio";
-            
-            
+            if (p.store.toLowerCase().includes('leveros')) badgeClass = "leveros";
+            if (p.store.toLowerCase().includes('central ar')) badgeClass = "centralar";
 
             let emojiCycle = "❄️";
             const tl = p.title.toLowerCase();
@@ -1163,8 +1221,8 @@
         let bgLoja = "#000"; let textLoja = "#fff";
         let sn = p.store.toLowerCase();
         if (sn.includes('dufrio')) { bgLoja = "#0038A8"; }
-        
-         // Laranja Central Ar
+        else if (sn.includes('leveros')) { bgLoja = "#56B141"; }
+        else if (sn.includes('central ar')) { bgLoja = "#ff5722"; } // Laranja Central Ar
 
         const imgBox = document.createElement('div');
         imgBox.className = 'vc-img-box';
@@ -1188,7 +1246,7 @@
 
         const imgEl = document.createElement('img');
         imgEl.src = p.image;
-        imgEl.crossOrigin = "Anonymous";
+        if (!sn.includes('central ar')) imgEl.crossOrigin = "Anonymous";
 
         imgBox.appendChild(imgEl);
 
@@ -1252,7 +1310,7 @@
         };
 
         imgBox.onclick = async () => {
-          if (false) {
+          if (sn.includes('central ar')) {
             // Copiar apenas o link como texto se for Central Ar devido a sua estrutura Blob URL
             navigator.clipboard.writeText(p.image).then(() => {
               const originalBorder = imgBox.style.border;
