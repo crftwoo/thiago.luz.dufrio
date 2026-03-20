@@ -1280,23 +1280,6 @@
         card.appendChild(textBox);
         card.appendChild(storeBadge);
 
-        // --- BOTAO DE INTEGRACAO COM O SITE ---
-        const pubBtn = document.createElement('button');
-        pubBtn.innerText = "Enviar p/ Site 🚀";
-        pubBtn.style.background = '#8B5CF6'; // Violet
-        pubBtn.style.color = '#fff';
-        pubBtn.style.border = 'none';
-        pubBtn.style.padding = '10px 10px';
-        pubBtn.style.borderRadius = '6px';
-        pubBtn.style.fontSize = '12px';
-        pubBtn.style.fontWeight = 'bold';
-        pubBtn.style.cursor = 'pointer';
-        pubBtn.style.width = '100%';
-        pubBtn.onclick = () => enviarProSite(p, pubBtn);
-        
-        cardWrapper.appendChild(card);
-        cardWrapper.appendChild(pubBtn);
-
         container.appendChild(cardWrapper);
 
         // --- AÇÕES DO CLIQUE (Copiar) ---
@@ -1398,43 +1381,6 @@
       });
     }
 
-    async function enviarProSite(produto, btnElement) {
-      const oldText = btnElement.innerText;
-      btnElement.innerText = "Enviando... ⏳";
-      btnElement.disabled = true;
-
-      try {
-        const resposta = await fetch("http://localhost:3000/adicionar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(produto)
-        });
-
-        const obj = await resposta.json();
-
-        if (resposta.status === 409) {
-          btnElement.innerText = "⚠️ Já está no Site!";
-          btnElement.style.background = "#F59E0B"; // Laranja
-        } else if (resposta.ok) {
-          btnElement.innerText = "✅ Publicado no Ar!";
-          btnElement.style.background = "#10B981"; // Verde
-        } else {
-          throw new Error(obj.erro || "Erro na API");
-        }
-      } catch (err) {
-        console.error(err);
-        btnElement.innerText = "❌ Falha. Motor ON?";
-        btnElement.style.background = "#EF4444"; // Vermelho
-      }
-
-      setTimeout(() => {
-        if (!btnElement.innerText.includes("✅") && !btnElement.innerText.includes("⚠️")) {
-          btnElement.innerText = oldText;
-          btnElement.style.background = "#8B5CF6";
-          btnElement.disabled = false;
-        }
-      }, 5000);
-    }
 
   </script>
 
