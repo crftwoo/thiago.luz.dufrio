@@ -125,22 +125,26 @@
       margin: 0 auto;
     }
 
+    .menu-title-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
     .menu-title {
       font-size: 36px;
       font-weight: 900;
-      margin-bottom: 40px;
       text-transform: uppercase;
       letter-spacing: -1px;
-      text-align: center;
       color: var(--text-main);
+      margin: 0;
     }
 
-    .menu-title span {
-      color: var(--dufrio-amarelo);
-      background: var(--dufrio-azul);
-      padding: 4px 12px;
-      border-radius: 8px;
-      font-style: italic;
+    .menu-logo {
+      height: 48px;
+      object-fit: contain;
     }
 
     .menu-grid {
@@ -349,8 +353,13 @@
     <div class="tabs" id="tabs"></div>
   </div>
 
-  <div class="menu" id="menu">
-    <div class="menu-title">Ferramentas <span>Dufrio</span></div>
+  <!-- MENU PRINCIPAL -->
+  <main class="menu" id="menu">
+    <div class="menu-title-container">
+      <h1 class="menu-title">Ferramentas</h1>
+      <img src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" alt="Dufrio Logo" class="menu-logo">
+    </div>
+
     <div class="menu-grid" id="menuGrid"></div>
     <div style="margin-top: 40px; text-align: center;">
       <div id="lastUpdate" class="tooltip" style="font-size: 12px; color: #555; font-weight: 500;">
