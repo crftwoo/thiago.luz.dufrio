@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
@@ -17,10 +17,13 @@
 
     :root {
       --green: #FFD000;
-      --border: rgba(255, 255, 255, 0.05);
-      --bg-color: #060B19;
-      --card-bg: #0C152B;
-      --text-secondary: #71717a;
+      --dufrio-azul: #102E82;
+      --dufrio-azul-claro: #2BAAE2;
+      --border: #e5e7eb;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-secondary: #6b7280;
+      --text-main: #1f2937;
     }
 
     body {
@@ -28,7 +31,7 @@
       padding: 40px 20px;
       font-family: 'Inter', sans-serif;
       background: var(--bg-color);
-      color: #fff;
+      color: var(--text-main);
     }
 
     .container {
@@ -39,15 +42,8 @@
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
@@ -57,7 +53,7 @@
       letter-spacing: -1px;
       text-transform: uppercase;
       font-style: italic;
-      color: var(--green);
+      color: var(--dufrio-azul);
     }
 
     .sub-head {
@@ -77,6 +73,7 @@
       text-transform: uppercase;
       letter-spacing: -0.5px;
       font-size: 18px;
+      color: var(--text-main);
     }
 
     .section {
@@ -91,27 +88,28 @@
       border-radius: 12px;
       cursor: pointer;
       padding: 16px 32px;
-      color: #fff;
+      color: var(--text-main);
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
       font-size: 12px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       font-family: 'Inter', sans-serif;
     }
 
     button:hover {
-      border-color: rgba(255, 255, 255, 0.2);
+      border-color: #cbd5e1;
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     button.selecionado {
-      background: var(--green);
-      color: #000;
-      border-color: var(--green);
+      background: var(--dufrio-azul);
+      color: #fff;
+      border-color: var(--dufrio-azul);
       transform: translateY(-2px);
-      box-shadow: 0 8px 15px rgba(155, 226, 13, 0.3);
+      box-shadow: 0 4px 12px rgba(16,46,130,0.2);
     }
 
     .tipo-btn {
@@ -123,28 +121,14 @@
       padding: 24px 16px;
     }
 
-    .tipo-btn.selecionado {
-      background: var(--green);
-      color: #000;
-      border-color: var(--green);
-    }
-
     .tipo-btn img {
       width: 140px;
-      mix-blend-mode: lighten;
-      filter: contrast(1.6) brightness(0.7) drop-shadow(0 0 4px rgba(75, 216, 255, 0.2));
-      transition: transform 0.3s ease, filter 0.3s ease;
+      transition: transform 0.3s ease;
+      mix-blend-mode: multiply;
     }
 
     .tipo-btn:hover img {
       transform: scale(1.05);
-      filter: contrast(1.8) brightness(0.9) drop-shadow(0 0 8px rgba(75, 216, 255, 0.4));
-    }
-
-    .tipo-btn.selecionado img {
-      filter: contrast(1.8) brightness(1.1);
-      mix-blend-mode: normal;
-      /* remove the lighten on green bg for better view or keep it if png handles it */
     }
 
     #resultados {
@@ -161,22 +145,22 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: all 0.3s ease;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
 
     .card:hover {
       transform: translateY(-4px);
-      border-color: rgba(255, 255, 255, 0.1);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+      border-color: var(--dufrio-azul-claro);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
     }
 
     .card strong {
       font-weight: 800;
-      font-size: 16px;
+      font-size: 14px;
       margin-bottom: 24px;
       display: block;
-      color: #fff;
+      color: var(--text-main);
       text-transform: uppercase;
       letter-spacing: -0.5px;
     }
@@ -188,20 +172,17 @@
 
     .card button {
       width: 100%;
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
+      background: var(--card-bg);
+      color: var(--dufrio-azul);
       border: 1px solid var(--border);
     }
 
     .card button:hover {
-      background: var(--green);
-      color: #000;
-      border-color: var(--green);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 15px rgba(155, 226, 13, 0.25);
+      background: var(--dufrio-azul);
+      color: #fff;
+      border-color: var(--dufrio-azul);
     }
 
-    /* Styles for the multiple compare section */
     .compare-section {
       margin-top: 60px;
       padding-top: 40px;
@@ -230,56 +211,40 @@
       box-shadow: none;
     }
 
-    .compare-actions button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    }
-
     .tech-btn {
-      --b: 1px;
-      --s: 12px;
-      position: relative;
       padding: 12px 20px;
-      color: var(--btn-color);
-      background: #080808;
+      color: var(--dufrio-azul);
+      background: var(--bg-color);
       font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
-      border: var(--b) solid transparent;
+      border: 1px solid var(--border);
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: 6px;
       transition: all 0.2s;
     }
 
     .tech-btn:not(.solid):hover {
-      background: #111;
+      background: #e2e8f0;
       transform: translateY(-2px);
+      border-color: #cbd5e1;
     }
 
     .tech-btn.solid {
-      background: var(--btn-color);
+      background: var(--btn-color, var(--dufrio-azul));
+      color: #fff;
+      border-color: var(--btn-color, var(--dufrio-azul));
+    }
+    
+    .tech-btn.solid[style*="--green"] {
       color: #000;
-      border-color: var(--btn-color);
     }
 
     .tech-btn.solid:hover {
-      filter: brightness(1.1);
+      filter: brightness(1.05);
       transform: translateY(-2px);
-    }
-
-    .tech-btn:not(.solid)::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 4px;
-      padding: var(--b);
-      background: linear-gradient(90deg, var(--btn-color) var(--s), transparent 0 calc(100% - var(--s)), var(--btn-color) 0) border-box,
-        linear-gradient(0deg, var(--btn-color) var(--s), transparent 0 calc(100% - var(--s)), var(--btn-color) 0) border-box;
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .badge-store {
@@ -293,31 +258,20 @@
       margin-bottom: 12px;
     }
 
-    .badge-dufrio {
-      background: #0056b3;
-      color: white;
-    }
-
-    .badge-leveros {
-      background: #009038;
-      color: white;
-    }
-
-    .badge-centralar {
-      background: #005ca8;
-      color: white;
-    }
+    .badge-dufrio { background: #0056b3; color: white; }
+    .badge-leveros { background: #009038; color: white; }
+    .badge-centralar { background: #005ca8; color: white; }
 
     .filter-section {
       width: 100%;
       max-width: 800px;
       margin-bottom: 32px;
       padding: 24px;
-      background: linear-gradient(145deg, #111111, #0C152B);
-      border: 1px solid rgba(255, 255, 255, 0.03);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 16px;
       text-align: left;
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.02), 0 10px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
 
     .filter-section p {
@@ -348,52 +302,34 @@
       font-size: 11px;
       font-weight: 700;
       cursor: pointer;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      color: #777;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
       transition: all 0.2s;
       user-select: none;
-      opacity: 0.5;
+      opacity: 0.6;
       filter: grayscale(100%);
     }
 
     .filter-badge:hover {
-      background: #222;
+      background: #e2e8f0;
     }
 
     .filter-badge.active {
-      color: #fff;
-      background: #2a2a2a;
-      /* Cor clara padrão para marcas e lojas genéricas */
-      border-color: #333;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      color: var(--text-main);
+      background: #fff;
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       opacity: 1;
       filter: grayscale(0%);
     }
 
-    .filter-badge.active[data-filter="premium"] {
-      background: #b08d57;
-    }
-
-    .filter-badge.active[data-filter="boa"] {
-      background: #00b050;
-    }
-
-    .filter-badge.active[data-filter="inter"] {
-      background: #ffc000;
-    }
-
-    .filter-badge.active[data-filter="basica"] {
-      background: #ff0000;
-    }
-
-    .filter-badge.active[data-filter="sf"] {
-      background: #4ba3e3;
-    }
-
-    .filter-badge.active[data-filter="qf"] {
-      background: #e36a4b;
-    }
+    .filter-badge.active[data-filter="premium"] { background: #b08d57; color: #fff; border-color: #b08d57; }
+    .filter-badge.active[data-filter="boa"] { background: #00b050; color: #fff; border-color: #00b050; }
+    .filter-badge.active[data-filter="inter"] { background: #ffc000; color: #000; border-color: #ffc000; }
+    .filter-badge.active[data-filter="basica"] { background: #ff0000; color: #fff; border-color: #ff0000; }
+    .filter-badge.active[data-filter="sf"] { background: #4ba3e3; color: #fff; border-color: #4ba3e3; }
+    .filter-badge.active[data-filter="qf"] { background: #e36a4b; color: #fff; border-color: #e36a4b; }
 
     .compare-copy-btn {
       width: auto !important;
@@ -411,45 +347,32 @@
       text-transform: uppercase;
       letter-spacing: 1px;
       vertical-align: middle;
-      opacity: 0.8;
+      opacity: 0.9;
       margin-left: 8px;
     }
 
-    .badge-inline.dufrio {
-      background: #0056b3;
-      color: white;
-    }
-
-    .badge-inline.leveros {
-      background: #009038;
-      color: white;
-    }
-
-    .badge-inline.centralar {
-      background: #005ca8;
-      color: white;
-    }
+    .badge-inline.dufrio { background: #0056b3; color: white; }
+    .badge-inline.leveros { background: #009038; color: white; }
+    .badge-inline.centralar { background: #005ca8; color: white; }
 
     .fake-textarea {
       width: 100%;
       max-width: 800px;
       height: 300px;
-      background: #0d0d0d;
-      color: #e0e0e0;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: var(--bg-color);
+      color: var(--text-main);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 24px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
+      font-size: 13px;
       margin-bottom: 32px;
       overflow-y: auto;
       line-height: 1.6;
       text-align: left;
       white-space: pre-wrap;
-      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
 
-    /* Cards Visuais do Comparador */
     #visual-cards-container {
       display: none;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -457,46 +380,43 @@
       margin-top: 30px;
       width: 100%;
       max-width: 1400px;
-      /* Aumentado para permitir 4 ou mais cards em monitores ultrawide */
       padding-bottom: 40px;
     }
 
     .visual-card {
-      background: #111;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
-      /* Garante que a imagem respeite o border-radius */
       display: flex;
       flex-direction: column;
-      transition: border-color 0.2s, background 0.2s;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
     }
 
     .visual-card:hover {
-      border-color: rgba(255, 255, 255, 0.15);
-      background: #161616;
+      border-color: var(--dufrio-azul-claro);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
     }
 
     .vc-img-box {
       width: 100%;
-      /* Altura definida pelo aspect-ratio para imagens de ar condicionado que geralmente sao 16:9 ou 4:3 largas */
       aspect-ratio: 4 / 3;
       background: #fff;
-      /* Fundo branco pra mesclar melhor com as fotos que originalmente tem fundo branco */
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
       cursor: pointer;
-      border-bottom: 2px solid #1a1a1a;
+      border-bottom: 1px solid var(--border);
     }
 
     .vc-img-box img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      /* O contain com o aspect-ratio acima garante que a imagem preenche a largura e dita a naturalidade da caixa */
       transition: transform 0.2s ease;
+      mix-blend-mode: multiply;
     }
 
     .vc-img-box:hover img {
@@ -504,8 +424,7 @@
     }
 
     .vc-text-box {
-      padding: 14px 16px;
-      /* Padding movido para cá para afastar o texto das bordas */
+      padding: 16px;
       transition: background-color 0.2s ease;
       display: flex;
       flex-direction: column;
@@ -514,14 +433,13 @@
     }
 
     .vc-text-box:hover {
-      background-color: rgba(255, 255, 255, 0.03);
-      border-color: rgba(255, 255, 255, 0.08);
+      background-color: var(--bg-color);
     }
 
     .vc-title {
       font-size: 13px;
       font-weight: 600;
-      color: #ccc;
+      color: var(--text-main);
       line-height: 1.4;
       margin-bottom: 8px;
     }
@@ -529,13 +447,13 @@
     .vc-spot {
       font-size: 18px;
       font-weight: 700;
-      color: #fff;
+      color: var(--dufrio-azul);
     }
 
     .vc-install {
       font-size: 12px;
-      color: #777;
-      font-weight: 400;
+      color: var(--text-secondary);
+      font-weight: 500;
     }
 
     .badge-store-overlay {
@@ -544,10 +462,11 @@
       left: 10px;
       font-size: 10px;
       padding: 3px 8px;
-      border-radius: 12px;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      backdrop-filter: blur(4px);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #000;
+      font-weight: 800;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       z-index: 2;
     }
 
@@ -564,58 +483,20 @@
     }
 
     @keyframes slideUpFade {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @media (max-width: 768px) {
-      body {
-        padding: 24px 16px;
-      }
-
-      h1 {
-        font-size: 28px;
-      }
-
-      .sub-head {
-        margin-bottom: 24px;
-        padding-bottom: 16px;
-      }
-
-      .section {
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .tipo-btn,
-      .section button {
-        width: 100%;
-      }
-
-      .tipo-btn {
-        padding: 16px;
-        flex-direction: row;
-        justify-content: space-between;
-      }
-
-      .tipo-btn img {
-        width: 100px;
-      }
-
-      #resultados {
-        grid-template-columns: 1fr;
-      }
-
-      .card {
-        padding: 24px;
-      }
+      body { padding: 24px 16px; }
+      h1 { font-size: 28px; }
+      .sub-head { margin-bottom: 24px; padding-bottom: 16px; }
+      .section { flex-direction: column; gap: 12px; }
+      .tipo-btn, .section button { width: 100%; }
+      .tipo-btn { padding: 16px; flex-direction: row; justify-content: space-between; }
+      .tipo-btn img { width: 100px; }
+      #resultados { grid-template-columns: 1fr; }
+      .card { padding: 24px; }
     }
   </style>
 </head>
