@@ -122,9 +122,10 @@
     }
 
     .tipo-btn img {
-      width: 140px;
+      width: 160px;
       transition: transform 0.3s ease;
-      mix-blend-mode: multiply;
+      border-radius: 6px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 
     .tipo-btn:hover img {
@@ -739,11 +740,12 @@
       renderizarCaixa();
     }
 
+    const cacheBuster = "?v=" + new Date().getTime();
     const imagens = {
-      "Hiwall": "img/hi_wall.png",
-      "Hi Wall": "img/hi_wall.png",
-      "Piso Teto": "img/piso_teto.png",
-      "Cassete": "img/cassete.png"
+      "Hiwall": "img/hi_wall.jpg" + cacheBuster,
+      "Hi Wall": "img/hi_wall.jpg" + cacheBuster,
+      "Piso Teto": "img/piso_teto.jpg" + cacheBuster,
+      "Cassete": "img/cassete.jpg" + cacheBuster
     };
 
     fetch("https://opensheet.elk.sh/1ml7XpwZfzM4ElRJb4G62b93VMqUw3jeprTtgxdigiD8/Sheet1")
