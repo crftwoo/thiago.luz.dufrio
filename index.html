@@ -9,34 +9,37 @@
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap');
 
     * {
       box-sizing: border-box;
     }
 
     :root {
-      --green: #9BE20D;
-      --border: rgba(255, 255, 255, 0.05);
-      /* Cyber border */
-      --bg-color: #050505;
-      /* Blackout */
-      --card-bg: #0A0A0A;
-      /* Slightly above blackout */
-      --card-hover: rgba(255, 255, 255, 0.02);
-      --text-secondary: #71717a;
-      /* Zinc-500 equivalent */
+      --dufrio-amarelo: #FFD000;
+      /* Destaques e Botões */
+      --dufrio-azul: #102E82;
+      /* Azul corporativo */
+      --dufrio-azul-claro: #2BAAE2;
+      /* Azul secundário */
+
+      --border: rgba(255, 255, 255, 0.08);
+      /* Cyber border mais suave */
+      --bg-color: #060B19;
+      /* Fundo escuro azulado escuro */
+      --card-bg: #0C152B;
+      /* Card levemente mais claro */
+      --text-secondary: #9ca3af;
     }
 
     body {
       margin: 0;
       background: var(--bg-color);
-      color: #fff;
-      font-family: 'Montserrat', sans-serif;
+      color: #f3f4f6;
+      font-family: 'Inter', sans-serif;
       overflow-x: hidden;
     }
 
-    /* Scrollbars invisíveis para visual super clean */
     ::-webkit-scrollbar {
       width: 0px;
       height: 0px;
@@ -60,32 +63,30 @@
       border-radius: 12px;
       border: 1px solid var(--border);
       background: var(--card-bg);
-      color: var(--green);
+      color: var(--dufrio-amarelo);
       font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
       cursor: pointer;
       transition: all 0.3s ease;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Inter', sans-serif;
       flex-shrink: 0;
     }
 
     .menu-icon-btn:hover {
-      border-color: rgba(155, 226, 13, 0.3);
-      background: rgba(155, 226, 13, 0.05);
+      border-color: rgba(255, 208, 0, 0.4);
+      background: rgba(255, 208, 0, 0.08);
     }
 
     .tabs {
       display: none;
       gap: 12px;
       margin-left: 20px;
-      /* Horizontal Scroll Otimizado */
       overflow-x: auto;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
       padding-bottom: 4px;
-      /* margem pro scroll */
     }
 
     .tab {
@@ -100,21 +101,21 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       transition: all 0.3s ease;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Inter', sans-serif;
       white-space: nowrap;
       flex-shrink: 0;
     }
 
     .tab:hover {
-      border-color: #333;
+      border-color: #555;
       color: #fff;
     }
 
     .tab.active {
-      border-color: var(--green);
-      background: var(--green);
+      border-color: var(--dufrio-amarelo);
+      background: var(--dufrio-amarelo);
       color: #000;
-      box-shadow: 0 4px 20px rgba(155, 226, 13, 0.4);
+      box-shadow: 0 4px 20px rgba(255, 208, 0, 0.3);
     }
 
     /* --- MENU PRINCIPAL (GRID) --- */
@@ -137,7 +138,7 @@
     }
 
     .menu-title span {
-      color: var(--green);
+      color: var(--dufrio-amarelo);
       font-style: italic;
     }
 
@@ -170,15 +171,15 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
       opacity: 0;
       transition: opacity 0.3s ease;
     }
 
     .menu-item:hover {
       transform: translateY(-5px);
-      border-color: rgba(155, 226, 13, 0.3);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(155, 226, 13, 0.05);
+      border-color: rgba(255, 208, 0, 0.4);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 208, 0, 0.1);
     }
 
     .menu-item:hover::before {
@@ -189,7 +190,7 @@
       width: 64px;
       height: 64px;
       border-radius: 16px;
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
@@ -207,14 +208,14 @@
     }
 
     .menu-item:hover .menu-item-icon {
-      background: rgba(155, 226, 13, 0.1);
-      border-color: rgba(155, 226, 13, 0.2);
+      background: rgba(255, 208, 0, 0.15);
+      border-color: rgba(255, 208, 0, 0.3);
       transform: scale(1.05);
     }
 
     .menu-item:hover .icon-svg {
-      stroke: var(--green);
-      filter: drop-shadow(0 0 10px rgba(155, 226, 13, 0.6));
+      stroke: var(--dufrio-amarelo);
+      filter: drop-shadow(0 0 10px rgba(255, 208, 0, 0.5));
     }
 
     .menu-item-title {
@@ -310,11 +311,8 @@
         margin-left: 0;
         width: 100vw;
         margin-left: -16px;
-        /* Tirar padding do pai */
         padding-left: 16px;
-        /* Devolver padding interno pro primeiro item */
         padding-right: 16px;
-        /* Ultimo item não grudar na borda */
       }
 
       .menu {
@@ -333,7 +331,6 @@
 
       .menu-item {
         height: 100px;
-        /* Bem mais achatado, estilo App */
         border-radius: 16px;
         flex-direction: row;
         justify-content: flex-start;
@@ -345,7 +342,6 @@
         width: 48px;
         height: 48px;
         margin-bottom: 0;
-        /* Tira margem de baixo */
         border-radius: 12px;
       }
 
@@ -361,7 +357,6 @@
 
       .menu-item:hover {
         transform: translateX(5px);
-        /* Move pro lado ao inves de cima no cel */
       }
     }
   </style>
@@ -399,9 +394,7 @@
     const svgDownload = `<svg viewBox="0 0 24 24" fill="none" class="icon-svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
 
     // Limpei as ferramentas para adicionarmos as nossas da Dufrio sob demanda.
-    const ferramentas = [
-      // Ficarão aqui os novos cards.
-    ];
+    const ferramentas = [];
 
     const tabs = document.getElementById("tabs");
     const menuGrid = document.getElementById("menuGrid");
