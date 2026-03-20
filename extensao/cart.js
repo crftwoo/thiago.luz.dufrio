@@ -1,9 +1,9 @@
 (function () {
     // Verifica se está na página do carrinho
     const isDufrio = window.location.href.includes('dufrio.com.br/checkout/cart');
-    const isLeveros = window.location.href.includes('leveros.com.br/checkout/carrinho');
+    const isLeveros = false;
 
-    if (!isDufrio && !isLeveros) {
+    if (!isDufrio) {
         return;
     }
 
@@ -147,7 +147,7 @@
             subtotal: ''
         };
 
-        const isLeveros = window.location.href.includes('leveros.com.br');
+        const isLeveros = false;
 
         // Nome (print mostra data-th="Product" e strong.product-item-name > a.font-medium, e 'span.nome' na Leveros)
         const nameEl = row.querySelector(
@@ -228,7 +228,7 @@
 
         try {
             const currentUrl = window.location.href;
-            const urlIsLeveros = currentUrl.includes('leveros.com.br');
+            const urlIsLeveros = false;
 
             // Itens do carrinho (Dufrio ou Leveros)
             // Na Leveros as linhas ficam dentro de `.box-carrinho-produtos` ou `.boxCheckoutCarrinhoProdutoItem`

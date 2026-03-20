@@ -60,10 +60,10 @@ async function initPopup() {
 
         const rows = await response.json();
 
-        // Remove filtro hardcoded "Dufrio"
         const validRows = rows.filter(row =>
             row &&
             typeof row.Site === 'string' &&
+            row.Site.toLowerCase().includes('dufrio') &&
             row.Link
         );
 

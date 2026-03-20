@@ -15,9 +15,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "pullTabs") {
         chrome.tabs.query({
             url: [
-                "*://*.dufrio.com.br/*",
-                "*://*.leveros.com.br/*",
-                "*://*.centralar.com.br/*"
+                "*://*.dufrio.com.br/*"
             ]
         }, (tabs) => {
             let responsesNeeded = tabs.length;
@@ -63,24 +61,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true; // Keep message channel open for async response
     }
 
-    if (request.action === "fetchImageBackground" && request.url) {
-        fetch(request.url)
-            .then(res => res.blob())
-            .then(blob => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    sendResponse({ success: true, dataUrl: reader.result });
-                };
-                reader.onerror = () => {
-                    sendResponse({ success: false, error: "Failed to read blob" });
-                };
-                reader.readAsDataURL(blob);
-            })
-            .catch(err => {
-                sendResponse({ success: false, error: err.message });
-            });
-        return true; // Keep channel open for async fetch
-    }
+
 });
 
 async function handleScrapeRequest(url) {

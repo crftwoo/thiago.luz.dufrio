@@ -12,8 +12,6 @@
     ],
     "host_permissions": [
         "https://www.dufrio.com.br/*",
-        "https://www.leveros.com.br/*",
-        "https://parceiro.centralar.com.br/*",
         "https://opensheet.elk.sh/*",
         "https://castaticstorage.blob.core.windows.net/*"
     ],
@@ -44,9 +42,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://www.dufrio.com.br/ar-condicionado*",
-                "https://www.vendas.leveros.com.br/ar-condicionado*",
-                "https://parceiro.centralar.com.br/*"
+                "https://www.dufrio.com.br/ar-condicionado*"
             ],
             "css": [
                 "content.css"
@@ -58,8 +54,7 @@
         },
         {
             "matches": [
-                "https://www.dufrio.com.br/checkout/cart/*",
-                "https://www.vendas.leveros.com.br/checkout/carrinho*"
+                "https://www.dufrio.com.br/checkout/cart/*"
             ],
             "css": [
                 "cart.css"

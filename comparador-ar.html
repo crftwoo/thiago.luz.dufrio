@@ -16,7 +16,7 @@
     }
 
     :root {
-      --green: #FFD000;
+      --green: #102E82;
       --dufrio-azul: #102E82;
       --dufrio-azul-claro: #2BAAE2;
       --border: #e5e7eb;
@@ -46,7 +46,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    h1 {
+    h1 { font-style: italic; letter-spacing: -2px; 
       font-size: 32px;
       font-weight: 900;
       margin-bottom: 8px;
@@ -259,9 +259,9 @@
       margin-bottom: 12px;
     }
 
-    .badge-dufrio { background: #0056b3; color: white; }
-    .badge-leveros { background: #009038; color: white; }
-    .badge-centralar { background: #005ca8; color: white; }
+    .badge-dufrio { background: #102E82; color: white; margin-bottom: 0; }
+    
+    
 
     .filter-section {
       width: 100%;
@@ -490,7 +490,7 @@
 
     @media (max-width: 768px) {
       body { padding: 24px 16px; }
-      h1 { font-size: 28px; }
+      h1 { font-style: italic; letter-spacing: -2px;  font-size: 28px; }
       .sub-head { margin-bottom: 24px; padding-bottom: 16px; }
       .section { flex-direction: column; gap: 12px; }
       .tipo-btn, .section button { width: 100%; }
@@ -499,7 +499,49 @@
       #resultados { grid-template-columns: 1fr; }
       .card { padding: 24px; }
     }
-  </style>
+  
+    .visual-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .visual-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--dufrio-azul-claro);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+    .vc-img-box {
+      width: 100%;
+      height: 220px;
+      padding: 20px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .vc-img-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .vc-text-box {
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+    }
+    .vc-title { font-size: 14px; font-weight: 800; color: var(--text-main); line-height: 1.4; }
+    .vc-spot { font-size: 20px; font-weight: 900; color: var(--dufrio-azul); }
+    .vc-install { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+</style>
 </head>
 
 <body>
@@ -1169,8 +1211,8 @@
 
           const listItemsHtml = unifiedAndSortedList.map(p => {
             let badgeClass = "dufrio";
-            if (p.store.toLowerCase().includes('leveros')) badgeClass = "leveros";
-            if (p.store.toLowerCase().includes('central ar')) badgeClass = "centralar";
+            
+            
 
             let emojiCycle = "❄️";
             const tl = p.title.toLowerCase();
@@ -1246,14 +1288,14 @@
         cardWrapper.style.gap = '8px';
 
         const card = document.createElement('div');
-        card.className = 'visual-card';
+        card.className = 'visual-card'; card.style.flexDirection = 'column'; card.style.textAlign = 'center';
 
         // Determina a cor da loja
         let bgLoja = "#000"; let textLoja = "#fff";
         let sn = p.store.toLowerCase();
         if (sn.includes('dufrio')) { bgLoja = "#0038A8"; }
-        else if (sn.includes('leveros')) { bgLoja = "#56B141"; }
-        else if (sn.includes('central ar')) { bgLoja = "#ff5722"; } // Laranja Central Ar
+        
+         // Laranja Central Ar
 
         const imgBox = document.createElement('div');
         imgBox.className = 'vc-img-box';
@@ -1277,7 +1319,7 @@
 
         const imgEl = document.createElement('img');
         imgEl.src = p.image;
-        if (!sn.includes('central ar')) imgEl.crossOrigin = "Anonymous";
+        imgEl.crossOrigin = "Anonymous";
 
         imgBox.appendChild(imgEl);
 
@@ -1341,7 +1383,7 @@
         };
 
         imgBox.onclick = async () => {
-          if (sn.includes('central ar')) {
+          if (false) {
             // Copiar apenas o link como texto se for Central Ar devido a sua estrutura Blob URL
             navigator.clipboard.writeText(p.image).then(() => {
               const originalBorder = imgBox.style.border;
