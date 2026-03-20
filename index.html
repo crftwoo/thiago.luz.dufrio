@@ -462,6 +462,11 @@
           });
 
           document.getElementById("lastUpdate").childNodes[0].nodeValue = `⚡️ Última atualização: ${formattedDate} às ${formattedTime} `;
+          
+          // Start of the change
+          let tooltipContent = '<strong>Últimas Atualizações:</strong><br><ul style="margin: 8px 0; padding-left: 16px; color: var(--text-secondary);">';
+          // Assuming 'data' here would be an array of commits if the API call was for multiple commits.
+          // Since the current fetch is for a single commit, we'll adapt this to show the single commit message.
           const commitMsg = data.commit.message || "Sem descrição.";
           document.getElementById("updateTooltip").textContent = `O que mudou: "${commitMsg}"`;
 
