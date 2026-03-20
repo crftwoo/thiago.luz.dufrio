@@ -1,0 +1,86 @@
+{
+    "manifest_version": 3,
+    "name": "Dufrio - Busca Ar",
+    "short_name": "Dufrio",
+    "version": "1.2",
+    "description": "Escolha o tipo, BTUs e ciclo e vá direto para a lista de ar-condicionados.",
+    "permissions": [
+        "activeTab",
+        "scripting",
+        "storage",
+        "tabs"
+    ],
+    "host_permissions": [
+        "https://www.dufrio.com.br/*",
+        "https://www.leveros.com.br/*",
+        "https://parceiro.centralar.com.br/*",
+        "https://opensheet.elk.sh/*",
+        "https://castaticstorage.blob.core.windows.net/*"
+    ],
+    "externally_connectable": {
+        "matches": [
+            "https://crftwoo.github.io/*",
+            "http://127.0.0.1:*/*",
+            "http://localhost:*/*"
+        ]
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "icons": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Pesquisa de Ar Condicionado",
+        "default_icon": {
+            "16": "icon16.png",
+            "48": "icon48.png",
+            "128": "icon128.png"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://www.dufrio.com.br/ar-condicionado*",
+                "https://www.vendas.leveros.com.br/ar-condicionado*",
+                "https://parceiro.centralar.com.br/*"
+            ],
+            "css": [
+                "content.css"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://www.dufrio.com.br/checkout/cart/*",
+                "https://www.vendas.leveros.com.br/checkout/carrinho*"
+            ],
+            "css": [
+                "cart.css"
+            ],
+            "js": [
+                "cart.js"
+            ],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://crftwoo.github.io/*",
+                "http://127.0.0.1:*/*",
+                "http://localhost:*/*",
+                "file:///*"
+            ],
+            "js": [
+                "bridge.js"
+            ],
+            "run_at": "document_start",
+            "all_frames": true
+        }
+    ]
+}

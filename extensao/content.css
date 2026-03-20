@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
+#dufrio-ext-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 380px;
+    max-height: 90vh;
+    background: #f8f9fa;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    z-index: 999999;
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    border: none;
+    overflow: hidden;
+    color: #2c2c2c;
+}
+
+#dufrio-ext-header {
+    background: #ffffff;
+    color: #102E82;
+    padding: 18px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+#dufrio-ext-header>div>span {
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    color: #2c2c2c;
+}
+
+#dufrio-ext-close {
+    cursor: pointer;
+    font-weight: 400;
+    font-size: 24px;
+    color: #666;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+#dufrio-ext-close:hover {
+    color: #ff4444;
+}
+
+/* Base style for both header buttons mirroring tech-btn */
+#dufrio-ext-copy-list,
+#dufrio-ext-push-compare {
+    background: rgba(0, 0, 0, 0.05);
+    color: #2c2c2c;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+}
+
+#dufrio-ext-copy-list:hover {
+    background: #FFCA05;
+    /* var(--green) */
+    color: #102E82;
+    border-color: #FFCA05;
+}
+
+#dufrio-ext-push-compare:hover {
+    background: #007bff;
+    color: #2c2c2c;
+    border-color: #007bff;
+}
+
+#dufrio-ext-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* Scrollbar Bonita */
+#dufrio-ext-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#dufrio-ext-content::-webkit-scrollbar-track {
+    background: #f8f9fa;
+}
+
+#dufrio-ext-content::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 10px;
+}
+
+#dufrio-ext-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.dufrio-ext-card {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Mantem imagem dentro do border-radius */
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.dufrio-ext-card:hover {
+    border-color: rgba(0, 0, 0, 0.15);
+    background: #f1f5f9;
+}
+
+.dufrio-ext-text-container {
+    padding: 12px 14px;
+    /* Padding de respiro apenas no bloco de texto */
+    transition: background-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dufrio-ext-text-container:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+.dufrio-ext-card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    background: transparent;
+    border-bottom: 2px solid #e2e8f0;
+    transition: transform 0.2s ease;
+}
+
+.dufrio-ext-card img:hover {
+    transform: scale(1.02);
+}
+
+.dufrio-ext-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.dufrio-ext-spot {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c2c2c;
+}
+
+.dufrio-ext-install {
+    font-size: 12px;
+    color: #777;
+    font-weight: 400;
+}
+
+#dufrio-ext-floating-wrapper {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    z-index: 999998;
+}
+
+#dufrio-ext-floating-btn {
+    width: 100%;
+    height: 100%;
+    background: #f8f9fa;
+    border: 1px solid rgba(16, 46, 130, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 10px rgba(16, 46, 130, 0.1);
+    color: #102E82;
+    font-size: 20px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'Montserrat', system-ui, sans-serif;
+    user-select: none;
+}
+
+#dufrio-ext-floating-btn:active {
+    cursor: grabbing;
+}
+
+#dufrio-ext-floating-btn:hover {
+    background: #ffffff;
+    border-color: #102E82;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(16, 46, 130, 0.3);
+}
+
+#dufrio-ext-floating-close {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 18px;
+    height: 18px;
+    background: #ff4444;
+    color: #102E82;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    transition: transform 0.2s, background 0.2s;
+}
+
+#dufrio-ext-floating-close:hover {
+    background: #ff0000;
+    transform: scale(1.1);
+}
+
+.dufrio-ext-hidden {
+    display: none !important;
+}
