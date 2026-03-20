@@ -367,7 +367,6 @@
 
   <div class="header">
     <button class="menu-icon-btn" onclick="document.querySelector('.tabs').style.display = 'flex'">Ferramentas 🛠️</button>
-    <a href="https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip" class="menu-icon-btn" style="background: var(--dufrio-azul); color: white; text-decoration: none; margin-left: 10px;" download>BAIXAR EXTENSÃO 📥</a>
     <div class="tabs" id="tabs"></div>
   </div>
 
@@ -409,7 +408,8 @@
       { nome: "Precificação (Site)", arquivo: "precificacao-ar.html", icone: svgPrecificar },
       { nome: "Plano de Corte", arquivo: "plano-corte.html", icone: svgCorte },
       { nome: "Cotação Express", arquivo: "cotacoes.html", icone: svgCotar },
-      { nome: "Extração de Itens", arquivo: "itens-quantidade.html", icone: svgFiltro }
+      { nome: "Extração de Itens", arquivo: "itens-quantidade.html", icone: svgFiltro },
+      { nome: "Baixar Extensão", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, isDownload: true }
     ];
 
     const tabs = document.getElementById("tabs");
