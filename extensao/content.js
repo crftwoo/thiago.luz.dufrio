@@ -24,8 +24,7 @@
         // Define o título inicial com base no site atual
         const host = window.location.host;
         let pTitle = 'Ar condicionado - Dufrio';
-        if (host.includes('leveros.com.br')) pTitle = 'Ar condicionado - Leveros';
-        else if (host.includes('centralar.com.br')) pTitle = 'Ar condicionado - Central Ar';
+        
         titleSpan.innerText = pTitle;
 
         titleSpan.style.whiteSpace = 'pre-line';
@@ -59,8 +58,6 @@
             // Define qual é a loja atual baseada na URL
             const host = window.location.host;
             let currentStore = 'Dufrio';
-            if (host.includes('leveros.com.br')) currentStore = 'Leveros';
-            else if (host.includes('centralar.com.br')) currentStore = 'Central Ar';
 
             // Busca os dados antigos, mescla com a lista nova sob a key da loja atual e salva
             chrome.storage.local.get(['comparador_data'], (result) => {
@@ -205,9 +202,6 @@
     }
 
     function extractData() {
-        const host = window.location.host;
-        if (host.includes('leveros.com.br')) return extractDataLeveros();
-        if (host.includes('centralar.com.br')) return extractDataCentralAr();
         return extractDataDufrio();
     }
 
@@ -547,8 +541,7 @@
     function generateSmartTitle(productsList) {
         const host = window.location.host;
         let defaultTitle = 'Ar condicionado - Dufrio';
-        if (host.includes('leveros.com.br')) defaultTitle = 'Ar condicionado - Leveros';
-        else if (host.includes('centralar.com.br')) defaultTitle = 'Ar condicionado - Central Ar';
+        
 
         if (!productsList || productsList.length === 0) return defaultTitle;
 
@@ -687,16 +680,16 @@
             textContainer.title = 'Clique para copiar o texto inteiro';
 
             const title = document.createElement('div');
+            title.innerText = '❄️ ' + p.title;
             title.className = 'dufrio-ext-title';
-            title.innerText = p.title;
 
             const spot = document.createElement('div');
+            spot.innerText = '💰 ' + p.spot;
             spot.className = 'dufrio-ext-spot';
-            spot.innerText = p.spot;
 
             const install = document.createElement('div');
+            install.innerText = '💳 ' + p.install;
             install.className = 'dufrio-ext-install';
-            install.innerText = p.install;
 
             textContainer.appendChild(title);
             textContainer.appendChild(spot);
@@ -718,12 +711,10 @@
 
             // ATENÇÃO: A Central Ar (castaticstorage) bloqueia o carregamento visual da imagem se usarmos crossOrigin
             // Mas a Dufrio e Leveros precisam disso para podermos extrair o canvas no clipboard_item depois.
-            if (!window.location.host.includes('centralar')) {
-                img.crossOrigin = "Anonymous";
-            }
+            img.crossOrigin = "Anonymous";
 
             img.onclick = async () => {
-                if (window.location.host.includes('centralar')) {
+                if (false) {
                     try {
                         // Central Ar: Usa o Background Service Worker para realizar o fetch da imagem sem bloqueio CORS do site
                         const dataUrl = await new Promise((resolve, reject) => {
