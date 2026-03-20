@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ferramentas Dufrio</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --green: #9BE20D;
+      --border: rgba(255, 255, 255, 0.05);
+      /* Cyber border */
+      --bg-color: #050505;
+      /* Blackout */
+      --card-bg: #0A0A0A;
+      /* Slightly above blackout */
+      --card-hover: rgba(255, 255, 255, 0.02);
+      --text-secondary: #71717a;
+      /* Zinc-500 equivalent */
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-color);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbars invisíveis para visual super clean */
+    ::-webkit-scrollbar {
+      width: 0px;
+      height: 0px;
+      background: transparent;
+    }
+
+    /* --- HEADER E TABS --- */
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-color);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .menu-icon-btn {
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+      flex-shrink: 0;
+    }
+
+    .menu-icon-btn:hover {
+      border-color: rgba(155, 226, 13, 0.3);
+      background: rgba(155, 226, 13, 0.05);
+    }
+
+    .tabs {
+      display: none;
+      gap: 12px;
+      margin-left: 20px;
+      /* Horizontal Scroll Otimizado */
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+      /* margem pro scroll */
+    }
+
+    .tab {
+      background: var(--card-bg);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      padding: 12px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      font-family: 'Montserrat', sans-serif;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .tab:hover {
+      border-color: #333;
+      color: #fff;
+    }
+
+    .tab.active {
+      border-color: var(--green);
+      background: var(--green);
+      color: #000;
+      box-shadow: 0 4px 20px rgba(155, 226, 13, 0.4);
+    }
+
+    /* --- MENU PRINCIPAL (GRID) --- */
+    .menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .menu-title {
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: 60px;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      text-align: center;
+    }
+
+    .menu-title span {
+      color: var(--green);
+      font-style: italic;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      width: 100%;
+    }
+
+    .menu-item {
+      height: 200px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .menu-item:hover {
+      transform: translateY(-5px);
+      border-color: rgba(155, 226, 13, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(155, 226, 13, 0.05);
+    }
+
+    .menu-item:hover::before {
+      opacity: 1;
+    }
+
+    .menu-item-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .icon-svg {
+      width: 32px;
+      height: 32px;
+      stroke: var(--text-secondary);
+      stroke-width: 2;
+      transition: all 0.3s ease;
+    }
+
+    .menu-item:hover .menu-item-icon {
+      background: rgba(155, 226, 13, 0.1);
+      border-color: rgba(155, 226, 13, 0.2);
+      transform: scale(1.05);
+    }
+
+    .menu-item:hover .icon-svg {
+      stroke: var(--green);
+      filter: drop-shadow(0 0 10px rgba(155, 226, 13, 0.6));
+    }
+
+    .menu-item-title {
+      font-weight: 800;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #fff;
+    }
+
+    /* --- I-FRAME CONTENT --- */
+    .content {
+      width: 100%;
+      height: calc(100vh - 70px);
+      display: none;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: var(--bg-color);
+    }
+
+    /* --- TOOLTIP & ATUALIZAÇÃO --- */
+    #lastUpdate {
+      font-size: 10px !important;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+    }
+
+    .tooltiptext {
+      visibility: hidden;
+      width: 280px;
+      background-color: var(--card-bg);
+      color: #fff;
+      text-align: center;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      position: absolute;
+      z-index: 100;
+      bottom: 130%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: all 0.3s ease;
+      font-size: 11px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+      bottom: 140%;
+    }
+
+    .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -6px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: var(--border) transparent transparent transparent;
+    }
+
+
+    /* ==========================================
+       📱 APP-LIKE MOBILE OPTIMIZATION
+       ========================================== */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+      }
+
+      .menu-icon-btn {
+        margin-bottom: 16px;
+      }
+
+      .tabs {
+        margin-left: 0;
+        width: 100vw;
+        margin-left: -16px;
+        /* Tirar padding do pai */
+        padding-left: 16px;
+        /* Devolver padding interno pro primeiro item */
+        padding-right: 16px;
+        /* Ultimo item não grudar na borda */
+      }
+
+      .menu {
+        padding: 40px 16px;
+      }
+
+      .menu-title {
+        font-size: 24px;
+        margin-bottom: 40px;
+      }
+
+      .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .menu-item {
+        height: 100px;
+        /* Bem mais achatado, estilo App */
+        border-radius: 16px;
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 0 20px;
+        gap: 20px;
+      }
+
+      .menu-item-icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 0;
+        /* Tira margem de baixo */
+        border-radius: 12px;
+      }
+
+      .icon-svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .menu-item-title {
+        text-align: left;
+        font-size: 13px;
+      }
+
+      .menu-item:hover {
+        transform: translateX(5px);
+        /* Move pro lado ao inves de cima no cel */
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <button class="menu-icon-btn" onclick="voltarMenu()">MENU</button>
+    <div class="tabs" id="tabs"></div>
+  </div>
+
+  <div class="menu" id="menu">
+    <div class="menu-title">Ferramentas <span>Dufrio</span></div>
+    <div class="menu-grid" id="menuGrid"></div>
+    <div style="margin-top: 40px; text-align: center;">
+      <div id="lastUpdate" class="tooltip" style="font-size: 12px; color: #555; font-weight: 500;">
+        Verificando última atualização...
+        <span class="tooltiptext" id="updateTooltip">Carregando detalhes...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content" id="content">
+    <iframe id="frame"></iframe>
+  </div>
+
+  <script>
+    // SVGs (Mantidos todos para podermos usar nas próximas ferramentas)
+    const svgComparar = `<svg viewBox="0 0 24 24" fill="none" class="icon-svg"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>`;
+    const svgPrecificar = `<svg viewBox="0 0 24 24" fill="none" class="icon-svg"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line><line x1="6" y1="18" x2="18" y2="6"></line></svg>`;
+    const svgCotar = `<svg viewBox="0 0 24 24" fill="none" class="icon-svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
+    const svgFiltro = `<svg viewBox="0 0 24 24" fill="none" class="icon-svg"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>`;
+    const svgCorte = `<svg viewBox="0 0 24 24" fill="none" class="icon-svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>`;
+    const svgDownload = `<svg viewBox="0 0 24 24" fill="none" class="icon-svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+
+    // Limpei as ferramentas para adicionarmos as nossas da Dufrio sob demanda.
+    const ferramentas = [
+      // Ficarão aqui os novos cards.
+    ];
+
+    const tabs = document.getElementById("tabs");
+    const menuGrid = document.getElementById("menuGrid");
+
+    function renderizarFerramentas() {
+      tabs.innerHTML = '';
+      menuGrid.innerHTML = '';
+      
+      if (ferramentas.length === 0) {
+        menuGrid.innerHTML = '<div style="color:var(--text-secondary); text-align:center; padding: 40px; width:100%; grid-column: 1 / -1;">Nenhuma ferramenta adicionada ainda. Envie a primeira ferramenta!</div>';
+        return;
+      }
+
+      ferramentas.forEach(f => {
+        const tab = document.createElement("button");
+        tab.className = "tab";
+        tab.textContent = f.nome;
+        tab.onclick = () => abrirFerramenta(tab, f);
+        tabs.appendChild(tab);
+
+        const card = document.createElement("div");
+        card.className = "menu-item";
+        card.onclick = () => abrirFerramenta(tab, f);
+        card.innerHTML = `<div class="menu-item-icon">${f.icone}</div><div class="menu-item-title">${f.nome}</div>`;
+        menuGrid.appendChild(card);
+      });
+    }
+
+    function abrirFerramenta(botao, f) {
+      if (f.isDownload) {
+        const confirmar = confirm(`Deseja baixar o arquivo da ${f.nome}?`);
+        if (!confirmar) return;
+
+        const link = document.createElement("a");
+        link.href = f.arquivo;
+        link.download = f.arquivo.split('/').pop();
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      botao.classList.add("active");
+      menu.style.display = "none";
+      content.style.display = "block";
+      tabs.style.display = "flex";
+      frame.src = f.arquivo + "?v=" + new Date().getTime();
+    }
+
+    function voltarMenu() {
+      frame.src = "";
+      content.style.display = "none";
+      menu.style.display = "flex";
+      tabs.style.display = "none";
+    }
+
+    renderizarFerramentas();
+
+    // Busca a data do último commit no GitHub do SEU NOVO REPOSITORIO
+    fetch("https://api.github.com/repos/crftwoo/thiago.luz.dufrio/commits/main?v=" + new Date().getTime())
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.commit && data.commit.author && data.commit.author.date) {
+          const date = new Date(data.commit.author.date);
+          const formattedDate = date.toLocaleDateString("pt-BR", {
+            day: '2-digit', month: '2-digit', year: 'numeric'
+          });
+          const formattedTime = date.toLocaleTimeString("pt-BR", {
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+          });
+
+          document.getElementById("lastUpdate").childNodes[0].nodeValue = `⚡️ Última atualização: ${formattedDate} às ${formattedTime} `;
+          const commitMsg = data.commit.message || "Sem descrição.";
+          document.getElementById("updateTooltip").textContent = `O que mudou: "${commitMsg}"`;
+
+        } else {
+          document.getElementById("lastUpdate").childNodes[0].nodeValue = "Última atualização: Indisponível ";
+          document.getElementById("updateTooltip").textContent = "Não foi possível carregar os detalhes.";
+        }
+      })
+      .catch(error => {
+        document.getElementById("lastUpdate").textContent = "Última atualização: Offline";
+      });
+  </script>
+</body>
+
+</html>
