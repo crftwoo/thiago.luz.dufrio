@@ -193,11 +193,9 @@ async function initPopup() {
             // Depois de escolhido, mostra só o tipo selecionado no centro
             if (selectedTipo) {
                 resetBtn.classList.remove('hidden');
-                const chip = document.createElement('button');
-                chip.type = 'button';
-                chip.className = 'chip selected';
-                chip.textContent = selectedTipo;
+                const chip = createChip(selectedTipo, selectedTipo, selectedTipo, () => {});
                 chip.disabled = true;
+                chip.style.cursor = 'default';
                 tipoRow.appendChild(chip);
                 return;
             }

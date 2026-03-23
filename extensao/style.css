@@ -97,10 +97,10 @@ body {
 }
 
 .chip.selected {
-    background-color: var(--dufrio-blue);
+    background-color: #eff6ff;
     border-color: var(--dufrio-blue);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(16, 46, 130, 0.2);
+    color: var(--dufrio-blue);
+    box-shadow: 0 0 0 1px var(--dufrio-blue);
 }
 
 .summary-text {
