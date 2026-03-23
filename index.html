@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,9 +17,6 @@
       --text-main: #1e293b;
       --text-secondary: #64748b;
       --border: #e2e8f0;
-      
-      --sidebar-width: 280px;
-      --sidebar-collapsed-width: 80px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -29,200 +25,115 @@
       background-color: var(--bg-slate);
       color: var(--text-main);
       display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* === SIDEBAR LATERAL RETRÁTIL === */
-    .sidebar {
-      width: var(--sidebar-collapsed-width); 
-      background-color: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex;
       flex-direction: column;
-      padding: 24px 0;
-      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 10;
-      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.02);
-      overflow: hidden;
-      white-space: nowrap;
-    }
-
-    .sidebar.open {
-      width: var(--sidebar-width);
-    }
-
-    .sidebar-header {
-      display: flex;
       align-items: center;
-      padding: 0 20px;
-      margin-bottom: 40px;
-      gap: 16px;
-    }
-
-    .toggle-btn {
-      min-width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: var(--bg-slate);
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--dufrio-azul);
-      transition: all 0.2s;
-    }
-
-    .toggle-btn:hover { background: #e2e8f0; }
-    
-    .toggle-btn svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2.5; }
-
-    .sidebar-logo {
-      height: 28px;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    
-    .sidebar.open .sidebar-logo { opacity: 1; transition-delay: 0.1s;}
-
-    .sidebar-menu {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 0 12px;
-      overflow-y: auto;
+      min-height: 100vh;
       overflow-x: hidden;
     }
 
-    /* Oculta scrollbar visualmente mas permite rolagem (mouse/touch) */
-    .sidebar-menu::-webkit-scrollbar {
-      width: 4px;
-    }
-    .sidebar-menu::-webkit-scrollbar-thumb {
-      background: transparent;
-    }
-    .sidebar:hover .sidebar-menu::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
+    /* === CABEÇALHO DO IFRAME (Oculto no menu) === */
+    .header {
+      width: 100%;
+      background: var(--surface);
+      padding: 16px 32px;
+      display: none; /* Só aparece quando abre ferramenta */
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      z-index: 10;
     }
 
-    .menu-link {
+    .btn-voltar {
+      background: var(--bg-slate);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: var(--dufrio-azul);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 16px;
-      padding: 12px;
-      border-radius: 12px;
-      color: var(--text-main);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.2s ease;
-      cursor: pointer;
+      gap: 8px;
+      transition: all 0.2s;
     }
 
-    .menu-link:hover {
-      background-color: var(--bg-slate);
+    .btn-voltar:hover {
+      background: #e2e8f0;
+      transform: translateX(-4px);
+    }
+
+    .iframe-title {
+      font-weight: 800;
       color: var(--dufrio-azul);
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
     }
 
-    .menu-link.active {
-      background-color: #eff6ff;
-      color: var(--dufrio-azul);
-    }
-
-    .menu-icon {
-      min-width: 24px;
-      height: 24px;
-      stroke: currentColor;
-      stroke-width: 2;
-      fill: none;
-    }
-
-    .menu-text {
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    
-    .sidebar.open .menu-text { opacity: 1; transition-delay: 0.1s; }
-
-    /* === MAIN AREA === */
-    .main-area {
-      flex: 1;
+    /* === MENU PRINCIPAL CENTRALIZADO === */
+    .menu {
+      width: 100%;
+      max-width: 1100px;
+      padding: 60px 20px;
       display: flex;
       flex-direction: column;
-      padding: 40px;
-      overflow-y: auto;
+      align-items: center;
     }
 
-    .top-header {
+    .menu-title-container {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 60px;
       flex-wrap: wrap;
-      gap: 20px;
     }
 
     .title-group {
       display: flex;
       flex-direction: column;
+      text-align: left; /* Títulos alinhados à esquerda do bloco interno */
     }
 
     .ferramentas-title {
-      font-size: 36px;
+      font-size: 42px;
       font-weight: 900;
       color: var(--dufrio-azul);
-      letter-spacing: -1px;
+      letter-spacing: -1.5px;
       text-transform: uppercase;
-      line-height: 1.1;
+      line-height: 1;
     }
 
     .ferramentas-subtitle {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 800;
       color: var(--dufrio-azul-claro);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 16px;
+      letter-spacing: 1px;
+      margin-top: 4px;
     }
 
-    /* ATUALIZACOES CLARAS */
-    .update-box {
-      background: #fff;
-      border: 1px solid var(--border);
-      padding: 16px 24px;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-      max-width: 500px;
+    .menu-logo {
+      height: 60px;
+      object-fit: contain;
     }
 
-    .update-box strong {
-      display: block;
-      color: var(--dufrio-azul);
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-
-    .update-box p {
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.4;
-      font-weight: 500;
-    }
-
-    /* === TOOLS GRID (DASHBOARD CARDS) === */
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    /* === TOOLS GRID CENTRALIZADO E ENVOLVENTE === */
+    .menu-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 24px;
-      margin-bottom: 40px;
+      width: 100%;
     }
 
     .dashboard-card {
+      /* Baseado no layout 3x por linha - responsivo */
+      width: calc(33.333% - 16px);
+      min-width: 300px;
+      max-width: 350px;
       background: var(--surface);
       border-radius: 20px;
       padding: 24px;
@@ -234,6 +145,7 @@
       overflow: hidden;
       transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
       border: 1px solid rgba(255, 255, 255, 0.5);
+      text-align: left;
     }
 
     .dashboard-card::before {
@@ -267,8 +179,8 @@
     }
 
     .card-icon-wrapper {
-      width: 56px;
-      height: 56px;
+      width: 50px;
+      height: 50px;
       border-radius: 14px;
       display: flex;
       align-items: center;
@@ -279,22 +191,21 @@
     }
 
     .card-icon-wrapper svg {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       stroke: currentColor;
       stroke-width: 2;
     }
 
     .dashboard-card:hover .card-icon-wrapper {
-      background: var(--card-color);
-      color: #fff;
+      transform: scale(1.1);
     }
 
     .card-body h3 {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 800;
       color: var(--text-main);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       text-transform: uppercase;
       letter-spacing: -0.5px;
     }
@@ -303,148 +214,167 @@
       font-size: 13px;
       color: var(--text-secondary);
       font-weight: 500;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
-    /* === IFRAME VIEW === */
-    .iframe-view {
-      display: none;
-      flex-direction: column;
-      flex: 1;
-      height: 100%;
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(112, 144, 176, 0.08);
-      overflow: hidden;
-      position: relative;
-    }
-
-    .iframe-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      background: #fff;
-    }
-
-    .btn-voltar {
-      background: var(--bg-slate);
-      border: none;
-      padding: 10px 20px;
-      border-radius: 10px;
-      color: var(--dufrio-azul);
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
-    }
-
-    .btn-voltar:hover {
-      background: #e2e8f0;
-      transform: translateX(-4px);
-    }
-
-    .iframe-title {
-      font-weight: 800;
-      color: var(--dufrio-azul);
-      font-size: 16px;
-      text-transform: uppercase;
-      letter-spacing: -0.5px;
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      flex: 1;
-    }
-
-    /* === METADATA FOOTER === */
-    .system-footer {
-      margin-top: auto;
+    /* === TOOLTIP & ATUALIZAÇÃO (RODAPÉ) === */
+    .footer-area {
+      margin-top: 60px;
       text-align: center;
-      padding-top: 24px;
+      padding-bottom: 40px;
+    }
+
+    #lastUpdate {
+      font-size: 12px !important;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      cursor: help;
+      display: inline-block;
+    }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltiptext {
+      visibility: hidden;
+      width: 380px;
+      background-color: var(--surface);
+      color: var(--text-main);
+      text-align: center;
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      position: absolute;
+      z-index: 100;
+      bottom: 140%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: all 0.3s ease;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      pointer-events: none;
+    }
+
+    .tooltiptext strong {
+      display: block;
+      color: var(--dufrio-azul);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+      bottom: 160%;
+    }
+
+    .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -8px;
+      border-width: 8px;
+      border-style: solid;
+      border-color: var(--surface) transparent transparent transparent;
     }
 
     .creation-date {
       font-size: 10px;
       color: var(--text-muted, #94a3b8);
-      font-weight: 500;
-      opacity: 0.8;
+      margin-top: 12px;
       letter-spacing: 0.5px;
+      opacity: 0.8;
+      font-weight: 500;
+    }
+
+    /* --- I-FRAME CONTENT --- */
+    .content {
+      width: 100%;
+      height: 100vh;
+      display: none;
+      flex-direction: column;
+    }
+
+    iframe {
+      width: 100%;
+      flex: 1;
+      border: none;
+      background: var(--surface);
+    }
+    
+    @media (max-width: 768px) {
+      .menu-title-container {
+        flex-direction: column-reverse; /* Logo em cima no celular ou embaixo */
+        gap: 20px;
+      }
+      .title-group {
+        text-align: center;
+      }
+      .ferramentas-title {
+        font-size: 32px;
+      }
+      .dashboard-card {
+        width: 100%;
+        max-width: 100%;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- SIDEBAR LATERAL RETRÁTIL -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <button class="toggle-btn" onclick="toggleSidebar()">
-        <svg viewBox="0 0 24 24" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-      </button>
-      <!-- Logo da Dufrio Original Sem Inverter (fundo branco agora) -->
-      <img src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" alt="Dufrio" class="sidebar-logo">
-    </div>
+  <!-- CABEÇALHO (Apenas na view da Ferramenta) -->
+  <header class="header" id="mainHeader">
+    <button class="btn-voltar" onclick="fecharFerramenta()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      MENU
+    </button>
+    <span class="iframe-title" id="iframeTitle">Módulo</span>
+    <div style="width:100px;"></div> <!-- spacer -->
+  </header>
 
-    <!-- O menu recebe exatamente as mesmas ferramentas da home dinamicamente -->
-    <ul class="sidebar-menu" id="sidebarMenu">
-      <li class="menu-link active" onclick="location.reload()" title="Página Inicial">
-        <svg class="menu-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-        <span class="menu-text">Menu Inicial</span>
-      </li>
-      <!-- Links Injetados Rápido -->
-    </ul>
-  </aside>
-
-  <!-- ÁREA PRINCIPAL -->
-  <main class="main-area">
-
-    <!-- CABEÇALHO -->
-    <header class="top-header" id="topHeader">
+  <!-- MENU PRINCIPAL CENTRALIZADO -->
+  <main class="menu" id="menu">
+    <div class="menu-title-container">
       <div class="title-group">
         <h1 class="ferramentas-title">Ferramentas</h1>
         <div class="ferramentas-subtitle">Thiago Luz</div>
       </div>
-
-      <div class="header-actions">
-        <!-- CAIXA DE ATUALIZAÇAO EM PORTUGUES MTO CLARA -->
-        <div class="update-box">
-          <strong id="updateDate">⚡️ Consultando alterações...</strong>
-          <p id="updateMessage">Buscando da base de dados...</p>
-        </div>
-      </div>
-    </header>
-
-    <!-- GRID DE CARDS (DASHBOARD) -->
-    <div class="grid-container" id="menuGrid"></div>
-
-    <!-- ÁREA DO IFRAME (Onde a ferramenta abre) -->
-    <div class="iframe-view" id="iframeView">
-      <div class="iframe-header">
-        <button class="btn-voltar" onclick="fecharFerramenta()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          Voltar ao Menu Principal
-        </button>
-        <span class="iframe-title" id="iframeTitle">Aguarde...</span>
-        <div></div> <!-- Spacer -->
-      </div>
-      <iframe id="frame"></iframe>
+      <!-- Logo da Dufrio Original Sem Inverter -->
+      <img src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" alt="Dufrio" class="menu-logo">
     </div>
 
-    <!-- RODAPÉ DE SISTEMA -->
-    <footer class="system-footer" id="systemFooter">
+    <!-- GRID DE CARDS (DASHBOARD) -->
+    <div class="menu-grid" id="menuGrid"></div>
+
+    <!-- RODAPÉ DE SISTEMA COM TOOLTIP -->
+    <div class="footer-area">
+      <div id="lastUpdate" class="tooltip">
+        <span id="updateText">Verificando atualizações...</span>
+        <div class="tooltiptext" id="updateTooltip">
+          <strong>Histórico de Log</strong>
+          <span id="updateMessage">Carregando detalhes...</span>
+        </div>
+      </div>
       <div class="creation-date">
         Criado em 16/09/2024
       </div>
-    </footer>
-
+    </div>
   </main>
+
+  <!-- ÁREA DO IFRAME -->
+  <div class="content" id="content">
+    <iframe id="frame"></iframe>
+  </div>
 
   <!-- SCRIPT -->
   <script>
@@ -467,24 +397,16 @@
     ];
 
     const menuGrid = document.getElementById("menuGrid");
-    const sidebarMenu = document.getElementById("sidebarMenu");
-    const iframeView = document.getElementById("iframeView");
-    const iframeTitle = document.getElementById("iframeTitle");
+    const menu = document.getElementById("menu");
+    const content = document.getElementById("content");
     const frame = document.getElementById("frame");
-    const topHeader = document.getElementById("topHeader");
-    const sidebar = document.getElementById("sidebar");
+    const mainHeader = document.getElementById("mainHeader");
+    const iframeTitle = document.getElementById("iframeTitle");
 
-    // Lógica para Expandir/Recuar Sidebar
-    function toggleSidebar() {
-      sidebar.classList.toggle('open');
-    }
-
-    // Lógica para desenhar os Cards Neumórficos
-    function renderizarCardsELista() {
+    // Lógica para desenhar os Cards Neumórficos no Grid Central
+    function renderizarCards() {
       menuGrid.innerHTML = '';
       ferramentas.forEach((f, index) => {
-        
-        // 1. Injeta Card na Tela Principal
         const cardHtml = `
           <div class="dashboard-card" style="--card-color: ${f.color}; --card-bg-light: ${f.bg};" onclick="abrirFerramenta(${index})">
             <div class="card-header">
@@ -497,23 +419,14 @@
           </div>
         `;
         menuGrid.insertAdjacentHTML('beforeend', cardHtml);
-
-        // 2. Injeta também na barra lateral automaticamente
-        const listHtml = `
-          <li class="menu-link hide-active" title="${f.nome}" onclick="abrirFerramenta(${index}, this)">
-            <span class="menu-icon">${f.icone}</span>
-            <span class="menu-text">${f.nome}</span>
-          </li>
-        `;
-        sidebarMenu.insertAdjacentHTML('beforeend', listHtml);
       });
     }
 
     // Abertura com suavidade
-    window.abrirFerramenta = function(index, menuItemEl = null) {
+    window.abrirFerramenta = function(index) {
       const f = ferramentas[index];
       if (f.isDownload) {
-        if (confirm(`Deseja baixar o arquivo da ${f.nome}?`)) {
+        if (confirm(`Deseja baixar os arquivos da extensão?`)) {
           const link = document.createElement("a");
           link.href = f.arquivo;
           link.download = "extensao-dufrio.zip";
@@ -524,16 +437,10 @@
         return;
       }
       
-      // Controla Active da Esquerda
-      document.querySelectorAll('.menu-link').forEach(el => el.classList.remove('active'));
-      if(menuItemEl) {
-        menuItemEl.classList.add('active');
-      }
-
       // Abre o ambiente de Iframe
-      menuGrid.style.display = "none";
-      topHeader.style.display = "none";
-      iframeView.style.display = "flex";
+      menu.style.display = "none";
+      content.style.display = "flex";
+      mainHeader.style.display = "flex";
       iframeTitle.textContent = f.nome;
       frame.src = f.arquivo + "?v=" + new Date().getTime();
     };
@@ -541,17 +448,14 @@
     // Fechar Ferramenta
     window.fecharFerramenta = function() {
       frame.src = "";
-      document.querySelectorAll('.menu-link').forEach(el => el.classList.remove('active'));
-      document.querySelector('.menu-link[title="Página Inicial"]').classList.add('active');
-
-      iframeView.style.display = "none";
-      menuGrid.style.display = "grid";
-      topHeader.style.display = "flex";
+      content.style.display = "none";
+      mainHeader.style.display = "none";
+      menu.style.display = "flex";
     };
 
-    renderizarCardsELista();
+    renderizarCards();
 
-    // Sincronização e Busca Clara em Português (Exigência do Thiago)
+    // Sincronização Server-side Fake (API GitHub real puxando o update)
     fetch("https://api.github.com/repos/crftwoo/thiago.luz.dufrio/commits/main?v=" + new Date().getTime())
       .then(response => response.json())
       .then(data => {
@@ -560,12 +464,11 @@
           const formattedDate = date.toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' });
           const formattedTime = date.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
           
-          document.getElementById("updateDate").textContent = `ÚLTIMA ATUALIZAÇÃO: ${formattedDate} às ${formattedTime}`;
-          document.getElementById("updateMessage").textContent = `O que mudou: "${data.commit.message}"`;
+          document.getElementById("updateText").textContent = `⚡️ Última atualização: ${formattedDate} às ${formattedTime}`;
+          document.getElementById("updateMessage").textContent = data.commit.message;
         }
       }).catch(err => {
-        document.getElementById("updateDate").textContent = "OFFLINE";
-        document.getElementById("updateMessage").textContent = "Não foi possível carregar o log de alterações do site.";
+        document.getElementById("updateText").textContent = "⚡️ Última atualização: Indisponível";
       });
   </script>
 </body>
