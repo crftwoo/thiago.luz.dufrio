@@ -7,7 +7,25 @@ function createChip(label, value, currentValue, onSelect) {
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.className = 'chip';
-    chip.textContent = label;
+
+    if (['Hiwall', 'Piso Teto', 'Cassete'].includes(label)) {
+        let imgSrc = '';
+        if (label === 'Hiwall') imgSrc = 'img/hi_wall.png';
+        if (label === 'Piso Teto') imgSrc = 'img/piso_teto.png';
+        if (label === 'Cassete') imgSrc = 'img/cassete.png';
+
+        chip.innerHTML = `<img src="${imgSrc}" style="width: 60px; display: block; margin-bottom: 6px; mix-blend-mode: darken; transition: transform 0.2s ease;"><span>${label}</span>`;
+        chip.style.display = 'flex';
+        chip.style.flexDirection = 'column';
+        chip.style.alignItems = 'center';
+        chip.style.padding = '10px 14px';
+        
+        // Efeito sutil hover na imagem
+        chip.addEventListener('mouseenter', () => { if(!chip.classList.contains('selected')) chip.querySelector('img').style.transform = 'scale(1.05)' });
+        chip.addEventListener('mouseleave', () => { chip.querySelector('img').style.transform = 'scale(1)' });
+    } else {
+        chip.textContent = label;
+    }
 
     if (value === currentValue) {
         chip.classList.add('selected');
