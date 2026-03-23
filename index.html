@@ -93,6 +93,19 @@
       gap: 4px;
       padding: 0 12px;
       overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* Oculta scrollbar visualmente mas permite rolagem (mouse/touch) */
+    .sidebar-menu::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar-menu::-webkit-scrollbar-thumb {
+      background: transparent;
+    }
+    .sidebar:hover .sidebar-menu::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
     }
 
     .menu-link {
