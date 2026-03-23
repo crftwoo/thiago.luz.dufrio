@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dufrio Enterprise Hub</title>
+  <title>Ferramentas Thiago Luz - Dufrio</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -18,15 +18,12 @@
       --text-main: #1e293b;
       --text-secondary: #64748b;
       --border: #e2e8f0;
-      --sidebar-width: 260px;
+      
+      --sidebar-width: 280px;
+      --sidebar-collapsed-width: 80px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
     body {
       background-color: var(--bg-slate);
@@ -36,196 +33,178 @@
       overflow: hidden;
     }
 
-    /* === SIDEBAR === */
+    /* === SIDEBAR LATERAL RETRÁTIL === */
     .sidebar {
-      width: var(--sidebar-width);
-      background-color: var(--dufrio-azul);
-      color: #fff;
+      width: var(--sidebar-collapsed-width); 
+      background-color: var(--surface);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      padding: 32px 24px;
-      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
+      padding: 24px 0;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 10;
-      border-radius: 0 30px 30px 0;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.02);
+      overflow: hidden;
+      white-space: nowrap;
     }
 
-    .sidebar-logo-container {
+    .sidebar.open {
+      width: var(--sidebar-width);
+    }
+
+    .sidebar-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 48px;
+      padding: 0 20px;
+      margin-bottom: 40px;
+      gap: 16px;
     }
 
-    .sidebar-logo {
-      height: 32px;
-      filter: brightness(0) invert(1);
+    .toggle-btn {
+      min-width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--bg-slate);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--dufrio-azul);
+      transition: all 0.2s;
     }
+
+    .toggle-btn:hover { background: #e2e8f0; }
+    
+    .toggle-btn svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2.5; }
+
+    .sidebar-logo {
+      height: 28px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .sidebar.open .sidebar-logo { opacity: 1; transition-delay: 0.1s;}
 
     .sidebar-menu {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      flex: 1;
+      gap: 4px;
+      padding: 0 12px;
+      overflow-y: auto;
     }
 
     .menu-link {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
+      gap: 16px;
+      padding: 12px;
       border-radius: 12px;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-main);
       text-decoration: none;
       font-weight: 600;
       font-size: 14px;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       cursor: pointer;
     }
 
     .menu-link:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-      color: #fff;
+      background-color: var(--bg-slate);
+      color: var(--dufrio-azul);
     }
 
     .menu-link.active {
-      background-color: #fff;
+      background-color: #eff6ff;
       color: var(--dufrio-azul);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .menu-icon {
-      width: 20px;
-      height: 20px;
+      min-width: 24px;
+      height: 24px;
       stroke: currentColor;
-      stroke-width: 2.5;
+      stroke-width: 2;
       fill: none;
     }
 
-    .sidebar-footer {
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-top: auto;
+    .menu-text {
+      opacity: 0;
+      transition: opacity 0.2s;
     }
-
-    .logout-btn {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
-      color: rgba(255, 255, 255, 0.8);
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      border-radius: 12px;
-      transition: all 0.2s;
-    }
-
-    .logout-btn:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-      color: #fff;
-    }
+    
+    .sidebar.open .menu-text { opacity: 1; transition-delay: 0.1s; }
 
     /* === MAIN AREA === */
     .main-area {
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: 32px 40px;
+      padding: 40px;
       overflow-y: auto;
     }
 
     .top-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       margin-bottom: 40px;
-    }
-
-    .welcome-text h1 {
-      font-size: 32px;
-      font-weight: 800;
-      color: var(--dufrio-azul);
-      letter-spacing: -1px;
-      margin-bottom: 4px;
-    }
-
-    .welcome-text p {
-      font-size: 14px;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
+      flex-wrap: wrap;
       gap: 20px;
     }
 
-    .search-bar {
-      background: #fff;
-      border-radius: 30px;
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-    }
-
-    .search-bar input {
-      border: none;
-      outline: none;
-      font-size: 14px;
-      color: var(--text-main);
-      width: 200px;
-      font-family: inherit;
-    }
-
-    .search-bar input::placeholder {
-      color: var(--text-secondary);
-    }
-
-    .user-profile {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .user-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: var(--dufrio-azul);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 16px;
-      box-shadow: 0 4px 10px rgba(16, 46, 130, 0.2);
-    }
-
-    .user-info {
+    .title-group {
       display: flex;
       flex-direction: column;
     }
 
-    .user-info strong {
-      font-size: 14px;
-      font-weight: 700;
+    .ferramentas-title {
+      font-size: 36px;
+      font-weight: 900;
       color: var(--dufrio-azul);
+      letter-spacing: -1px;
+      text-transform: uppercase;
+      line-height: 1.1;
     }
 
-    .user-info span {
-      font-size: 11px;
+    .ferramentas-subtitle {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--dufrio-azul-claro);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    /* ATUALIZACOES CLARAS */
+    .update-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      padding: 16px 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+      max-width: 500px;
+    }
+
+    .update-box strong {
+      display: block;
+      color: var(--dufrio-azul);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .update-box p {
+      font-size: 14px;
       color: var(--text-secondary);
+      line-height: 1.4;
       font-weight: 500;
     }
 
     /* === TOOLS GRID (DASHBOARD CARDS) === */
     .grid-container {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 24px;
       margin-bottom: 40px;
     }
@@ -236,7 +215,7 @@
       padding: 24px;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 18px 40px rgba(112, 144, 176, 0.08);
+      box-shadow: 0 10px 30px rgba(112, 144, 176, 0.08);
       cursor: pointer;
       position: relative;
       overflow: hidden;
@@ -259,7 +238,8 @@
 
     .dashboard-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 25px 50px rgba(112, 144, 176, 0.15);
+      box-shadow: 0 20px 40px rgba(112, 144, 176, 0.12);
+      border-color: var(--card-color);
     }
 
     .dashboard-card:hover::before {
@@ -274,8 +254,8 @@
     }
 
     .card-icon-wrapper {
-      width: 50px;
-      height: 50px;
+      width: 56px;
+      height: 56px;
       border-radius: 14px;
       display: flex;
       align-items: center;
@@ -286,36 +266,24 @@
     }
 
     .card-icon-wrapper svg {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       stroke: currentColor;
       stroke-width: 2;
     }
 
     .dashboard-card:hover .card-icon-wrapper {
-      transform: scale(1.1);
-    }
-
-    .card-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 12px;
-      background: #f1f5f9;
-      color: #475569;
-      letter-spacing: 0.5px;
-    }
-
-    .card-badge.status-active {
-      background: #ecfdf5;
-      color: #059669;
+      background: var(--card-color);
+      color: #fff;
     }
 
     .card-body h3 {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 800;
-      color: var(--dufrio-azul);
+      color: var(--text-main);
       margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
     }
 
     .card-body p {
@@ -323,26 +291,6 @@
       color: var(--text-secondary);
       font-weight: 500;
       line-height: 1.5;
-    }
-
-    .card-footer-info {
-      margin-top: auto;
-      padding-top: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 1px solid var(--border);
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--dufrio-azul-claro);
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.3s ease;
-    }
-
-    .dashboard-card:hover .card-footer-info {
-      opacity: 1;
-      transform: translateY(0);
     }
 
     /* === IFRAME VIEW === */
@@ -353,7 +301,7 @@
       height: 100%;
       background: #fff;
       border-radius: 20px;
-      box-shadow: 0 18px 40px rgba(112, 144, 176, 0.08);
+      box-shadow: 0 10px 30px rgba(112, 144, 176, 0.08);
       overflow: hidden;
       position: relative;
     }
@@ -405,69 +353,40 @@
     /* === METADATA FOOTER === */
     .system-footer {
       margin-top: auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      text-align: center;
       padding-top: 24px;
-      border-top: 1px solid rgba(0,0,0,0.05);
-    }
-
-    .update-status {
-      font-size: 12px;
-      color: var(--text-secondary);
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .update-status span.dot {
-      width: 8px;
-      height: 8px;
-      background: #10b981;
-      border-radius: 50%;
-      display: inline-block;
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
     }
 
     .creation-date {
-      font-size: 11px;
-      color: var(--text-secondary);
+      font-size: 10px;
+      color: var(--text-muted, #94a3b8);
       font-weight: 500;
-      opacity: 0.7;
+      opacity: 0.8;
+      letter-spacing: 0.5px;
     }
-
   </style>
 </head>
 
 <body>
 
-  <!-- SIDEBAR LATERAL -->
-  <aside class="sidebar">
-    <div class="sidebar-logo-container">
-      <!-- Imagem tratada com CSS para ficar branca sobre o fundo azul escuro -->
+  <!-- SIDEBAR LATERAL RETRÁTIL -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="toggle-btn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <!-- Logo da Dufrio Original Sem Inverter (fundo branco agora) -->
       <img src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" alt="Dufrio" class="sidebar-logo">
     </div>
 
-    <ul class="sidebar-menu">
-      <li class="menu-link active" onclick="location.reload()">
+    <!-- O menu recebe exatamente as mesmas ferramentas da home dinamicamente -->
+    <ul class="sidebar-menu" id="sidebarMenu">
+      <li class="menu-link active" onclick="location.reload()" title="Página Inicial">
         <svg class="menu-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-        Dashboard
+        <span class="menu-text">Menu Inicial</span>
       </li>
-      <li class="menu-link">
-        <svg class="menu-icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-        Projetos (Em breve)
-      </li>
-      <li class="menu-link">
-        <svg class="menu-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-        Relatórios (Em breve)
-      </li>
+      <!-- Links Injetados Rápido -->
     </ul>
-
-    <div class="logout-btn">
-      <svg class="menu-icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-      Sair do Sistema
-    </div>
   </aside>
 
   <!-- ÁREA PRINCIPAL -->
@@ -475,22 +394,16 @@
 
     <!-- CABEÇALHO -->
     <header class="top-header" id="topHeader">
-      <div class="welcome-text">
-        <h1>Welcome, Thiago!</h1>
-        <p>Today's Dufrio Insights & Enterprise Tools</p>
+      <div class="title-group">
+        <h1 class="ferramentas-title">Ferramentas</h1>
+        <div class="ferramentas-subtitle">Thiago Luz</div>
       </div>
 
       <div class="header-actions">
-        <div class="search-bar">
-          <svg style="width:16px; height:16px; color:#94a3b8;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input type="text" placeholder="Search...">
-        </div>
-        <div class="user-profile">
-          <div class="user-info" style="text-align: right;">
-            <strong>Thiago Luz</strong>
-            <span>Admin Executivo</span>
-          </div>
-          <div class="user-avatar">TL</div>
+        <!-- CAIXA DE ATUALIZAÇAO EM PORTUGUES MTO CLARA -->
+        <div class="update-box">
+          <strong id="updateDate">⚡️ Consultando alterações...</strong>
+          <p id="updateMessage">Buscando da base de dados...</p>
         </div>
       </div>
     </header>
@@ -503,7 +416,7 @@
       <div class="iframe-header">
         <button class="btn-voltar" onclick="fecharFerramenta()">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          Voltar ao Dashboard
+          Voltar ao Menu Principal
         </button>
         <span class="iframe-title" id="iframeTitle">Aguarde...</span>
         <div></div> <!-- Spacer -->
@@ -513,10 +426,6 @@
 
     <!-- RODAPÉ DE SISTEMA -->
     <footer class="system-footer" id="systemFooter">
-      <div class="update-status">
-        <span class="dot"></span>
-        <span id="lastUpdate">Sincronizando...</span>
-      </div>
       <div class="creation-date">
         Criado em 16/09/2024
       </div>
@@ -536,51 +445,62 @@
 
     // Arrays de Ferramentas Premium
     const ferramentas = [
-      { nome: "Comparador de Ar", desc: "Análise de preços em tempo real com concorrência", arquivo: "comparador-ar.html", icone: svgComparar, color: "#102E82", bg: "#eff6ff", badge: "Live" },
-      { nome: "Precificação (Site)", desc: "Calculadora executiva de margens e custos", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#059669", bg: "#ecfdf5", badge: "Ativo" },
-      { nome: "Plano de Corte", desc: "Otimização de tubulação e direcionamento", arquivo: "plano-corte.html", icone: svgCorte, color: "#ea580c", bg: "#fff7ed", badge: "Ativo" },
-      { nome: "Cotação Express", desc: "Agilidade e assertividade p/ orçamentos", arquivo: "cotacoes.html", icone: svgCotar, color: "#2563eb", bg: "#eff6ff", badge: "Ativo" },
-      { nome: "Extração de Itens", desc: "Extração robusta e estruturada de dados", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", bg: "#fdf4ff", badge: "Ativo" },
-      { nome: "Baixar Extensão", desc: "Instalador do módulo Google Chrome (v1.2)", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#475569", bg: "#f8fafc", badge: "v1.2", isDownload: true }
+      { nome: "Comparador de Ar", desc: "Análise de preços em tempo real com concorrência", arquivo: "comparador-ar.html", icone: svgComparar, color: "#102E82", bg: "#eff6ff" },
+      { nome: "Precificação (Site)", desc: "Calculadora executiva de margens e custos", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#2BAAE2", bg: "#e0f2fe" },
+      { nome: "Plano de Corte", desc: "Otimização de tubulação e direcionamento", arquivo: "plano-corte.html", icone: svgCorte, color: "#ea580c", bg: "#fff7ed" },
+      { nome: "Cotação Express", desc: "Agilidade e assertividade p/ orçamentos", arquivo: "cotacoes.html", icone: svgCotar, color: "#2563eb", bg: "#eff6ff" },
+      { nome: "Extração de Itens", desc: "Extração robusta e estruturada de dados", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", bg: "#fdf4ff" },
+      { nome: "Baixar Extensão", desc: "Instalador do módulo Google Chrome", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#475569", bg: "#f8fafc", isDownload: true }
     ];
 
     const menuGrid = document.getElementById("menuGrid");
+    const sidebarMenu = document.getElementById("sidebarMenu");
     const iframeView = document.getElementById("iframeView");
     const iframeTitle = document.getElementById("iframeTitle");
     const frame = document.getElementById("frame");
     const topHeader = document.getElementById("topHeader");
+    const sidebar = document.getElementById("sidebar");
+
+    // Lógica para Expandir/Recuar Sidebar
+    function toggleSidebar() {
+      sidebar.classList.toggle('open');
+    }
 
     // Lógica para desenhar os Cards Neumórficos
-    function renderizarCards() {
+    function renderizarCardsELista() {
       menuGrid.innerHTML = '';
-      ferramentas.forEach(f => {
-        const badgeClass = f.badge === 'Live' || f.badge === 'Ativo' ? 'card-badge status-active' : 'card-badge';
+      ferramentas.forEach((f, index) => {
         
+        // 1. Injeta Card na Tela Principal
         const cardHtml = `
-          <div class="dashboard-card" style="--card-color: ${f.color}; --card-bg-light: ${f.bg};" onclick="abrirFerramenta(${ferramentas.indexOf(f)})">
+          <div class="dashboard-card" style="--card-color: ${f.color}; --card-bg-light: ${f.bg};" onclick="abrirFerramenta(${index})">
             <div class="card-header">
               <div class="card-icon-wrapper">${f.icone}</div>
-              <div class="${badgeClass}">${f.badge}</div>
             </div>
             <div class="card-body">
               <h3>${f.nome}</h3>
               <p>${f.desc}</p>
             </div>
-            <div class="card-footer-info">
-              <span>Acessar Módulo</span>
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </div>
           </div>
         `;
         menuGrid.insertAdjacentHTML('beforeend', cardHtml);
+
+        // 2. Injeta também na barra lateral automaticamente
+        const listHtml = `
+          <li class="menu-link hide-active" title="${f.nome}" onclick="abrirFerramenta(${index}, this)">
+            <span class="menu-icon">${f.icone}</span>
+            <span class="menu-text">${f.nome}</span>
+          </li>
+        `;
+        sidebarMenu.insertAdjacentHTML('beforeend', listHtml);
       });
     }
 
     // Abertura com suavidade
-    window.abrirFerramenta = function(index) {
+    window.abrirFerramenta = function(index, menuItemEl = null) {
       const f = ferramentas[index];
       if (f.isDownload) {
-        if (confirm(`Deseja baixar e compilar o módulo: ${f.nome}?`)) {
+        if (confirm(`Deseja baixar o arquivo da ${f.nome}?`)) {
           const link = document.createElement("a");
           link.href = f.arquivo;
           link.download = "extensao-dufrio.zip";
@@ -591,36 +511,48 @@
         return;
       }
       
+      // Controla Active da Esquerda
+      document.querySelectorAll('.menu-link').forEach(el => el.classList.remove('active'));
+      if(menuItemEl) {
+        menuItemEl.classList.add('active');
+      }
+
       // Abre o ambiente de Iframe
       menuGrid.style.display = "none";
       topHeader.style.display = "none";
       iframeView.style.display = "flex";
-      iframeTitle.textContent = "Módulo: " + f.nome;
+      iframeTitle.textContent = f.nome;
       frame.src = f.arquivo + "?v=" + new Date().getTime();
     };
 
     // Fechar Ferramenta
     window.fecharFerramenta = function() {
       frame.src = "";
+      document.querySelectorAll('.menu-link').forEach(el => el.classList.remove('active'));
+      document.querySelector('.menu-link[title="Página Inicial"]').classList.add('active');
+
       iframeView.style.display = "none";
       menuGrid.style.display = "grid";
       topHeader.style.display = "flex";
     };
 
-    renderizarCards();
+    renderizarCardsELista();
 
-    // Sincronização Server-side Fake (API GitHub real puxando o update)
+    // Sincronização e Busca Clara em Português (Exigência do Thiago)
     fetch("https://api.github.com/repos/crftwoo/thiago.luz.dufrio/commits/main?v=" + new Date().getTime())
       .then(response => response.json())
       .then(data => {
         if (data && data.commit && data.commit.author && data.commit.author.date) {
           const date = new Date(data.commit.author.date);
           const formattedDate = date.toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' });
-          const formattedTime = date.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          document.getElementById("lastUpdate").textContent = `Servidor Sincronizado: ${formattedDate} às ${formattedTime}`;
+          const formattedTime = date.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+          
+          document.getElementById("updateDate").textContent = `ÚLTIMA ATUALIZAÇÃO: ${formattedDate} às ${formattedTime}`;
+          document.getElementById("updateMessage").textContent = `O que mudou: "${data.commit.message}"`;
         }
       }).catch(err => {
-        document.getElementById("lastUpdate").textContent = "Servidor Local Ativo";
+        document.getElementById("updateDate").textContent = "OFFLINE";
+        document.getElementById("updateMessage").textContent = "Não foi possível carregar o log de alterações do site.";
       });
   </script>
 </body>
