@@ -743,7 +743,7 @@
       tipos.forEach(t => {
         const b = document.createElement("button");
         b.className = "tipo-btn";
-        b.innerHTML = `<div class="img-wrapper"><img src="${imagens[t] || ''}"></div><span>${t}</span>`;
+        b.innerHTML = `<div class="img-wrapper"><img src="${imagens[t] || ''}?v=${new Date().getTime()}"></div><span>${t}</span>`;
         b.onclick = () => {
           if (ativoTipo) ativoTipo.classList.remove("selecionado");
           b.classList.add("selecionado");
