@@ -537,7 +537,7 @@
 
       Object.keys(planos).forEach(chave => {
         let tamanhoPainel = getTamanhoPainelPadrao(chave);
-        out += `<h3>Plano de corte – ${chave}</h3>`;
+        out += `<h3 style="text-align: center; margin-top: 32px; font-size: 14px;">Plano de corte – ${chave}</h3>`;
         let paineis = planos[chave].base;
         let max = Math.max(...paineis.map(p => p.length));
         out += `<div class="table-responsive"><table><tr><th rowspan="2">Painel</th><th colspan="${max}">Cortes (m)</th><th rowspan="2">Sobra</th></tr><tr>`;
