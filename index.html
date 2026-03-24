@@ -17,6 +17,9 @@
       --text-main: #1e293b;
       --text-secondary: #64748b;
       --border: #e2e8f0;
+      
+      --sidebar-width: 280px;
+      --sidebar-collapsed-width: 80px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -25,58 +28,132 @@
       background-color: var(--bg-slate);
       color: var(--text-main);
       display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* === SIDEBAR LATERAL RETRÁTIL === */
+    .sidebar {
+      width: var(--sidebar-collapsed-width); 
+      background-color: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
       flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      overflow-x: hidden;
+      padding: 24px 0;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 20;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.02);
+      white-space: nowrap;
     }
 
-    /* === CABEÇALHO DO IFRAME (Oculto no menu) === */
-    .header {
-      width: 100%;
-      background: var(--surface);
-      padding: 16px 32px;
-      display: none; /* Só aparece quando abre ferramenta */
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      z-index: 10;
+    .sidebar.open {
+      width: var(--sidebar-width);
     }
 
-    .btn-voltar {
-      background: var(--bg-slate);
-      border: none;
-      padding: 10px 20px;
-      border-radius: 10px;
-      color: var(--dufrio-azul);
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
+    .sidebar-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      padding: 0 20px;
+      margin-bottom: 40px;
+      gap: 16px;
+    }
+
+    .toggle-btn {
+      min-width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--bg-slate);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--dufrio-azul);
       transition: all 0.2s;
     }
 
-    .btn-voltar:hover {
-      background: #e2e8f0;
-      transform: translateX(-4px);
+    .toggle-btn:hover { background: #e2e8f0; }
+    
+    .toggle-btn svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2.5; }
+
+    .sidebar-logo {
+      height: 28px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      mix-blend-mode: multiply; /* Resolve o fundo branco com opacidade bizarra */
+    }
+    
+    .sidebar.open .sidebar-logo { opacity: 1; transition-delay: 0.1s;}
+
+    .sidebar-menu {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0 12px;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
-    .iframe-title {
-      font-weight: 800;
+    .sidebar-menu::-webkit-scrollbar { width: 4px; }
+    .sidebar-menu::-webkit-scrollbar-thumb { background: transparent; }
+    .sidebar:hover .sidebar-menu::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    .menu-link {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px;
+      border-radius: 12px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .menu-link:hover {
+      background-color: var(--bg-slate);
       color: var(--dufrio-azul);
-      font-size: 16px;
-      text-transform: uppercase;
-      letter-spacing: -0.5px;
     }
 
-    /* === MENU PRINCIPAL CENTRALIZADO === */
-    .menu {
+    .menu-link.active {
+      background-color: #eff6ff;
+      color: var(--dufrio-azul);
+    }
+
+    .menu-icon {
+      min-width: 24px;
+      height: 24px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .menu-text {
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .sidebar.open .menu-text { opacity: 1; transition-delay: 0.1s; }
+
+
+    /* === MAIN AREA === */
+    .main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center; 
+      padding: 60px 40px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* === MENU HUB CENTRALIZADO === */
+    .menu-hub {
       width: 100%;
       max-width: 1100px;
-      padding: 60px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -94,7 +171,7 @@
     .title-group {
       display: flex;
       flex-direction: column;
-      text-align: left; /* Títulos alinhados à esquerda do bloco interno */
+      text-align: left;
     }
 
     .ferramentas-title {
@@ -118,9 +195,10 @@
     .menu-logo {
       height: 60px;
       object-fit: contain;
+      mix-blend-mode: multiply; /* Segredo pra remover fundo branco do webp */
     }
 
-    /* === TOOLS GRID CENTRALIZADO E ENVOLVENTE === */
+    /* === TOOLS GRID CENTRALIZADO (3x3 perfeitamente) === */
     .menu-grid {
       display: flex;
       flex-wrap: wrap;
@@ -130,7 +208,6 @@
     }
 
     .dashboard-card {
-      /* Baseado no layout 3x por linha - responsivo */
       width: calc(33.333% - 16px);
       min-width: 300px;
       max-width: 350px;
@@ -297,84 +374,132 @@
     }
 
     /* --- I-FRAME CONTENT --- */
-    .content {
-      width: 100%;
-      height: 100vh;
+    .iframe-view {
       display: none;
       flex-direction: column;
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      background: var(--surface);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(112, 144, 176, 0.08);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .iframe-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .btn-voltar {
+      background: var(--bg-slate);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: var(--dufrio-azul);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-voltar:hover {
+      background: #e2e8f0;
+      transform: translateX(-4px);
+    }
+
+    .iframe-title {
+      font-weight: 800;
+      color: var(--dufrio-azul);
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
     }
 
     iframe {
       width: 100%;
-      flex: 1;
+      height: 100%;
       border: none;
-      background: var(--surface);
-    }
-    
-    @media (max-width: 768px) {
-      .menu-title-container {
-        flex-direction: column-reverse; /* Logo em cima no celular ou embaixo */
-        gap: 20px;
-      }
-      .title-group {
-        text-align: center;
-      }
-      .ferramentas-title {
-        font-size: 32px;
-      }
-      .dashboard-card {
-        width: 100%;
-        max-width: 100%;
-      }
+      flex: 1;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- CABEÇALHO (Apenas na view da Ferramenta) -->
-  <header class="header" id="mainHeader">
-    <button class="btn-voltar" onclick="fecharFerramenta()">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-      MENU
-    </button>
-    <span class="iframe-title" id="iframeTitle">Módulo</span>
-    <div style="width:100px;"></div> <!-- spacer -->
-  </header>
-
-  <!-- MENU PRINCIPAL CENTRALIZADO -->
-  <main class="menu" id="menu">
-    <div class="menu-title-container">
-      <div class="title-group">
-        <h1 class="ferramentas-title">Ferramentas</h1>
-        <div class="ferramentas-subtitle">Thiago Luz</div>
-      </div>
-      <!-- Logo da Dufrio Original Sem Inverter -->
-      <img src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" alt="Dufrio" class="menu-logo">
+  <!-- SIDEBAR LATERAL RETRÁTIL -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="toggle-btn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <img src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" alt="Dufrio" class="sidebar-logo">
     </div>
 
-    <!-- GRID DE CARDS (DASHBOARD) -->
-    <div class="menu-grid" id="menuGrid"></div>
+    <!-- O menu recebe exatamente as mesmas ferramentas da home dinamicamente -->
+    <ul class="sidebar-menu" id="sidebarMenu">
+      <li class="menu-link active" onclick="location.reload()" title="Página Inicial">
+        <svg class="menu-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span class="menu-text">Menu Inicial</span>
+      </li>
+      <!-- Links Injetados Rápido -->
+    </ul>
+  </aside>
 
-    <!-- RODAPÉ DE SISTEMA COM TOOLTIP -->
-    <div class="footer-area">
-      <div id="lastUpdate" class="tooltip">
-        <span id="updateText">Verificando atualizações...</span>
-        <div class="tooltiptext" id="updateTooltip">
-          <strong>Histórico de Log</strong>
-          <span id="updateMessage">Carregando detalhes...</span>
+  <!-- ÁREA PRINCIPAL -->
+  <main class="main-area">
+
+    <!-- MENU HUB CENTRALIZADO -->
+    <div class="menu-hub" id="menuHub">
+      <div class="menu-title-container">
+        <div class="title-group">
+          <h1 class="ferramentas-title">Ferramentas</h1>
+          <div class="ferramentas-subtitle">Thiago Luz</div>
+        </div>
+        <!-- Logo da Dufrio Original com correção de fundo -->
+        <img src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" alt="Dufrio" class="menu-logo">
+      </div>
+
+      <!-- GRID DE CARDS (DASHBOARD) -->
+      <div class="menu-grid" id="menuGrid"></div>
+
+      <!-- RODAPÉ DE SISTEMA COM TOOLTIP (OCULTO A MENOS QUE HOVER) -->
+      <div class="footer-area">
+        <div id="lastUpdate" class="tooltip">
+          <span id="updateText">Verificando atualizações...</span>
+          <div class="tooltiptext" id="updateTooltip">
+            <strong>Histórico de Log</strong>
+            <span id="updateMessage">Carregando detalhes...</span>
+          </div>
+        </div>
+        <div class="creation-date">
+          Criado em 16/09/2024
         </div>
       </div>
-      <div class="creation-date">
-        Criado em 16/09/2024
-      </div>
     </div>
-  </main>
 
-  <!-- ÁREA DO IFRAME -->
-  <div class="content" id="content">
-    <iframe id="frame"></iframe>
-  </div>
+    <!-- ÁREA DO IFRAME (Onde a ferramenta abre) -->
+    <div class="iframe-view" id="iframeView">
+      <div class="iframe-header">
+        <button class="btn-voltar" onclick="fecharFerramenta()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Voltar ao Menu Interativo
+        </button>
+        <span class="iframe-title" id="iframeTitle">Aguarde...</span>
+        <div></div> <!-- Spacer -->
+      </div>
+      <iframe id="frame"></iframe>
+    </div>
+
+  </main>
 
   <!-- SCRIPT -->
   <script>
@@ -397,16 +522,24 @@
     ];
 
     const menuGrid = document.getElementById("menuGrid");
-    const menu = document.getElementById("menu");
-    const content = document.getElementById("content");
-    const frame = document.getElementById("frame");
-    const mainHeader = document.getElementById("mainHeader");
+    const sidebarMenu = document.getElementById("sidebarMenu");
+    const menuHub = document.getElementById("menuHub");
+    const iframeView = document.getElementById("iframeView");
     const iframeTitle = document.getElementById("iframeTitle");
+    const frame = document.getElementById("frame");
+    const sidebar = document.getElementById("sidebar");
 
-    // Lógica para desenhar os Cards Neumórficos no Grid Central
-    function renderizarCards() {
+    // Lógica para Expandir/Recuar Sidebar
+    function toggleSidebar() {
+      sidebar.classList.toggle('open');
+    }
+
+    // Lógica para desenhar os Cards Neumórficos no Grid Central + Lincar com Sidebar
+    function renderizarCardsELista() {
       menuGrid.innerHTML = '';
       ferramentas.forEach((f, index) => {
+        
+        // 1. Injeta Card na Tela Principal
         const cardHtml = `
           <div class="dashboard-card" style="--card-color: ${f.color}; --card-bg-light: ${f.bg};" onclick="abrirFerramenta(${index})">
             <div class="card-header">
@@ -419,11 +552,20 @@
           </div>
         `;
         menuGrid.insertAdjacentHTML('beforeend', cardHtml);
+
+        // 2. Injeta também na barra lateral automaticamente
+        const listHtml = `
+          <li class="menu-link hide-active" title="${f.nome}" onclick="abrirFerramenta(${index}, this)">
+            <span class="menu-icon">${f.icone}</span>
+            <span class="menu-text">${f.nome}</span>
+          </li>
+        `;
+        sidebarMenu.insertAdjacentHTML('beforeend', listHtml);
       });
     }
 
     // Abertura com suavidade
-    window.abrirFerramenta = function(index) {
+    window.abrirFerramenta = function(index, menuItemEl = null) {
       const f = ferramentas[index];
       if (f.isDownload) {
         if (confirm(`Deseja baixar os arquivos da extensão?`)) {
@@ -437,23 +579,39 @@
         return;
       }
       
-      // Abre o ambiente de Iframe
-      menu.style.display = "none";
-      content.style.display = "flex";
-      mainHeader.style.display = "flex";
+      // Controla Active da Esquerda
+      document.querySelectorAll('.menu-link').forEach(el => el.classList.remove('active'));
+      if(menuItemEl) {
+        menuItemEl.classList.add('active');
+      } else {
+        // Find matching sidebar link if clicked via card
+        const links = document.querySelectorAll('.menu-link');
+        for (let l of links) {
+          if (l.getAttribute("title") === f.nome) {
+             l.classList.add('active');
+             break;
+          }
+        }
+      }
+
+      // Abre o ambiente de Iframe puxando o titulo dinamicamente
+      menuHub.style.display = "none";
+      iframeView.style.display = "flex";
       iframeTitle.textContent = f.nome;
       frame.src = f.arquivo + "?v=" + new Date().getTime();
     };
 
-    // Fechar Ferramenta
+    // Fechar Ferramenta (Botão Voltar)
     window.fecharFerramenta = function() {
       frame.src = "";
-      content.style.display = "none";
-      mainHeader.style.display = "none";
-      menu.style.display = "flex";
+      document.querySelectorAll('.menu-link').forEach(el => el.classList.remove('active'));
+      document.querySelector('.menu-link[title="Página Inicial"]').classList.add('active');
+
+      iframeView.style.display = "none";
+      menuHub.style.display = "flex";
     };
 
-    renderizarCards();
+    renderizarCardsELista();
 
     // Sincronização Server-side Fake (API GitHub real puxando o update)
     fetch("https://api.github.com/repos/crftwoo/thiago.luz.dufrio/commits/main?v=" + new Date().getTime())
@@ -465,10 +623,11 @@
           const formattedTime = date.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
           
           document.getElementById("updateText").textContent = `⚡️ Última atualização: ${formattedDate} às ${formattedTime}`;
-          document.getElementById("updateMessage").textContent = data.commit.message;
+          document.getElementById("updateMessage").textContent = `"${data.commit.message}"`;
         }
       }).catch(err => {
         document.getElementById("updateText").textContent = "⚡️ Última atualização: Indisponível";
+        document.getElementById("updateMessage").textContent = "Não foi possível carregar o histórico.";
       });
   </script>
 </body>
