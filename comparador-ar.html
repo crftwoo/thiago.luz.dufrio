@@ -162,6 +162,22 @@
       box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
     }
 
+    .card.dufrio-highlight {
+      border: 1.5px solid var(--dufrio-azul);
+      background: #f8fafc;
+      box-shadow: 0 4px 12px rgba(16,46,130,0.06);
+    }
+
+    .card.dufrio-highlight button {
+      background: var(--dufrio-azul);
+      color: #fff;
+    }
+
+    .card.dufrio-highlight:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px rgba(16,46,130,0.12);
+    }
+
     .card strong {
       font-weight: 800;
       font-size: 14px;
@@ -832,9 +848,18 @@
         btnTodasContainer.style.display = 'none';
       }
 
+      res.sort((a, b) => {
+        const isADufrio = a.Site.toLowerCase().includes('dufrio');
+        const isBDufrio = b.Site.toLowerCase().includes('dufrio');
+        if (isADufrio && !isBDufrio) return -1;
+        if (!isADufrio && isBDufrio) return 1;
+        return a.Site.localeCompare(b.Site); // Ordem alfabetica para os demais
+      });
+
       res.forEach(i => {
         const card = document.createElement("div");
-        card.className = "card";
+        const isDufrio = i.Site.toLowerCase().includes('dufrio');
+        card.className = isDufrio ? "card dufrio-highlight" : "card";
         card.innerHTML = `<strong>${i.Site}</strong><br><br><a href="${i.Link}" target="_blank"><button>Abrir pesquisa</button></a>`;
         div.appendChild(card);
       });
