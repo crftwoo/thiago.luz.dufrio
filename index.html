@@ -46,8 +46,8 @@
       white-space: nowrap;
     }
 
-    .sidebar.open {
-      width: var(--sidebar-width);
+    .sidebar:hover {
+      width: 350px;
     }
 
     .sidebar-header {
@@ -83,7 +83,7 @@
       mix-blend-mode: multiply; /* Resolve o fundo branco com opacidade bizarra */
     }
     
-    .sidebar.open .sidebar-logo { opacity: 1; transition-delay: 0.1s;}
+    .sidebar:hover .sidebar-logo { opacity: 1; transition-delay: 0.1s;}
 
     .sidebar-menu {
       list-style: none;
@@ -136,7 +136,7 @@
       transition: opacity 0.2s;
     }
     
-    .sidebar.open .menu-text { opacity: 1; transition-delay: 0.1s; }
+    .sidebar:hover .menu-text { opacity: 1; transition-delay: 0.1s; }
 
 
     /* === MAIN AREA === */
@@ -176,7 +176,7 @@
     }
 
     .ferramentas-title {
-      font-size: 42px;
+      font-size: 35px;
       font-weight: 900;
       color: var(--dufrio-azul);
       letter-spacing: -1.5px;
@@ -439,7 +439,7 @@
   <!-- SIDEBAR LATERAL RETRÁTIL -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <button class="toggle-btn" onclick="toggleSidebar()">
+      <button class="toggle-btn" style="cursor: default;">
         <svg viewBox="0 0 24 24" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
       <img src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" alt="Dufrio" class="sidebar-logo">
