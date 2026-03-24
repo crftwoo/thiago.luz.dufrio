@@ -436,6 +436,11 @@
 
     let grupos = {}, planos = {}, ordem = [], decisoes = {}, idx = 0;
 
+    function getTamanhoPainelPadrao(chave) {
+      if (chave === "EPS 50mm") return 6.00;
+      return PAINEL_PADRAO;
+    }
+
     function parseDemanda(txt) {
       txt.split("\n").forEach(l => {
         let m = l.match(/(\d+)\s*PAINEL.*?(\d+[\.,]\d+).*?(PIR|EPS).*?(\d+mm)/i);
@@ -449,7 +454,7 @@
       });
     }
 
-    function otimizar(pecas) {
+    function otimizar(pecas, tamanhoPadrao) {
       let itens = [...pecas].sort((a, b) => b - a);
       let paineis = [];
 
@@ -457,7 +462,7 @@
         let melhor = null, menor = Infinity;
         paineis.forEach(panel => {
           let usado = panel.reduce((s, v) => s + v, 0);
-          let sobra = PAINEL_PADRAO - (usado + p);
+          let sobra = tamanhoPadrao - (usado + p);
           if (sobra >= 0 && sobra < menor) { menor = sobra; melhor = panel; }
         });
         if (melhor) melhor.push(p);
@@ -465,8 +470,8 @@
       });
 
       paineis.sort((a, b) =>
-        (PAINEL_PADRAO - a.reduce((s, v) => s + v, 0)) -
-        (PAINEL_PADRAO - b.reduce((s, v) => s + v, 0))
+        (tamanhoPadrao - a.reduce((s, v) => s + v, 0)) -
+        (tamanhoPadrao - b.reduce((s, v) => s + v, 0))
       );
 
       return paineis;
@@ -479,11 +484,14 @@
       parseDemanda(input.value);
 
       Object.keys(grupos).forEach(chave => {
-        let paineis = otimizar(grupos[chave]);
+        let tamanhoPainel = getTamanhoPainelPadrao(chave);
+        let paineis = otimizar(grupos[chave], tamanhoPainel);
         let ultimo = paineis.pop();
-        let sobra = PAINEL_PADRAO - ultimo.reduce((s, v) => s + v, 0);
+        let sobra = tamanhoPainel - ultimo.reduce((s, v) => s + v, 0);
         planos[chave] = { base: paineis, ultimo: ultimo };
-        if (sobra > LIMITE_SOBRA) ordem.push(chave);
+        
+        let temAlternativa = (chave !== "EPS 50mm");
+        if (sobra > LIMITE_SOBRA && temAlternativa) ordem.push(chave);
         else { planos[chave].base.push(ultimo); decisoes[chave] = "PADRAO"; }
       });
 
@@ -493,14 +501,15 @@
 
     function mostrarPergunta() {
       let chave = ordem[idx];
+      let tamanhoPadrao = getTamanhoPainelPadrao(chave);
       let ultimo = planos[chave].ultimo;
       let maior = Math.max(...ultimo);
       let alt = PAINEIS_ALT.find(p => p >= maior);
-      let sobra = PAINEL_PADRAO - ultimo.reduce((s, v) => s + v, 0);
+      let sobra = tamanhoPadrao - ultimo.reduce((s, v) => s + v, 0);
 
       decisao.innerHTML = `<div class="decision">
     <h3>Decisão – ${chave}</h3>
-    <button onclick="decidir('PADRAO')">Painel 12,05 m (sobra ${sobra.toFixed(2)} m)</button><br><br>
+    <button onclick="decidir('PADRAO')">Painel ${tamanhoPadrao.toFixed(2)} m (sobra ${sobra.toFixed(2)} m)</button><br><br>
     <button onclick="decidir(${alt})">Painel ${alt.toFixed(2)} m (sobra ${(alt - maior).toFixed(2)} m)</button>
   </div>`;
     }
@@ -527,6 +536,7 @@
       let resumoTxt = "Demanda a atender:\n" + input.value.trim() + "\n\nCortes com melhor aproveitamento para atender a demanda:\n";
 
       Object.keys(planos).forEach(chave => {
+        let tamanhoPainel = getTamanhoPainelPadrao(chave);
         out += `<h3>Plano de corte – ${chave}</h3>`;
         let paineis = planos[chave].base;
         let max = Math.max(...paineis.map(p => p.length));
@@ -536,7 +546,7 @@
 
         let cont = {};
         paineis.forEach((p, i) => {
-          let tam = p.tamAlt || PAINEL_PADRAO;
+          let tam = p.tamAlt || tamanhoPainel;
           cont[tam] = (cont[tam] || 0) + 1;
           let usado = p.reduce((s, v) => s + v, 0);
           out += `<tr><td>Painel ${i + 1}<br><span class="sub">${tam.toFixed(2)} m</span></td>`;
@@ -544,6 +554,7 @@
           out += `<td>${(tam - usado).toFixed(2)}</td></tr>`;
         });
         out += "</table></div>";
+        resultado.innerHTML += out;
 
         Object.keys(cont).forEach(t => {
           resumoTxt += `${cont[t]} pçs – Painel ${chave.split(" ")[0]} ${chave.split(" ")[1]} de ${Number(t).toFixed(2)} m\n`;
