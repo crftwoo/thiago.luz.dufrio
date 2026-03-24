@@ -492,11 +492,11 @@
         
         let temAlternativa = (chave !== "EPS 50mm");
         if (sobra > LIMITE_SOBRA && temAlternativa) ordem.push(chave);
-        else { planos[chave].base.push(ultimo); decisoes[chave] = "PADRAO"; }
+        else { decisoes[chave] = "PADRAO"; }
       });
 
       if (ordem.length) mostrarPergunta();
-      else mostrarTudo();
+      else { aplicarDecisoes(); mostrarTudo(); }
     }
 
     function mostrarPergunta() {
