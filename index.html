@@ -144,7 +144,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: center; 
+      align-items: flex-start; 
       padding: 60px 40px;
       overflow-y: auto;
       overflow-x: hidden;
@@ -156,13 +156,14 @@
       max-width: 1100px;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
     }
 
     .menu-title-container {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      width: 100%;
       gap: 40px;
       margin-bottom: 60px;
       flex-wrap: wrap;
@@ -390,7 +391,7 @@
     .iframe-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       padding: 16px 24px;
       border-bottom: 1px solid var(--border);
       background: #fff;
@@ -489,12 +490,7 @@
     <!-- ÁREA DO IFRAME (Onde a ferramenta abre) -->
     <div class="iframe-view" id="iframeView">
       <div class="iframe-header">
-        <button class="btn-voltar" onclick="fecharFerramenta()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          Voltar ao Menu Interativo
-        </button>
         <span class="iframe-title" id="iframeTitle">Aguarde...</span>
-        <div></div> <!-- Spacer -->
       </div>
       <iframe id="frame"></iframe>
     </div>
@@ -513,12 +509,12 @@
 
     // Arrays de Ferramentas Premium
     const ferramentas = [
-      { nome: "Comparador de Ar", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#102E82", bg: "#eff6ff" },
-      { nome: "Precificação (Site)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#2BAAE2", bg: "#e0f2fe" },
-      { nome: "Plano de Corte", desc: "Otimização de cortes de paineis EPS/PIR para melhor aproveitamento das chapas de 12m.", arquivo: "plano-corte.html", icone: svgCorte, color: "#ea580c", bg: "#fff7ed" },
-      { nome: "Cotação Express", desc: "Orçamento rapido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#2563eb", bg: "#eff6ff" },
-      { nome: "Extração de Itens", desc: "Extração de codigos que constam quantidade em estoque.", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", bg: "#fdf4ff" },
-      { nome: "Baixar Extensão", desc: "", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#475569", bg: "#f8fafc", isDownload: true }
+      { nome: "COMPARADOR DE AR-CONDICIONADO", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#102E82", bg: "#eff6ff" },
+      { nome: "PRECIFICAÇÃO SKU'S (SITE)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#2BAAE2", bg: "#e0f2fe" },
+      { nome: "PLANO DE CORTE - PAINÉIS", desc: "Otimização de cortes de paineis EPS/PIR para melhor aproveitamento das chapas de 12m.", arquivo: "plano-corte.html", icone: svgCorte, color: "#ea580c", bg: "#fff7ed" },
+      { nome: "COTAÇÃO EXPRESS", desc: "Orçamento rápido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#2563eb", bg: "#eff6ff" },
+      { nome: "EXTRAÇÃO DE CÓDIGOS", desc: "Extração de códigos que constam quantidade em estoque.", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", bg: "#fdf4ff" },
+      { nome: "BAIXAR EXTENSÃO", desc: "", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#475569", bg: "#f8fafc", isDownload: true }
     ];
 
     const menuGrid = document.getElementById("menuGrid");
