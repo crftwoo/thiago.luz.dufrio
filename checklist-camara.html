@@ -288,6 +288,25 @@
       gap: 20px;
     }
 
+    /* TYPEFORM REVEAL LOGIC */
+    .q-block {
+      display: none;
+      animation: fadeIn 0.4s ease;
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px dashed var(--border);
+    }
+    .q-block.active { display: block; }
+    .q-block:last-child { border-bottom: none; }
+
+    .btn-next:disabled {
+      background: #cbd5e1;
+      color: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
   </style>
 </head>
 <body>
@@ -306,31 +325,75 @@
       <div class="step-indicator" id="ind-5">5</div>
     </div>
 
-    <!-- STAGE 1 -->
+    <!-- STAGE 1 (DADOS COMERCIAIS) -->
     <div class="step-content active" id="step-1">
       <h2 class="step-title">Dados Comerciais</h2>
       <p class="step-desc">Insira as informações de atendimento deste orçamento.</p>
       
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Cliente</label>
-          <input type="text" id="f_cliente" placeholder="Razão Social ou Nome" />
+      <!-- PERGUNTA 1 -->
+      <div class="q-block active" id="q_cliente">
+        <label>Nome do Cliente e Código</label>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-top: 8px;">
+          <input type="text" id="f_cliente" placeholder="Razão Social ou Nome" onkeyup="checkQ1()" />
+          <input type="text" id="f_codigo" placeholder="Cód. Sistema (Opcional)" />
         </div>
-        <div class="form-group">
-          <label>Cód. Cliente (Opcional)</label>
-          <input type="text" id="f_codigo" placeholder="ID no sistema" />
+      </div>
+
+      <!-- PERGUNTA 2 -->
+      <div class="q-block" id="q_contato">
+        <label>Contato do Cliente (Telefone)</label>
+        <div style="margin-top: 8px;">
+          <input type="text" id="f_contato" placeholder="(XX) XXXXX-XXXX" maxlength="15" onkeyup="maskPhone(this); checkQ2()" />
         </div>
-        <div class="form-group">
-          <label>Contato</label>
-          <input type="text" id="f_contato" placeholder="Nome do Responsável / Tel" />
+      </div>
+
+      <!-- PERGUNTA 3 -->
+      <div class="q-block" id="q_vendedor">
+        <label>De: Vendedor (Seu Nome)</label>
+        <div style="margin-top: 8px;">
+          <input type="text" id="f_vendedor" placeholder="Digite seu nome..." onkeyup="checkQ3()" />
         </div>
-        <div class="form-group">
-          <label>Vendedor</label>
-          <input type="text" id="f_vendedor" placeholder="Seu Nome" />
-        </div>
-        <div class="form-group">
-          <label>Condição de Pagamento</label>
-          <input type="text" id="f_pagamento" placeholder="Ex: 30/60/90 Dias" />
+      </div>
+
+      <!-- PERGUNTA 4 -->
+      <div class="q-block" id="q_pgto">
+        <label>Condição de Pagamento</label>
+        <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 12px;">
+          <select id="pagamento_tipo" onchange="handlePgto()">
+            <option value="">Selecione a forma principal...</option>
+            <option value="A vista">À vista</option>
+            <option value="Cartao">Cartão de Crédito</option>
+            <option value="Boleto">Boleto (Sujeito à aprovação)</option>
+          </select>
+
+          <!-- Sub-opção Cartão -->
+          <div id="pgto_cartao_opts" style="display: none;">
+            <select id="cartao_parc" onchange="checkQ4()">
+              <option value="">Quantas parcelas no cartão?</option>
+              <option value="1x">1x (Apenas uma parcela)</option>
+              <option value="2x">2x no Cartão</option>
+              <option value="3x">3x no Cartão</option>
+              <option value="4x">4x no Cartão</option>
+              <option value="5x">5x no Cartão</option>
+              <option value="6x">6x no Cartão</option>
+              <option value="7x">7x no Cartão</option>
+              <option value="8x">8x no Cartão</option>
+              <option value="9x">9x no Cartão</option>
+              <option value="10x">10x no Cartão</option>
+            </select>
+          </div>
+
+          <!-- Sub-opção Boleto -->
+          <div id="pgto_boleto_opts" style="display: none;">
+            <select id="boleto_parc" onchange="checkQ4()">
+              <option value="">Prazos do Boleto</option>
+              <option value="1x - 28dd">1x - 28dd</option>
+              <option value="2x 28/56">2x 28/56</option>
+              <option value="3x 28/56/84">3x 28/56/84</option>
+              <option value="4x 28/56/84/112">4x 28/56/84/112</option>
+              <option value="5x 28/56/84/112/140">5x 28/56/84/112/140</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -514,7 +577,7 @@
     <!-- BUTTON BOX -->
     <div class="wizard-actions">
       <button class="btn btn-prev" id="btn-prev" onclick="changeStep(-1)" style="visibility: hidden;">Voltar Passo</button>
-      <button class="btn btn-next" id="btn-next" onclick="changeStep(1)">Próximo Passo</button>
+      <button class="btn btn-next" id="btn-next" onclick="changeStep(1)" disabled>Próximo Passo</button>
       <button class="btn btn-submit" id="btn-submit" onclick="gerarPDF()" style="display: none;">Baixar Formulário Oficial (.PDF)</button>
     </div>
 
@@ -561,8 +624,84 @@
         }
     }
 
+    // Typeform Logic Step 1
+    function checkQ1() {
+        if(document.getElementById('f_cliente').value.trim().length > 2) {
+            document.getElementById('q_contato').classList.add('active');
+        }
+        validaPasso1();
+    }
+    
+    function maskPhone(input) {
+        let val = input.value.replace(/\D/g, '');
+        if (val.length > 11) val = val.slice(0, 11);
+        if (val.length > 2) val = `(${val.slice(0,2)}) ${val.slice(2)}`;
+        if (val.length > 9) val = `${val.slice(0,10)}-${val.slice(10)}`;
+        input.value = val;
+    }
+
+    function checkQ2() {
+        let val = document.getElementById('f_contato').value.replace(/\D/g, '');
+        if(val.length >= 10) { // minimo fixo pra celular ou fixo com DDD
+            document.getElementById('q_vendedor').classList.add('active');
+        }
+        validaPasso1();
+    }
+
+    function checkQ3() {
+        if(document.getElementById('f_vendedor').value.trim().length > 2) {
+            document.getElementById('q_pgto').classList.add('active');
+        }
+        validaPasso1();
+    }
+
+    function handlePgto() {
+        const tipo = document.getElementById('pagamento_tipo').value;
+        const cartao = document.getElementById('pgto_cartao_opts');
+        const boleto = document.getElementById('pgto_boleto_opts');
+        
+        cartao.style.display = 'none';
+        boleto.style.display = 'none';
+        document.getElementById('cartao_parc').value = "";
+        document.getElementById('boleto_parc').value = "";
+
+        if (tipo === "Cartao") cartao.style.display = 'block';
+        if (tipo === "Boleto") boleto.style.display = 'block';
+
+        checkQ4();
+    }
+
+    function checkQ4() {
+        validaPasso1();
+    }
+
+    function validaPasso1() {
+        const c1 = document.getElementById('f_cliente').value.trim().length > 2;
+        const c2 = document.getElementById('f_contato').value.replace(/\D/g, '').length >= 10;
+        const c3 = document.getElementById('f_vendedor').value.trim().length > 2;
+        
+        const tipoPgto = document.getElementById('pagamento_tipo').value;
+        let c4 = false;
+        if (tipoPgto === "A vista") c4 = true;
+        if (tipoPgto === "Cartao" && document.getElementById('cartao_parc').value !== "") c4 = true;
+        if (tipoPgto === "Boleto" && document.getElementById('boleto_parc').value !== "") c4 = true;
+
+        const nextBtn = document.getElementById('btn-next');
+        if(currentStep === 1) {
+            nextBtn.disabled = !(c1 && c2 && c3 && c4);
+        }
+    }
+
+    function getPagamentoString() {
+        const tipo = document.getElementById('pagamento_tipo').value;
+        if (tipo === "A vista") return "À vista";
+        if (tipo === "Cartao") return "Cartão de Crédito - " + document.getElementById('cartao_parc').value;
+        if (tipo === "Boleto") return "Boleto - " + document.getElementById('boleto_parc').value;
+        return "";
+    }
+
     function updateView() {
-      // Hide all content
+      // Esconder steps
       for (let i = 1; i <= totalSteps; i++) {
         document.getElementById(`step-${i}`).classList.remove('active');
         const ind = document.getElementById(`ind-${i}`);
@@ -572,10 +711,9 @@
         if (i === currentStep) ind.classList.add('active');
       }
 
-      // Show current
+      // Mostrar atual
       document.getElementById(`step-${currentStep}`).classList.add('active');
 
-      // Update buttons
       const btnPrev = document.getElementById('btn-prev');
       const btnNext = document.getElementById('btn-next');
       const btnSubmit = document.getElementById('btn-submit');
@@ -588,6 +726,10 @@
       } else {
         btnNext.style.display = 'block';
         btnSubmit.style.display = 'none';
+        
+        // Se mudou de step, re-checa disabled state
+        if(currentStep === 1) validaPasso1();
+        else btnNext.disabled = false; // Em breve travaremos os outros steps tbm
       }
     }
 
@@ -647,7 +789,13 @@
             writeTextField('Caixa de texto 2_4', 'f_codigo');
             writeTextField('Caixa de texto 1_2', 'f_contato');
             writeTextField('Caixa de texto 1_3', 'f_vendedor');
-            writeTextField('Caixa de texto 1_4', 'f_pagamento');
+            
+            // Escreve string montada de Pagamento
+            const pgtoString = getPagamentoString();
+            if(pgtoString !== "") {
+                const fPgto = form.getTextField('Caixa de texto 1_4');
+                if(fPgto) fPgto.setText(pgtoString);
+            }
             
             // Passo 2
             writeTextField('Caixa de texto 2_5', 'f_comp');
