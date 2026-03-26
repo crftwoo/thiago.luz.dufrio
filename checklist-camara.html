@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checklist Oficial de Câmara Fria</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #f8f9fa;
+      --surface: #ffffff;
+      --text-main: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      
+      --dufrio-azul: #002d72;
+      --dufrio-azul-hover: #001f50;
+      --dufrio-azul-claro: #004cba;
+      --dufrio-neon: #007bff;
+      --dufrio-accent: #0f172a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .header-app {
+      width: 100%;
+      background: var(--surface);
+      padding: 24px 40px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--dufrio-azul);
+      text-transform: uppercase;
+      letter-spacing: -1px;
+    }
+
+    .header-subtitle {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    .wizard-container {
+      width: 100%;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 40px;
+      background: var(--surface);
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(0, 45, 114, 0.05);
+    }
+
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+      z-index: 1;
+      transform: translateY(-50%);
+    }
+
+    .step-indicator {
+      width: 40px;
+      height: 40px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--text-secondary);
+      z-index: 2;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .step-indicator.active {
+      border-color: var(--dufrio-azul);
+      background: var(--dufrio-azul);
+      color: #fff;
+    }
+
+    .step-indicator.completed {
+      border-color: var(--dufrio-azul-claro);
+      background: var(--dufrio-azul-claro);
+      color: #fff;
+    }
+
+    .step-content {
+      display: none;
+      animation: fadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .step-content.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--dufrio-azul);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      font-weight: 500;
+    }
+
+    /* === FORM ELEMENTS === */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group.third { grid-column: span 1; }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      text-transform: uppercase;
+    }
+
+    input[type="text"], input[type="number"], select {
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.2s;
+      font-family: inherit;
+      background: #fdfdfd;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus, select:focus {
+      border-color: var(--dufrio-azul);
+      background: #fff;
+      box-shadow: 0 4px 15px rgba(0, 45, 114, 0.08);
+    }
+
+    /* CUSTOM RADIO / CHECKBOX BUTTONS */
+    .radio-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .radio-card {
+      flex: 1;
+      position: relative;
+    }
+
+    .radio-card input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .radio-card label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      background: #fff;
+      text-align: center;
+    }
+
+    .radio-card input:checked + label {
+      border-color: var(--dufrio-azul);
+      color: var(--dufrio-azul);
+      background: rgba(0, 45, 114, 0.03);
+    }
+
+    /* ACTIONS */
+    .wizard-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+    }
+
+    .btn-prev {
+      background: var(--bg-color);
+      color: var(--text-secondary);
+    }
+    .btn-prev:hover { background: #e2e8f0; color: var(--text-main); }
+    
+    .btn-next {
+      background: var(--dufrio-azul);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(0, 45, 114, 0.2);
+    }
+    .btn-next:hover {
+      background: var(--dufrio-azul-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-submit {
+      background: #10b981;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .btn-submit:hover {
+      background: #059669;
+      transform: translateY(-2px);
+    }
+
+    /* GRID MÃE DAS 3 COLUNAS */
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header class="header-app">
+    <h1 class="header-title">Checklist de Câmaras Frias</h1>
+    <h2 class="header-subtitle">Preenchimento interativo e exportação nativa do PDF Dufrio</h2>
+  </header>
+
+  <main class="wizard-container">
+    <div class="stepper">
+      <div class="step-indicator active" id="ind-1">1</div>
+      <div class="step-indicator" id="ind-2">2</div>
+      <div class="step-indicator" id="ind-3">3</div>
+      <div class="step-indicator" id="ind-4">4</div>
+      <div class="step-indicator" id="ind-5">5</div>
+    </div>
+
+    <!-- STAGE 1 -->
+    <div class="step-content active" id="step-1">
+      <h2 class="step-title">Dados Comerciais</h2>
+      <p class="step-desc">Insira as informações de atendimento deste orçamento.</p>
+      
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Cliente</label>
+          <input type="text" id="f_cliente" placeholder="Razão Social ou Nome" />
+        </div>
+        <div class="form-group">
+          <label>Cód. Cliente (Opcional)</label>
+          <input type="text" id="f_codigo" placeholder="ID no sistema" />
+        </div>
+        <div class="form-group">
+          <label>Contato</label>
+          <input type="text" id="f_contato" placeholder="Nome do Responsável / Tel" />
+        </div>
+        <div class="form-group">
+          <label>Vendedor</label>
+          <input type="text" id="f_vendedor" placeholder="Seu Nome" />
+        </div>
+        <div class="form-group">
+          <label>Condição de Pagamento</label>
+          <input type="text" id="f_pagamento" placeholder="Ex: 30/60/90 Dias" />
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 2 -->
+    <div class="step-content" id="step-2">
+      <h2 class="step-title">Gabarito Físico</h2>
+      <p class="step-desc">Medidas externas e definição estrutural do piso da Câmara.</p>
+      
+      <div class="form-grid-3" style="margin-bottom: 24px;">
+        <div class="form-group">
+          <label>Comprimento (m)</label>
+          <input type="text" id="f_comp" placeholder="Ex: 4.50" />
+        </div>
+        <div class="form-group">
+          <label>Largura (m)</label>
+          <input type="text" id="f_larg" placeholder="Ex: 3.20" />
+        </div>
+        <div class="form-group">
+          <label>Altura (m) *Padrão 2.40</label>
+          <input type="text" id="f_alt" value="2.40" placeholder="Ex: 2.40" />
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label>Isolamento do Piso</label>
+        <div class="radio-group" style="display: grid; grid-template-columns: repeat(4, 1fr);">
+          <div class="radio-card">
+            <input type="radio" name="piso" id="piso_painel" value="Caixa de seleção 1_13" />
+            <label for="piso_painel">Piso Painel</label>
+          </div>
+          <div class="radio-card">
+            <input type="radio" name="piso" id="piso_civil_elevado" value="Caixa de seleção 1_14" />
+            <label for="piso_civil_elevado">Civil Elevado</label>
+          </div>
+          <div class="radio-card">
+            <input type="radio" name="piso" id="piso_civil_enterrado" value="Caixa de seleção 1_15" />
+            <label for="piso_civil_enterrado">Civil Enterrado</label>
+          </div>
+          <div class="radio-card">
+            <input type="radio" name="piso" id="piso_sem" value="Caixa de seleção 1_16" />
+            <label for="piso_sem">Sem Isolamento</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 3 -->
+    <div class="step-content" id="step-3">
+      <h2 class="step-title">Painéis e Portas</h2>
+      <p class="step-desc">Tipo de retenção térmica e especificações de entrada do frigorífico.</p>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Família de Painel</label>
+          <div class="radio-group">
+            <div class="radio-card">
+              <input type="radio" name="tipo_painel" id="painel_pir" value="Caixa de seleção 1_4" onchange="togglePainel()" />
+              <label for="painel_pir">PIR (Poliisocianurato)</label>
+            </div>
+            <div class="radio-card">
+              <input type="radio" name="tipo_painel" id="painel_eps" value="Caixa de seleção 1_2" onchange="togglePainel()" />
+              <label for="painel_eps">EPS (Isopor)</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group full" id="espessura_block" style="display: none;">
+            <label>Temperatura e Espessura (Baseadas na Família)</label>
+            <select id="f_espessura" class="form-group full"></select>
+        </div>
+
+        <div class="form-group full" style="margin-top: 16px;">
+          <label>Estilo de Portas e Batentes</label>
+          <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr);">
+            <div class="radio-card"><input type="radio" name="porta_tipo" id="p_gir_3" value="Caixa de seleção 1_17" /><label for="p_gir_3">Giratória - 3 Batentes</label></div>
+            <div class="radio-card"><input type="radio" name="porta_tipo" id="p_gir_4" value="Caixa de seleção 1_18" /><label for="p_gir_4">Giratória - 4 Batentes</label></div>
+            <div class="radio-card"><input type="radio" name="porta_tipo" id="p_cor_3" value="Caixa de seleção 1_19" /><label for="p_cor_3">Correr - 3 Batentes</label></div>
+            <div class="radio-card"><input type="radio" name="porta_tipo" id="p_cor_4" value="Caixa de seleção 1_20" /><label for="p_cor_4">Correr - 4 Batentes</label></div>
+          </div>
+        </div>
+
+        <div class="form-group full">
+            <label>Tamanho da Porta Padrão</label>
+            <div class="radio-group" style="display: grid; grid-template-columns: repeat(3, 1fr);">
+              <div class="radio-card"><input type="radio" name="porta_tam" id="t_g080" value="Caixa de seleção 2" /><label for="t_g080">Gir. 0,80x1,80</label></div>
+              <div class="radio-card"><input type="radio" name="porta_tam" id="t_g100" value="Caixa de seleção 2_2" /><label for="t_g100">Gir. 1,00x2,00</label></div>
+              <div class="radio-card"><input type="radio" name="porta_tam" id="t_c080" value="Caixa de seleção 2_3" /><label for="t_c080">Cor. 0,80x1,80</label></div>
+              <div class="radio-card"><input type="radio" name="porta_tam" id="t_c100" value="Caixa de seleção 2_4" /><label for="t_c100">Cor. 1,00x2,00</label></div>
+              <div class="radio-card"><input type="radio" name="porta_tam" id="t_c14021" value="Caixa de seleção 2_5" /><label for="t_c14021">Cor. 1,40x2,10</label></div>
+              <div class="radio-card"><input type="radio" name="porta_tam" id="t_c14024" value="Caixa de seleção 2_6" /><label for="t_c14024">Cor. 1,40x2,40</label></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Qtd. de Portas</label>
+            <input type="text" id="f_qtd_portas" placeholder="Ex: 1" />
+        </div>
+        <div class="form-group">
+            <label>Medida Especial (Se houver)</label>
+            <input type="text" id="f_medida_especial" placeholder="L x A Especial" />
+        </div>
+        <div class="form-group">
+            <label>Lado de Abertura</label>
+            <div class="radio-group">
+                <div class="radio-card"><input type="radio" name="porta_lado" id="pl_dir" value="Caixa de seleção 2_8" /><label for="pl_dir">Direito</label></div>
+                <div class="radio-card"><input type="radio" name="porta_lado" id="pl_esq" value="Caixa de seleção 2_7" /><label for="pl_esq">Esquerdo</label></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Frequência de Abertura (Qtd/Dia)</label>
+            <input type="text" id="f_aberturas" placeholder="Ex: Frequente / 25x" />
+        </div>
+        <div class="form-group full">
+            <label>Observação (Portas)</label>
+            <input type="text" id="f_obs_portas" placeholder="..." />
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 4 -->
+    <div class="step-content" id="step-4">
+      <h2 class="step-title">Carga Térmica (Produto)</h2>
+      <p class="step-desc">Determina o esforço necessário que os motores e placa fria farão.</p>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Qual(is) Produto(s) será(ão) Armazenado(s)?</label>
+          <input type="text" id="f_produto_armazenado" placeholder="Ex: Carne Bovina e Frango Congelado" />
+        </div>
+        <div class="form-group">
+          <label>Temperatura de Entrada (°C)</label>
+          <input type="text" id="f_temp_entrada" placeholder="Ex: +10°C" />
+        </div>
+        <div class="form-group">
+          <label>Temperatura Interna Final (°C)</label>
+          <input type="text" id="f_temp_final" placeholder="Ex: -18°C" />
+        </div>
+        <div class="form-group">
+            <label>Capacidade Total Armazenada (Kg)</label>
+            <input type="text" id="f_capacidade" placeholder="Ex: 3.500 Kg" />
+        </div>
+        <div class="form-group">
+            <label>Movimentação Diária (Kg/Dia)</label>
+            <input type="text" id="f_movimentacao" placeholder="Ex: 500 Kg" />
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 5 -->
+    <div class="step-content" id="step-5">
+      <h2 class="step-title">Equipamento & Elétrica</h2>
+      <p class="step-desc">Rede elétrica industrial e tempos operacionais do maquinário.</p>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Tensão Elétrica (Energia)</label>
+          <div class="radio-group">
+            <div class="radio-card"><input type="radio" name="tensao" id="ten_220m" value="Caixa de seleção 2_9" /><label for="ten_220m">220V Mono</label></div>
+            <div class="radio-card"><input type="radio" name="tensao" id="ten_220t" value="Caixa de seleção 2_10" /><label for="ten_220t">220V Tri</label></div>
+            <div class="radio-card"><input type="radio" name="tensao" id="ten_380t" value="Caixa de seleção 2_11" /><label for="ten_380t">380V Tri</label></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tempo de Processo (h) *Normalmente 24h</label>
+          <input type="text" id="f_tempo_processo" value="24" placeholder="Ex: 24" />
+        </div>
+        <div class="form-group">
+          <label>Distância UC x EVAP (Metros)</label>
+          <input type="text" id="f_distancia" placeholder="Ex: 15m" />
+        </div>
+
+        <div class="form-group full" style="margin-top: 24px;">
+            <label>Observações Gerais Finais do Projeto</label>
+            <input type="text" id="f_obs_final" placeholder="Avisos, peculiaridades ou observações adicionais..." />
+        </div>
+      </div>
+    </div>
+
+    <!-- BUTTON BOX -->
+    <div class="wizard-actions">
+      <button class="btn btn-prev" id="btn-prev" onclick="changeStep(-1)" style="visibility: hidden;">Voltar Passo</button>
+      <button class="btn btn-next" id="btn-next" onclick="changeStep(1)">Próximo Passo</button>
+      <button class="btn btn-submit" id="btn-submit" onclick="gerarPDF()" style="display: none;">Baixar Formulário Oficial (.PDF)</button>
+    </div>
+
+  </main>
+
+  <script>
+    let currentStep = 1;
+    const totalSteps = 5;
+
+    // Dict for dynamic combobox "Painel Espessura" mappings
+    const PIR_OPTIONS = [
+        { label: "PIR 50mm (0°C)", pdfValue: "Caixa de seleção 1" },
+        { label: "PIR 70mm (-10°C)", pdfValue: "Caixa de seleção 1_5" },
+        { label: "PIR 100mm (-20°C)", pdfValue: "Caixa de seleção 1_6" },
+        { label: "PIR 120mm (-24°C)", pdfValue: "Caixa de seleção 1_7" },
+        { label: "PIR 150mm (-30°C)", pdfValue: "Caixa de seleção 1_8" }
+    ];
+
+    const EPS_OPTIONS = [
+        { label: "EPS 50mm (+5°C)", pdfValue: "Caixa de seleção 1_3" },
+        { label: "EPS 100mm (-10°C)", pdfValue: "Caixa de seleção 1_9" },
+        { label: "EPS 150mm (-20°C)", pdfValue: "Caixa de seleção 1_10" },
+        { label: "EPS 200mm (-24°C)", pdfValue: "Caixa de seleção 1_11" },
+        { label: "EPS 250mm (-30°C)", pdfValue: "Caixa de seleção 1_12" }
+    ];
+
+    function togglePainel() {
+        const d_block = document.getElementById("espessura_block");
+        const selectBox = document.getElementById("f_espessura");
+        selectBox.innerHTML = "";
+        
+        let opts = [];
+        if (document.getElementById("painel_pir").checked) opts = PIR_OPTIONS;
+        else if (document.getElementById("painel_eps").checked) opts = EPS_OPTIONS;
+
+        if (opts.length > 0) {
+            d_block.style.display = 'flex';
+            opts.forEach(o => {
+                let opt = document.createElement("option");
+                opt.value = o.pdfValue;
+                opt.text = o.label;
+                selectBox.add(opt);
+            });
+        }
+    }
+
+    function updateView() {
+      // Hide all content
+      for (let i = 1; i <= totalSteps; i++) {
+        document.getElementById(`step-${i}`).classList.remove('active');
+        const ind = document.getElementById(`ind-${i}`);
+        ind.classList.remove('active');
+        ind.classList.remove('completed');
+        if (i < currentStep) ind.classList.add('completed');
+        if (i === currentStep) ind.classList.add('active');
+      }
+
+      // Show current
+      document.getElementById(`step-${currentStep}`).classList.add('active');
+
+      // Update buttons
+      const btnPrev = document.getElementById('btn-prev');
+      const btnNext = document.getElementById('btn-next');
+      const btnSubmit = document.getElementById('btn-submit');
+
+      btnPrev.style.visibility = (currentStep === 1) ? 'hidden' : 'visible';
+      
+      if (currentStep === totalSteps) {
+        btnNext.style.display = 'none';
+        btnSubmit.style.display = 'block';
+      } else {
+        btnNext.style.display = 'block';
+        btnSubmit.style.display = 'none';
+      }
+    }
+
+    function changeStep(dir) {
+      if ((currentStep === 1 && dir === -1) || (currentStep === totalSteps && dir === 1)) return;
+      currentStep += dir;
+      updateView();
+    }
+
+    async function gerarPDF() {
+        try {
+            document.getElementById('btn-submit').innerText = "Processando PDF...";
+            document.getElementById('btn-submit').style.opacity = '0.7';
+
+            // 1. Fetch the raw PDF from relative path
+            const pdfBytes = await fetch('./CheckList_Original.pdf').then(res => {
+                if(!res.ok) throw new Error("Aviso Mestre: Arquivo CheckList_Original.pdf não foi encontrado no root folder!");
+                return res.arrayBuffer();
+            });
+
+            // 2. Load the PDF with pdf-lib
+            const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+            const form = pdfDoc.getForm();
+
+            if (!form) {
+                alert("O PDF de origem não contém metadados de Formulário preenchíveis (AcroForm).");
+                return;
+            }
+
+            // 3. Helper to write safely
+            const writeTextField = (fieldName, id) => {
+                const element = document.getElementById(id);
+                if (element && element.value.trim() !== "") {
+                    try {
+                        const field = form.getTextField(fieldName);
+                        if (field) field.setText(element.value.trim());
+                    } catch(e) { console.warn("Missing Text field in PDF:", fieldName); }
+                }
+            };
+            const writeCheckBox = (fieldName) => {
+                if(fieldName) {
+                    try {
+                        const field = form.getCheckBox(fieldName);
+                        if (field) field.check();
+                    } catch(e) { console.warn("Missing Checkbox field:", fieldName); }
+                }
+            };
+
+            const writeRadioGroup = (htmlName) => {
+                const checkedEl = document.querySelector(`input[name="${htmlName}"]:checked`);
+                if (checkedEl) writeCheckBox(checkedEl.value);
+            };
+
+            // ---- MAP FIELDS ----
+            // Passo 1
+            writeTextField('Caixa de texto 1', 'f_cliente');
+            writeTextField('Caixa de texto 2_4', 'f_codigo');
+            writeTextField('Caixa de texto 1_2', 'f_contato');
+            writeTextField('Caixa de texto 1_3', 'f_vendedor');
+            writeTextField('Caixa de texto 1_4', 'f_pagamento');
+            
+            // Passo 2
+            writeTextField('Caixa de texto 2_5', 'f_comp');
+            writeTextField('Caixa de texto 2_6', 'f_larg');
+            writeTextField('Caixa de texto 2_7', 'f_alt');
+            writeRadioGroup('piso'); // checkboxes do Piso Painel/Civil...
+
+            // Passo 3
+            writeRadioGroup('tipo_painel'); // PIR / EPS
+            // The Dropdown for thickness
+            const espessuraDrop = document.getElementById("f_espessura");
+            if(espessuraDrop.value) writeCheckBox(espessuraDrop.value);
+            
+            writeRadioGroup('porta_tipo');
+            writeRadioGroup('porta_tam');
+            writeRadioGroup('porta_lado');
+            writeTextField('Caixa de texto 2_3', 'f_qtd_portas'); // Qtd portas
+            writeTextField('Caixa de texto 2_10', 'f_medida_especial');
+            writeTextField('Caixa de texto 2_8', 'f_aberturas'); // Frequencia abertura
+            writeTextField('Caixa de texto 2_9', 'f_obs_portas');
+
+            // Passo 4
+            writeTextField('Caixa de texto 2_11', 'f_produto_armazenado');
+            writeTextField('Caixa de texto 2_12', 'f_temp_entrada');
+            writeTextField('Caixa de texto 2_13', 'f_temp_final');
+            writeTextField('Caixa de texto 2_16', 'f_capacidade');
+            writeTextField('Caixa de texto 2_15', 'f_movimentacao');
+
+            // Passo 5
+            writeRadioGroup('tensao');
+            writeTextField('Caixa de texto 2', 'f_tempo_processo');
+            writeTextField('Caixa de texto 2_2', 'f_distancia');
+            writeTextField('Caixa de texto 2_14', 'f_obs_final');
+
+            form.flatten(); // Evita que possa ser quebrado por editores baratos, fixa o texto como imagem vetorizada
+
+            const pdfBytesFilled = await pdfDoc.save();
+            const blob = new Blob([pdfBytesFilled], { type: "application/pdf" });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            
+            let clientStr = document.getElementById('f_cliente').value.substring(0, 15).replace(/\s/g, "_") || "Checklist";
+            link.download = `Câmara_Fria_${clientStr}.pdf`;
+            link.click();
+
+            document.getElementById('btn-submit').innerText = "Formulário PDF Baixado! ✅";
+            document.getElementById('btn-submit').style.background = "#059669";
+            
+            setTimeout(() => {
+                document.getElementById('btn-submit').innerText = "Baixar Novo PDF";
+                document.getElementById('btn-submit').style.opacity = '1';
+            }, 3000);
+
+        } catch (error) {
+            console.error(error);
+            alert("Erro catastrófico ao gerar o PDF. Verifique se o CheckList_Original.pdf existe. Erro: " + error.message);
+            document.getElementById('btn-submit').innerText = "Tentar Novamente";
+            document.getElementById('btn-submit').style.opacity = '1';
+        }
+    }
+  </script>
+</body>
+</html>
