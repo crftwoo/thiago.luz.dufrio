@@ -374,6 +374,7 @@
       <div class="step-indicator" id="ind-7">7</div>
       <div class="step-indicator" id="ind-8">8</div>
       <div class="step-indicator" id="ind-9">9</div>
+      <div class="step-indicator" id="ind-10">10</div>
     </div>
 
     <!-- STAGE 1 (DADOS COMERCIAIS) -->
@@ -838,8 +839,30 @@
         </div>
     </div>
 
-    <!-- STAGE 9 -->
+    <!-- STAGE 9 - Distância UC x EVAP -->
     <div class="step-content" id="step-9">
+        <h2 class="step-title">Distância UC × EVAP</h2>
+        <p class="step-desc">Qual é a distância entre a evaporadora e a unidade condensadora?</p>
+
+        <div class="form-grid">
+            <div class="form-group full">
+                <label>DIST. UC × EVAP</label>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <input type="number" id="f_dist_uc_evap" min="1" placeholder="Ex: 10"
+                        oninput="onDistInput()"
+                        style="max-width: 200px; font-size: 24px; font-weight: 700; text-align: center;"
+                        onkeydown="if(event.key==='ArrowUp'||event.key==='ArrowDown') event.preventDefault()">
+                    <span id="f_dist_m_display" style="font-size: 26px; font-weight: 800; color: var(--dufrio-azul); display: none;">m</span>
+                </div>
+                <div style="font-size: 11px; margin-top: 10px; color: #64748b; line-height: 1.6;">
+                    Distância em metros entre a unidade evaporadora (dentro da câmara) e a unidade condensadora (parte externa).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAGE 10 -->
+    <div class="step-content" id="step-10">
         <h2 class="step-title">Resumo e Envio</h2>
         <p class="step-desc">Aguardando conclusão das etapas anteriores.</p>
     </div>
@@ -855,7 +878,7 @@
 
   <script>
     let currentStep = 1;
-    const totalSteps = 9;
+    const totalSteps = 10;
 
     // Typeform Logic Step 1
     function checkQ1() {
@@ -1066,6 +1089,7 @@
             if(tempo && movDesc) movDesc.textContent = `Quantos kg serão movimentados durante as ${tempo}h de processo?`;
             validaPasso8();
         }
+        else if(currentStep === 9) validaPasso9();
         else btnNext.disabled = false;
       }
     }
@@ -1325,6 +1349,18 @@
         }
     }
 
+    function onDistInput() {
+        const v = document.getElementById('f_dist_uc_evap').value.trim();
+        document.getElementById('f_dist_m_display').style.display = v ? 'inline' : 'none';
+        validaPasso9();
+    }
+
+    function validaPasso9() {
+        const v = document.getElementById('f_dist_uc_evap').value.trim();
+        const nextBtn = document.getElementById('btn-next');
+        if(currentStep === 9) nextBtn.disabled = (v === '' || parseInt(v) < 1);
+    }
+
     async function gerarPDF() {
         try {
             document.getElementById('btn-submit').innerText = "Processando PDF...";
@@ -1507,6 +1543,11 @@
             const fMov = form.getTextField('Caixa de texto 2_18');
             const movVal = document.getElementById('f_movimentacao').value.trim();
             if(fMov && movVal) fMov.setText(movVal + ' kg');
+
+            // Distancia UC x EVAP (Caixa de texto 2_19)
+            const fDist = form.getTextField('Caixa de texto 2_19');
+            const distVal = document.getElementById('f_dist_uc_evap').value.trim();
+            if(fDist && distVal) fDist.setText(distVal + 'm');
 
             form.flatten(); // Protege o documento
 
