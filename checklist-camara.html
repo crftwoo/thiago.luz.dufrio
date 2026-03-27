@@ -593,14 +593,9 @@
                 <div class="form-group full">
                     <label>QTD. DE ABERTURA PORTA</label>
                     <input type="text" id="f_qtd_abertura" placeholder="Ex: Frequente / 15x ao Dia" oninput="validaPasso3()" style="text-transform: uppercase;">
-                    <div style="font-size: 11px; margin-top: 8px; color: #64748b;">
-                        <b>Frequente:</b> acima 20x Dia / <b>Moderado:</b> 10x Dia / <b>Raramente:</b> abaixo 5x Dia.
+                    <div style="font-size: 11px; margin-top: 8px; color: #64748b; line-height: 1.4;">
+                        <b>DICA:</b> Raramente - abaixo 5x Dia / Moderado - 10x Dia / Frequente - acima 20x Dia
                     </div>
-                </div>
-
-                <div class="form-group full">
-                    <label>OBSERVAÇÕES ADICIONAIS DAS PORTAS</label>
-                    <input type="text" id="f_obs_portas" placeholder="Detalhes extras, posicionamento, etc..." oninput="validaPasso3()" style="text-transform: uppercase;">
                 </div>
             </div>
         </div>
@@ -1085,17 +1080,11 @@
             const fQtdAb = form.getTextField('Caixa de texto 2_11');
             if(fQtdAb) fQtdAb.setText(document.getElementById('f_qtd_abertura').value.toUpperCase());
 
-            // Escreve o resumo em OBS Finais (Caixa de texto 2_14) e junta com OBS customizadas se existirem
-            let obsTextFinal = resumoPortas;
-            const fObsCustom = document.getElementById('f_obs_portas').value.trim();
-            if(fObsCustom !== "") {
-                obsTextFinal += "\nOBS ADICIONAL: " + fObsCustom;
-            }
-
-            if(obsTextFinal !== "") {
+            // Escreve apenas o resumo das portas em OBS Finais (Caixa de texto 2_14)
+            if(resumoPortas !== "") {
                 const fieldObs = form.getTextField('Caixa de texto 2_14');
                 if(fieldObs) {
-                    fieldObs.setText(obsTextFinal.toUpperCase());
+                    fieldObs.setText(resumoPortas.toUpperCase());
                 }
             }
 
