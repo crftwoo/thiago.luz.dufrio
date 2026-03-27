@@ -1401,221 +1401,133 @@
             const form = pdfDoc.getForm();
 
             if (!form) {
-                alert("O PDF de origem não contém metadados de Formulário preenchíveis (AcroForm).");
+                alert("O PDF de origem não contém formulário preenchível.");
                 return;
             }
 
-            // 3. Helper to write safely with UPPERCASE force (except dimensions with 'm')
-            const writeTextField = (fieldName, id) => {
-                const element = document.getElementById(id);
-                if (element && element.value.trim() !== "") {
-                    try {
-                        const field = form.getTextField(fieldName);
-                        if (field) {
-                            let val = element.value.trim();
-                            // Se for campo de medida, mantemos o 'm' minúsculo
-                            if (id === 'f_comp' || id === 'f_larg' || id === 'f_alt') {
-                                field.setText(val);
-                            } else {
-                                field.setText(val.toUpperCase());
-                            }
-                        }
-                    } catch(e) { console.warn("Missing Text field in PDF:", fieldName); }
-                }
+            // --- HELPER SEGURO PARA NÃO QUEBRAR O SCRIPT ---
+            const safeGetField = (name) => {
+                try { return form.getTextField(name); } catch(e) { return null; }
             };
-            const writeCheckBox = (fieldName) => {
-                if(fieldName) {
-                    try {
-                        const field = form.getCheckBox(fieldName);
-                        if (field) field.check();
-                    } catch(e) { console.warn("Missing Checkbox field:", fieldName); }
-                }
+            const safeGetCheck = (name) => {
+                try { return form.getCheckBox(name); } catch(e) { return null; }
             };
 
-            // 6. Preenchimento de Checkboxes (exemplo)
-            const fillCheckbox = (fieldName, id) => {
-                const element = document.getElementById(id);
-                if (element && element.checked) {
-                    try {
-                        const checkbox = form.getCheckBox(fieldName);
-                        if (checkbox) checkbox.check();
-                    } catch(e) { console.warn("Missing Checkbox:", fieldName); }
+            const writeText = (fieldName, value) => {
+                const f = safeGetField(fieldName);
+                if(f && value !== undefined && value !== null) {
+                    f.setText(value.toString().toUpperCase());
                 }
             };
-            
-            // 7. Preenchimento dos Campos de Painel e Espessura
-            fillCheckbox('Caixa de seleção 1_17', 'p_pir');
-            fillCheckbox('Caixa de seleção 1_18', 'p_eps');
-            
-            // 8. Preenchimento do Piso
-            fillCheckbox('Caixa de seleção 1_13', 'floor_painel');
-            fillCheckbox('Caixa de seleção 1_14', 'floor_elevado');
-            fillCheckbox('Caixa de seleção 1_15', 'floor_enterrado');
-            fillCheckbox('Caixa de seleção 1_16', 'floor_sem');
-            
-            // PIR Thicknesses
-            fillCheckbox('Caixa de seleção 1_19', 'pir_50');
-            fillCheckbox('Caixa de seleção 1_20', 'pir_70');
-            fillCheckbox('Caixa de seleção 1_21', 'pir_100');
-            fillCheckbox('Caixa de seleção 1_22', 'pir_120');
-            fillCheckbox('Caixa de seleção 1_23', 'pir_150');
-            
-            // EPS Thicknesses
-            fillCheckbox('Caixa de seleção 1_24', 'eps_50');
-            fillCheckbox('Caixa de seleção 1_25', 'eps_100');
-            fillCheckbox('Caixa de seleção 1_26', 'eps_150');
-            fillCheckbox('Caixa de seleção 1_27', 'eps_200');
-            fillCheckbox('Caixa de seleção 1_28', 'eps_250');
-
-            const writeRadioGroup = (htmlName) => {
-                const checkedEl = document.querySelector(`input[name="${htmlName}"]:checked`);
-                if (checkedEl) writeCheckBox(checkedEl.value);
+            const check = (fieldName) => {
+                const c = safeGetCheck(fieldName);
+                if(c) c.check();
             };
 
-            // ---- MAP FIELDS ----
+            // --- PREENCHIMENTO ---
+
             // Passo 1
-            writeTextField('Caixa de texto 1', 'f_cliente');
-            writeTextField('Caixa de texto 2_4', 'f_codigo');
-            writeTextField('Caixa de texto 1_2', 'f_contato');
-            writeTextField('Caixa de texto 1_3', 'f_vendedor');
-            
-            // Escreve string montada de Pagamento
-            const pgtoString = getPagamentoString();
-            if(pgtoString !== "") {
-                const fPgto = form.getTextField('Caixa de texto 1_4');
-                if(fPgto) fPgto.setText(pgtoString);
-            }
-            
+            writeText('Caixa de texto 1', document.getElementById('f_cliente').value);
+            writeText('Caixa de texto 1_2', document.getElementById('f_obra').value);
+            writeText('Caixa de texto 1_4', getPagamentoString());
+            writeText('Caixa de texto 1_3', document.getElementById('f_vendedor').value);
+
             // Passo 2
-            writeTextField('Caixa de texto 2_5', 'f_comp');
-            writeTextField('Caixa de texto 2_6', 'f_larg');
-            writeTextField('Caixa de texto 2_7', 'f_alt');
+            const comp = document.getElementById('f_comp').value;
+            const larg = document.getElementById('f_larg').value;
+            const alt = document.getElementById('f_alt').value;
+            if(comp) writeText('Caixa de texto 2_5', comp + "M");
+            if(larg) writeText('Caixa de texto 2_6', larg + "M");
+            if(alt)  writeText('Caixa de texto 2_7', alt + "M");
 
             // --- PASSO 3 - PORTAS ---
             const nPortas = parseInt(document.getElementById('f_qtd_portas').value) || 1;
-            const fQtdPortas = form.getTextField('Caixa de texto 2_3');
-            if(fQtdPortas) fQtdPortas.setText(nPortas.toString());
+            writeText('Caixa de texto 2_3', nPortas);
 
             let resumoPortas = "";
             for(let i=1; i <= nPortas; i++) {
                 const d = doorData[i];
                 if(!d) continue;
-
                 resumoPortas += `PORTA ${i}: ${d.tipo} ${d.bat} | ${d.tam} | LADO: ${d.lado.toUpperCase()}\n`;
 
-                // Carimba a PRIMEIRA porta nos campos
                 if(i === 1) {
-                    if(d.tipo === "Giratória" && d.bat.includes("3")) writeCheckBox('Caixa de seleção 1_17');
-                    if(d.tipo === "Giratória" && d.bat.includes("4")) writeCheckBox('Caixa de seleção 1_18');
-                    if(d.tipo === "Correr" && d.bat.includes("3")) writeCheckBox('Caixa de seleção 1_19');
-                    if(d.tipo === "Correr" && d.bat.includes("4")) writeCheckBox('Caixa de seleção 1_20');
+                    if(d.tipo === "Giratória" && d.bat.includes("3")) check('Caixa de seleção 1_17');
+                    if(d.tipo === "Giratória" && d.bat.includes("4")) check('Caixa de seleção 1_18');
+                    if(d.tipo === "Correr" && d.bat.includes("3")) check('Caixa de seleção 1_19');
+                    if(d.tipo === "Correr" && d.bat.includes("4")) check('Caixa de seleção 1_20');
 
                     if(d.tamId.startsWith('dt_8018')) {
-                        if(d.tipo === "Giratória") writeCheckBox('Caixa de seleção 2');
-                        else writeCheckBox('Caixa de seleção 2_3');
+                        if(d.tipo === "Giratória") check('Caixa de seleção 2');
+                        else check('Caixa de seleção 2_3');
                     }
                     if(d.tamId.startsWith('dt_1020')) {
-                        if(d.tipo === "Giratória") writeCheckBox('Caixa de seleção 2_2');
-                        else writeCheckBox('Caixa de seleção 2_4');
+                        if(d.tipo === "Giratória") check('Caixa de seleção 2_2');
+                        else check('Caixa de seleção 2_4');
                     }
-                    if(d.tamId.startsWith('dt_1421')) writeCheckBox('Caixa de seleção 2_5');
-                    if(d.tamId.startsWith('dt_1424')) writeCheckBox('Caixa de seleção 2_6');
+                    if(d.tamId.startsWith('dt_1421')) check('Caixa de seleção 2_5');
+                    if(d.tamId.startsWith('dt_1424')) check('Caixa de seleção 2_6');
+                    
                     if(d.tam.startsWith('ESP')) {
-                        const fieldEsp = form.getTextField('Caixa de texto 2_10');
-                        if(fieldEsp) fieldEsp.setText(d.tam.replace('ESP: ','').toUpperCase());
+                        writeText('Caixa de texto 2_10', d.tam.replace('ESP: ',''));
                     }
-                    if(d.lado === "Direito") writeCheckBox('Caixa de seleção 2_8');
-                    else writeCheckBox('Caixa de seleção 2_7');
+                    if(d.lado === "Direito") check('Caixa de seleção 2_8');
+                    else check('Caixa de seleção 2_7');
                 }
             }
 
-            // Escreve Qtd Abertura (Caixa de texto 2_11)
-            const fQtdAb = form.getTextField('Caixa de texto 2_11');
-            if(fQtdAb) fQtdAb.setText(document.getElementById('f_qtd_abertura').value.toUpperCase());
-
-            // --- OBSERVAÇÕES E LISTA DE PORTAS (Caixa de texto 2_14) ---
-            const userObs = document.getElementById('f_observacoes').value.trim();
-            const fieldObs = form.getTextField('Caixa de texto 2_14');
+            // Passo 4 em diante
+            writeText('Caixa de texto 2_11', document.getElementById('f_qtd_abertura').value);
+            writeText('Caixa de texto 2_12', document.getElementById('f_produto').value);
+            writeText('Caixa de texto 2_13', document.getElementById('f_temp_entrada').value);
+            writeText('Caixa de texto 2_15', document.getElementById('f_temp_final').value);
             
-            if(fieldObs) {
-                let finalObs = "";
-                if(nPortas > 1) {
-                    finalObs = ">>> LISTA DE PORTAS <<<\n" + resumoPortas + "\n>>> OBSERVAÇÕES <<<\n" + userObs;
-                } else {
-                    finalObs = userObs;
-                }
-                fieldObs.setText(finalObs.toUpperCase());
+            const tempoVal = document.getElementById('f_tempo_processo_num').value;
+            writeText('Caixa de texto 2_16', tempoVal ? tempoVal + 'H' : '');
+
+            // --- CONSOLIDAÇÃO FINAL NO CAMPO DE OBS (2_14) ---
+            const capacVal = document.getElementById('f_capac_arm').value;
+            const movVal = document.getElementById('f_movimentacao').value;
+            const distVal = document.getElementById('f_dist_uc_evap').value;
+            const userObs = document.getElementById('f_observacoes').value;
+
+            let consolidado = "";
+            if (nPortas > 1) {
+                consolidado += ">>> RELATÓRIO DE PORTAS <<<\n" + resumoPortas + "\n";
             }
 
-            // Produto Armazenado (Caixa de texto 2_12)
-            const fProduto = form.getTextField('Caixa de texto 2_12');
-            if(fProduto) fProduto.setText(document.getElementById('f_produto').value.toUpperCase());
+            consolidado += ">>> INFORMAÇÕES TÉCNICAS <<<\n";
+            if(capacVal) consolidado += `CAPACIDADE TOTAL: ${capacVal} KG\n`;
+            if(movVal)   consolidado += `MOVIMENTAÇÃO DIÁRIA: ${movVal} KG\n`;
+            if(distVal)  consolidado += `DISTÂNCIA UC/EVAP: ${distVal} METROS\n`;
 
-            // Temperatura de Entrada (Caixa de texto 2_13)
-            const fTempIn = form.getTextField('Caixa de texto 2_13');
-            if(fTempIn) fTempIn.setText(document.getElementById('f_temp_entrada').value.toUpperCase());
-
-            // Temperatura Final (Caixa de texto 2_15)
-            const fTempFinal = form.getTextField('Caixa de texto 2_15');
-            const tFinalVal = document.getElementById('f_temp_final').value.toUpperCase();
-            if(fTempFinal && tFinalVal) fTempFinal.setText(tFinalVal);
-
-            // Tempo de Processo (Caixa de texto 2_16)
-            const fTempo = form.getTextField('Caixa de texto 2_16');
-            const tempoVal = document.getElementById('f_tempo_processo_num').value.trim();
-            if(fTempo && tempoVal) fTempo.setText(tempoVal + 'h');
-
-            // 4. Consolidar tudo o que não tem campo específico no campo de OBS (2_14)
-            const fObs = form.getTextField('Caixa de texto 2_14');
-            if (fObs) {
-                const capacVal = document.getElementById('f_capac_arm').value.trim();
-                const movVal = document.getElementById('f_movimentacao').value.trim();
-                const distVal = document.getElementById('f_dist_uc_evap').value.trim();
-                const userObs = document.getElementById('f_observacoes').value.toUpperCase();
-
-                let consolidado = "";
-                
-                // Portas (se múltiplas)
-                if (parseInt(document.getElementById('f_qtd_portas').value) > 1) {
-                    consolidado += ">>> LISTA DE PORTAS <<<\n" + resumoPortas + "\n\n";
-                }
-
-                // Dados Técnicos Extras
-                consolidado += ">>> DADOS PROCESSO <<<\n";
-                if(capacVal) consolidado += `CAPACIDADE TOTAL: ${capacVal} KG\n`;
-                if(movVal) consolidado += `MOVIMENTACAO DIARIA: ${movVal} KG\n`;
-                if(distVal) consolidado += `DISTANCIA UC/EVAP: ${distVal} METROS\n`;
-                
-                // Observações do Usuário
-                if(userObs) {
-                    consolidado += "\n>>> ANOTACOES GERAIS <<<\n" + userObs;
-                }
-
-                fObs.setText(consolidado);
+            if(userObs) {
+                consolidado += "\n>>> ANOTAÇÕES GERAIS <<<\n" + userObs;
             }
 
-            form.flatten(); // Protege o documento
+            writeText('Caixa de texto 2_14', consolidado);
 
+            form.flatten();
             const pdfBytesFilled = await pdfDoc.save();
             const blob = new Blob([pdfBytesFilled], { type: "application/pdf" });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             
-            let clientStr = document.getElementById('f_cliente').value.substring(0, 15).replace(/\s/g, "_") || "Checklist";
+            const clientStr = document.getElementById('f_cliente').value.substring(0, 15).replace(/\s/g, "_") || "Checklist";
             link.download = `Câmara_Fria_${clientStr}.pdf`;
             link.click();
 
-            document.getElementById('btn-submit').innerText = "Formulário PDF Baixado! ✅";
+            document.getElementById('btn-submit').innerText = "PDF Gerado com Sucesso! ✅";
             document.getElementById('btn-submit').style.background = "#059669";
             
             setTimeout(() => {
                 document.getElementById('btn-submit').innerText = "Baixar Novo PDF";
                 document.getElementById('btn-submit').style.opacity = '1';
+                document.getElementById('btn-submit').style.background = "var(--dufrio-azul)";
             }, 3000);
 
         } catch (error) {
             console.error(error);
-            alert("Erro catastrófico ao gerar o PDF. Verifique se o CheckList_Original.pdf existe. Erro: " + error.message);
+            alert("Erro ao gerar o PDF: " + error.message);
             document.getElementById('btn-submit').innerText = "Tentar Novamente";
             document.getElementById('btn-submit').style.opacity = '1';
         }
