@@ -683,8 +683,104 @@
         </div>
     </div>
 
-    <!-- STAGE 6 -->
+    <!-- STAGE 6 - Temperatura Final -->
     <div class="step-content" id="step-6">
+        <h2 class="step-title">Temperatura Final</h2>
+        <p class="step-desc" id="step6-desc">Informe a temperatura interna que a câmara deve atingir.</p>
+
+        <div class="form-grid">
+            <div class="form-group full">
+                <label id="step6-label">TEMP. INTERNA FINAL (°C)</label>
+                <input type="text" id="f_temp_final" placeholder="Ex: 0°C, -18°C, +2°C" oninput="validaPasso6()" style="text-transform: uppercase;">
+                <div style="font-size: 11px; margin-top: 8px; color: #64748b; line-height: 1.4;">
+                    Temperatura que a câmara deve manter internamente. Fique atento ao ponto de congelamento do produto!
+                </div>
+            </div>
+        </div>
+
+        <!-- Atalhos rápidos -->
+        <div style="margin-top: 16px;">
+            <div style="font-size: 11px; font-weight: 800; color: var(--dufrio-azul); letter-spacing: 0.5px; margin-bottom: 6px;">ATALHOS RÁPIDOS — RESFRIADO:</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+                <button type="button" onclick="setTempFinal('0°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🥩 Carne/Peixe 0°C</button>
+                <button type="button" onclick="setTempFinal('+2°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🍞 Massa/Pão +2°C</button>
+                <button type="button" onclick="setTempFinal('+2°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🥬 Fruta +2°C</button>
+                <button type="button" onclick="setTempFinal('+2°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🥛 Laticínios +2°C</button>
+                <button type="button" onclick="setTempFinal('-2°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🍺 Cerveja -2°C</button>
+                <button type="button" onclick="setTempFinal('0°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🍺 Bebidas 0°C</button>
+                <button type="button" onclick="setTempFinal('+6°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🥦 Vegetais +6°C</button>
+            </div>
+            <div style="font-size: 11px; font-weight: 800; color: #0369a1; letter-spacing: 0.5px; margin-bottom: 6px;">ATALHOS RÁPIDOS — CONGELADO:</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <button type="button" onclick="setTempFinal('-18°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #93c5fd; background:#eff6ff; color:#1d4ed8; cursor:pointer; font-weight:600;">🧊 Gelo -18°C</button>
+                <button type="button" onclick="setTempFinal('-24°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #93c5fd; background:#eff6ff; color:#1d4ed8; cursor:pointer; font-weight:600;">🍦 Sorvete -24°C</button>
+                <button type="button" onclick="setTempFinal('-18°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #93c5fd; background:#eff6ff; color:#1d4ed8; cursor:pointer; font-weight:600;">🍞 Massa/Pão -18°C</button>
+                <button type="button" onclick="setTempFinal('-18°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #93c5fd; background:#eff6ff; color:#1d4ed8; cursor:pointer; font-weight:600;">🥩 Carne/Peixe -18°C</button>
+                <button type="button" onclick="setTempFinal('-10°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #93c5fd; background:#eff6ff; color:#1d4ed8; cursor:pointer; font-weight:600;">🥬 Fruta -10°C</button>
+            </div>
+        </div>
+
+        <!-- Tabela de referência -->
+        <div style="margin-top: 20px; font-size: 11px; color: #64748b;">
+            <div style="font-weight: 800; color: var(--dufrio-azul); margin-bottom: 8px; letter-spacing: 0.5px;">📋 TABELA DE REFERÊNCIA — TEMP. INTERNA FINAL:</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <!-- Coluna 1: Resfriado/Congelado -->
+                <div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <thead>
+                            <tr style="background: #e0f2fe; color: #0369a1; font-weight: 800;">
+                                <td style="padding: 6px 10px; border: 1px solid #bae6fd;">PRODUTO</td>
+                                <td style="padding: 6px 10px; border: 1px solid #bae6fd; text-align:center;">RESFRIADO</td>
+                                <td style="padding: 6px 10px; border: 1px solid #bae6fd; text-align:center;">CONGELADO</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Gelo</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-18°C</td></tr>
+                            <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Sorvete</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-24°C</td></tr>
+                            <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Massa/Pão</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+2°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-18°C</td></tr>
+                            <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Carne/Peixe</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">0°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-18°C</td></tr>
+                            <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Fruta</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+2°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-10°C</td></tr>
+                            <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Cerveja</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-2,0°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                            <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Bebidas</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">0°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                            <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Laticínios</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+2°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                            <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Vegetais</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+6°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Coluna 2: Ponto de congelamento -->
+                <div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <thead>
+                            <tr style="background: #fef3c7; color: #92400e; font-weight: 800;">
+                                <td colspan="2" style="padding: 6px 10px; border: 1px solid #fde68a; text-align:center;">⚠️ PONTO DE CONGELAMENTO</td>
+                            </tr>
+                            <tr style="background: #fffbeb; color: #92400e; font-weight: 700; font-size: 10px;">
+                                <td style="padding: 5px 10px; border: 1px solid #fde68a;">PRODUTO</td>
+                                <td style="padding: 5px 10px; border: 1px solid #fde68a; text-align:center;">TEMP. CRÍTICA</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Gelo</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">0°C</td></tr>
+                            <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Massa/Pão</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">0°C</td></tr>
+                            <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Carne</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-2,2°C</td></tr>
+                            <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Peixe</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-2,2°C</td></tr>
+                            <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Sorvete</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-5,5°C</td></tr>
+                            <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Vegetais</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-0,5°C</td></tr>
+                            <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Frutas</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-1°C</td></tr>
+                            <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Laticínios</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-6,5°C</td></tr>
+                            <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Bebidas</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-2,2°C</td></tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 8px; font-size: 10px; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px;">
+                        ⚠️ <b>ATENÇÃO:</b> A temp. final da câmara não pode atingir ou ultrapassar o ponto de congelamento do produto para câmaras de resfriamento.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAGE 7 -->
+    <div class="step-content" id="step-7">
         <h2 class="step-title">Resumo e Envio</h2>
         <p class="step-desc">Aguardando conclusão das etapas anteriores.</p>
     </div>
@@ -700,7 +796,7 @@
 
   <script>
     let currentStep = 1;
-    const totalSteps = 6;
+    const totalSteps = 7;
 
     // Typeform Logic Step 1
     function checkQ1() {
@@ -889,6 +985,18 @@
         }
         else if(currentStep === 4) validaPasso4();
         else if(currentStep === 5) validaPasso5();
+        else if(currentStep === 6) {
+            // Atualiza descrição dinâmica com a temp de entrada
+            const tIn = document.getElementById('f_temp_entrada').value.trim();
+            const prod = document.getElementById('f_produto').value.trim();
+            const lb = document.getElementById('step6-label');
+            const ds = document.getElementById('step6-desc');
+            if(tIn) {
+                if(lb) lb.textContent = `TEMP. INTERNA FINAL: entra ${tIn ? 'a ' + tIn : ''} → deve atingir ___°C`;
+                if(ds) ds.textContent = `O produto ${prod ? '"' + prod + '"' : ''} entra na câmara a ${tIn} — informe a temperatura final que deve ser atingida.`;
+            }
+            validaPasso6();
+        }
         else btnNext.disabled = false;
       }
     }
@@ -1097,6 +1205,17 @@
         validaPasso5();
     }
 
+    function validaPasso6() {
+        const v = document.getElementById('f_temp_final').value.trim();
+        const nextBtn = document.getElementById('btn-next');
+        if(currentStep === 6) nextBtn.disabled = v.length < 2;
+    }
+
+    function setTempFinal(val) {
+        document.getElementById('f_temp_final').value = val;
+        validaPasso6();
+    }
+
     async function gerarPDF() {
         try {
             document.getElementById('btn-submit').innerText = "Processando PDF...";
@@ -1260,6 +1379,10 @@
             // Temperatura de Entrada (Caixa de texto 2_13)
             const fTempIn = form.getTextField('Caixa de texto 2_13');
             if(fTempIn) fTempIn.setText(document.getElementById('f_temp_entrada').value.toUpperCase());
+
+            // Temperatura Final (Caixa de texto 2_15)
+            const fTempFinal = form.getTextField('Caixa de texto 2_15');
+            if(fTempFinal) fTempFinal.setText(document.getElementById('f_temp_final').value.toUpperCase());
 
             form.flatten(); // Protege o documento
 
