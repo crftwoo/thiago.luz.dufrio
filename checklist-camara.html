@@ -588,13 +588,16 @@
             <!-- Dinâmico via JS -->
         </div>
 
-        <div style="border-top: 1px dashed #cbd5e1; padding-top: 24px; margin-top: 24px;">
+        <div id="bloco_abertura" style="display:none; border-top: 1px dashed #cbd5e1; padding-top: 24px; margin-top: 24px;">
             <div class="form-grid">
                 <div class="form-group full">
-                    <label>QTD. DE ABERTURA PORTA</label>
+                    <label>COM QUE FREQUÊNCIA A PORTA DESTA CÂMARA É ABERTA AO LONGO DO DIA?</label>
                     <input type="text" id="f_qtd_abertura" placeholder="Ex: Frequente / 15x ao Dia" oninput="validaPasso3()" style="text-transform: uppercase;">
-                    <div style="font-size: 11px; margin-top: 8px; color: #64748b; line-height: 1.4;">
-                        <b>DICA:</b> Raramente - abaixo 5x Dia / Moderado - 10x Dia / Frequente - acima 20x Dia
+                    <div style="font-size: 11px; margin-top: 8px; color: #64748b; line-height: 1.6;">
+                        <b>DICA:</b><br>
+                        • <b>RARAMENTE:</b> Abaixo de 5x ao dia (estoque de longo prazo).<br>
+                        • <b>MODERADO:</b> Aproximadamente 10x ao dia (uso regular).<br>
+                        • <b>FREQUENTE:</b> Acima de 20x ao dia (câmara de aceleração / alto giro).
                     </div>
                 </div>
             </div>
@@ -815,68 +818,85 @@
       }
     }
 
+    let doorData = {}; // Guarda os dados confirmados de cada porta
+
     // Typeform Logic Step 3
     function renderDoorRows() {
         const container = document.getElementById('door-list-container');
         let n = parseInt(document.getElementById('f_qtd_portas').value) || 1;
         if (n > 10) n = 10;
         
+        doorData = {};
         container.innerHTML = "";
+        document.getElementById('bloco_abertura').style.display = 'none';
 
         for(let i=1; i <= n; i++) {
             const row = document.createElement('div');
+            row.id = `door-entry-${i}`;
             row.className = 'door-entry';
             row.innerHTML = `
                 <div class="door-count-badge">PORTA ${i}</div>
-                <div class="form-grid">
-                    <div class="form-group full">
-                        <label>TIPO DE PORTA</label>
-                        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_gir_${i}" value="Giratória" onchange="validaPasso3()"><label for="d_gir_${i}">GIRATÓRIA</label></div>
-                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_cor_${i}" value="Correr" onchange="validaPasso3()"><label for="d_cor_${i}">CORRER</label></div>
+                <div class="door-form" id="door-form-${i}">
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label>TIPO DE PORTA</label>
+                            <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                                 <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_gir_${i}" value="Giratória" onchange="checkPortaReady(${i})"><label for="d_gir_${i}">GIRATÓRIA</label></div>
+                                 <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_cor_${i}" value="Correr" onchange="checkPortaReady(${i})"><label for="d_cor_${i}">CORRER</label></div>
+                            </div>
+                            <div style="font-size: 11px; margin-top: 8px; color: #64748b; line-height: 1.4;">
+                                • <b>GIRATÓRIA:</b> Menor custo, porém requer maior espaço de abertura.<br>
+                                • <b>CORRER:</b> Maior custo, porém requer menor espaço de abertura.
+                            </div>
                         </div>
-                        <div style="font-size: 11px; margin-top: 8px; color: #64748b; line-height: 1.4;">
-                            • <b>GIRATÓRIA:</b> Menor custo, porém requer maior espaço de abertura.<br>
-                            • <b>CORRER:</b> Maior custo, porém requer menor espaço abertura.
+
+                        <div class="form-group full">
+                            <label>QUANTIDADE DE BATENTES</label>
+                            <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                                 <div class="radio-card"><input type="radio" name="d_bat_${i}" id="d_bat3_${i}" value="3 Bat." onchange="checkPortaReady(${i})"><label for="d_bat3_${i}">3 BATENTES</label></div>
+                                 <div class="radio-card"><input type="radio" name="d_bat_${i}" id="d_bat4_${i}" value="4 Bat." onchange="checkPortaReady(${i})"><label for="d_bat4_${i}">4 BATENTES</label></div>
+                            </div>
+                            <div style="font-size: 11px; margin-top: 8px; color: #64748b; line-height: 1.4;">
+                                • <b>3 BATENTES:</b> Piso nivelado.<br>
+                                • <b>4 BATENTES:</b> Piso elevado e sem rampa.
+                            </div>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>TAMANHO</label>
+                            <div class="radio-group grid-3" style="font-size: 11px;">
+                                <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_8018_${i}" value="0.80x1.80" onchange="toggleMedidaEsp(${i})"><label for="dt_8018_${i}">0.80 X 1.80</label></div>
+                                <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_1020_${i}" value="1.00x2.00" onchange="toggleMedidaEsp(${i})"><label for="dt_1020_${i}">1.00 X 2.00</label></div>
+                                <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_1421_${i}" value="1.40x2.10" onchange="toggleMedidaEsp(${i})"><label for="dt_1421_${i}">1.40 X 2.10</label></div>
+                                <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_1424_${i}" value="1.40x2.40" onchange="toggleMedidaEsp(${i})"><label for="dt_1424_${i}">1.40 X 2.40</label></div>
+                                <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_esp_${i}" value="Especial" onchange="toggleMedidaEsp(${i})"><label for="dt_esp_${i}">ESPECIAL</label></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full" id="block_esp_${i}" style="display: none;">
+                            <label>ESPECIFIQUE A MEDIDA (L X A)</label>
+                            <input type="text" id="f_medida_esp_${i}" placeholder="Ex: 2.00 x 2.50" oninput="checkPortaReady(${i})" style="text-transform: uppercase;">
+                        </div>
+
+                        <div class="form-group full">
+                            <label>LADO DE ABERTURA</label>
+                            <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                                 <div class="radio-card"><input type="radio" name="d_lado_${i}" id="dl_esq_${i}" value="Esquerdo" onchange="checkPortaReady(${i})"><label for="dl_esq_${i}">ESQUERDO</label></div>
+                                 <div class="radio-card"><input type="radio" name="d_lado_${i}" id="dl_dir_${i}" value="Direito" onchange="checkPortaReady(${i})"><label for="dl_dir_${i}">DIREITO</label></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-group full">
-                        <label>QUANTIDADE DE BATENTES</label>
-                        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                             <div class="radio-card"><input type="radio" name="d_bat_${i}" id="d_bat3_${i}" value="3 Bat." onchange="validaPasso3()"><label for="d_bat3_${i}">3 BATENTES</label></div>
-                             <div class="radio-card"><input type="radio" name="d_bat_${i}" id="d_bat4_${i}" value="4 Bat." onchange="validaPasso3()"><label for="d_bat4_${i}">4 BATENTES</label></div>
-                        </div>
-                        <div style="font-size: 11px; margin-top: 8px; color: #64748b; line-height: 1.4;">
-                            • <b>3 BATENTES:</b> Piso nivelado.<br>
-                            • <b>4 BATENTES:</b> Piso elevado e sem rampa.
-                        </div>
-                    </div>
-
-                    <div class="form-group full">
-                        <label>TAMANHO</label>
-                        <div class="radio-group grid-3" style="font-size: 11px;">
-                            <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_8018_${i}" value="0.80x1.80" onchange="toggleMedidaEsp(${i})"><label for="dt_8018_${i}">0.80 X 1.80</label></div>
-                            <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_1020_${i}" value="1.00x2.00" onchange="toggleMedidaEsp(${i})"><label for="dt_1020_${i}">1.00 X 2.00</label></div>
-                            <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_1421_${i}" value="1.40x2.10" onchange="toggleMedidaEsp(${i})"><label for="dt_1421_${i}">1.40 X 2.10</label></div>
-                            <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_1424_${i}" value="1.40x2.40" onchange="toggleMedidaEsp(${i})"><label for="dt_1424_${i}">1.40 X 2.40</label></div>
-                            <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_esp_${i}" value="Especial" onchange="toggleMedidaEsp(${i})"><label for="dt_esp_${i}">ESPECIAL</label></div>
-                        </div>
-                    </div>
-
-                    <div class="form-group full" id="block_esp_${i}" style="display: none;">
-                        <label>ESPECIFIQUE A MEDIDA (L X A)</label>
-                        <input type="text" id="f_medida_esp_${i}" placeholder="Ex: 2.00 x 2.50" oninput="validaPasso3()" style="text-transform: uppercase;">
-                    </div>
-
-                    <div class="form-group full">
-                        <label>LADO DE ABERTURA</label>
-                        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                             <div class="radio-card"><input type="radio" name="d_lado_${i}" id="dl_esq_${i}" value="Esquerdo" onchange="validaPasso3()"><label for="dl_esq_${i}">ESQUERDO</label></div>
-                             <div class="radio-card"><input type="radio" name="d_lado_${i}" id="dl_dir_${i}" value="Direito" onchange="validaPasso3()"><label for="dl_dir_${i}">DIREITO</label></div>
-                        </div>
+                    <div id="btn_ok_wrap_${i}" style="text-align:right; margin-top: 16px; display:none;">
+                        <button type="button"
+                            onclick="confirmarPorta(${i})"
+                            style="background: var(--dufrio-azul); color: #fff; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 800; font-size: 13px; cursor: pointer; letter-spacing: 0.5px;">
+                            ✔ CONFIRMAR PORTA ${i}
+                        </button>
                     </div>
                 </div>
+
+                <div class="door-summary" id="door-summary-${i}" style="display:none;"></div>
             `;
             container.appendChild(row);
         }
@@ -886,6 +906,81 @@
     function toggleMedidaEsp(idx) {
         const isEsp = document.getElementById(`dt_esp_${idx}`).checked;
         document.getElementById(`block_esp_${idx}`).style.display = isEsp ? 'block' : 'none';
+        checkPortaReady(idx);
+    }
+
+    function checkPortaReady(idx) {
+        const t = document.querySelector(`input[name="d_tipo_${idx}"]:checked`);
+        const b = document.querySelector(`input[name="d_bat_${idx}"]:checked`);
+        const s = document.querySelector(`input[name="d_tam_${idx}"]:checked`);
+        const l = document.querySelector(`input[name="d_lado_${idx}"]:checked`);
+        let ok = t && b && s && l;
+        if(ok && s.value === "Especial") {
+            ok = document.getElementById(`f_medida_esp_${idx}`).value.trim() !== "";
+        }
+        const wrap = document.getElementById(`btn_ok_wrap_${idx}`);
+        if(wrap) wrap.style.display = ok ? 'block' : 'none';
+    }
+
+    function confirmarPorta(idx) {
+        const t = document.querySelector(`input[name="d_tipo_${idx}"]:checked`);
+        const b = document.querySelector(`input[name="d_bat_${idx}"]:checked`);
+        const s = document.querySelector(`input[name="d_tam_${idx}"]:checked`);
+        const l = document.querySelector(`input[name="d_lado_${idx}"]:checked`);
+        if(!t || !b || !s || !l) return;
+
+        let tamLabel = s.value;
+        if(s.value === "Especial") {
+            const esp = document.getElementById(`f_medida_esp_${idx}`).value.trim();
+            tamLabel = `ESP: ${esp}`;
+        }
+
+        // Salva no array de estado
+        doorData[idx] = {
+            tipo: t.value,
+            bat: b.value,
+            tam: tamLabel,
+            tamId: s.id,
+            lado: l.value
+        };
+
+        // Colapsa o form e exibe a linha-resumo
+        document.getElementById(`door-form-${idx}`).style.display = 'none';
+        const summary = document.getElementById(`door-summary-${idx}`);
+        summary.style.display = 'flex';
+        summary.style.alignItems = 'center';
+        summary.style.justifyContent = 'space-between';
+        summary.style.padding = '12px 16px';
+        summary.style.background = '#f0f9ff';
+        summary.style.borderRadius = '10px';
+        summary.style.border = '1px solid #bae6fd';
+        summary.style.fontSize = '13px';
+        summary.style.fontWeight = '600';
+        summary.style.color = 'var(--dufrio-azul)';
+        summary.style.marginTop = '8px';
+        summary.innerHTML = `
+            <span>&#128310; <b>PORTA ${idx}:</b> ${t.value} ${b.value} | ${tamLabel} | LADO ${l.value.toUpperCase()}</span>
+            <button type="button" onclick="editarPorta(${idx})" style="background:none;border:none;color:#64748b;font-size:11px;cursor:pointer;text-decoration:underline;">editar</button>
+        `;
+
+        checkTodasPortasConfirmadas();
+    }
+
+    function editarPorta(idx) {
+        delete doorData[idx];
+        document.getElementById(`door-form-${idx}`).style.display = 'block';
+        document.getElementById(`door-summary-${idx}`).style.display = 'none';
+        document.getElementById('bloco_abertura').style.display = 'none';
+        validaPasso3();
+    }
+
+    function checkTodasPortasConfirmadas() {
+        const n = parseInt(document.getElementById('f_qtd_portas').value) || 1;
+        let todasOk = true;
+        for(let i = 1; i <= n; i++) {
+            if(!doorData[i]) { todasOk = false; break; }
+        }
+        document.getElementById('bloco_abertura').style.display = todasOk ? 'block' : 'none';
         validaPasso3();
     }
 
@@ -893,23 +988,16 @@
         const n = parseInt(document.getElementById('f_qtd_portas').value) || 0;
         let allOk = n > 0;
 
-        for(let i=1; i <= n; i++) {
-            const t = document.querySelector(`input[name="d_tipo_${i}"]:checked`);
-            const b = document.querySelector(`input[name="d_bat_${i}"]:checked`);
-            const s = document.querySelector(`input[name="d_tam_${i}"]:checked`);
-            const l = document.querySelector(`input[name="d_lado_${i}"]:checked`);
-            
-            if(!t || !b || !s || !l) { allOk = false; break; }
-            
-            if(s.value === "Especial") {
-                if(document.getElementById(`f_medida_esp_${i}`).value.trim() === "") {
-                    allOk = false; break;
-                }
-            }
+        // Checa se todas as portas foram confirmadas com OK
+        for(let i = 1; i <= n; i++) {
+            if(!doorData[i]) { allOk = false; break; }
         }
 
-        const fQtdAb = document.getElementById('f_qtd_abertura').value.trim();
-        if(fQtdAb === "") allOk = false;
+        // Se todas estiverem confirmadas, checa a Qtd de Abertura
+        if(allOk) {
+            const fQtdAb = document.getElementById('f_qtd_abertura').value.trim();
+            if(fQtdAb === "") allOk = false;
+        }
 
         const nextBtn = document.getElementById('btn-next');
         if(currentStep === 3) {
@@ -1030,48 +1118,33 @@
 
             let resumoPortas = "";
             for(let i=1; i <= nPortas; i++) {
-                const checkedTipo = document.querySelector(`input[name="d_tipo_${i}"]:checked`);
-                const checkedBat = document.querySelector(`input[name="d_bat_${i}"]:checked`);
-                const checkedTam = document.querySelector(`input[name="d_tam_${i}"]:checked`);
-                const checkedLado = document.querySelector(`input[name="d_lado_${i}"]:checked`);
-                const mEspInput = document.getElementById(`f_medida_esp_${i}`);
+                const d = doorData[i];
+                if(!d) continue;
 
-                if(!checkedTipo || !checkedBat || !checkedTam || !checkedLado) continue;
+                resumoPortas += `PORTA ${i}: ${d.tipo} ${d.bat} | ${d.tam} | LADO: ${d.lado.toUpperCase()}\n`;
 
-                let tamLabel = checkedTam.value;
-                if(checkedTam.value === "Especial") tamLabel = "ESP: " + mEspInput.value;
-
-                let descTipoBat = checkedTipo.value + " " + checkedBat.value;
-
-                resumoPortas += `PORTA ${i}: ${descTipoBat} | ${tamLabel} | LADO: ${checkedLado.value.toUpperCase()}\n`;
-
-                // Carimba a PRIMEIRA porta nos campos específicos do PDF
+                // Carimba a PRIMEIRA porta nos campos
                 if(i === 1) {
-                    // Tipo + Batente
-                    if(checkedTipo.value === "Giratória" && checkedBat.value.includes("3")) writeCheckBox('Caixa de seleção 1_17');
-                    if(checkedTipo.value === "Giratória" && checkedBat.value.includes("4")) writeCheckBox('Caixa de seleção 1_18');
-                    if(checkedTipo.value === "Correr" && checkedBat.value.includes("3")) writeCheckBox('Caixa de seleção 1_19');
-                    if(checkedTipo.value === "Correr" && checkedBat.value.includes("4")) writeCheckBox('Caixa de seleção 1_20');
+                    if(d.tipo === "Giratória" && d.bat.includes("3")) writeCheckBox('Caixa de seleção 1_17');
+                    if(d.tipo === "Giratória" && d.bat.includes("4")) writeCheckBox('Caixa de seleção 1_18');
+                    if(d.tipo === "Correr" && d.bat.includes("3")) writeCheckBox('Caixa de seleção 1_19');
+                    if(d.tipo === "Correr" && d.bat.includes("4")) writeCheckBox('Caixa de seleção 1_20');
 
-                    // Tamanho
-                    if(checkedTam.id.startsWith('dt_8018')) {
-                        if(checkedTipo.value === "Giratória") writeCheckBox('Caixa de seleção 2');
+                    if(d.tamId.startsWith('dt_8018')) {
+                        if(d.tipo === "Giratória") writeCheckBox('Caixa de seleção 2');
                         else writeCheckBox('Caixa de seleção 2_3');
                     }
-                    if(checkedTam.id.startsWith('dt_1020')) {
-                        if(checkedTipo.value === "Giratória") writeCheckBox('Caixa de seleção 2_2');
+                    if(d.tamId.startsWith('dt_1020')) {
+                        if(d.tipo === "Giratória") writeCheckBox('Caixa de seleção 2_2');
                         else writeCheckBox('Caixa de seleção 2_4');
                     }
-                    if(checkedTam.id.startsWith('dt_1421')) writeCheckBox('Caixa de seleção 2_5');
-                    if(checkedTam.id.startsWith('dt_1424')) writeCheckBox('Caixa de seleção 2_6');
-                    
-                    if(checkedTam.value === "Especial") {
+                    if(d.tamId.startsWith('dt_1421')) writeCheckBox('Caixa de seleção 2_5');
+                    if(d.tamId.startsWith('dt_1424')) writeCheckBox('Caixa de seleção 2_6');
+                    if(d.tam.startsWith('ESP')) {
                         const fieldEsp = form.getTextField('Caixa de texto 2_10');
-                        if(fieldEsp) fieldEsp.setText(mEspInput.value.toUpperCase());
+                        if(fieldEsp) fieldEsp.setText(d.tam.replace('ESP: ','').toUpperCase());
                     }
-
-                    // Lado
-                    if(checkedLado.value === "Direito") writeCheckBox('Caixa de seleção 2_8');
+                    if(d.lado === "Direito") writeCheckBox('Caixa de seleção 2_8');
                     else writeCheckBox('Caixa de seleção 2_7');
                 }
             }
