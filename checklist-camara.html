@@ -216,8 +216,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 16px;
+      justify-content: flex-start;
+      padding: 24px;
       border: 2px solid var(--border);
       border-radius: 12px;
       cursor: pointer;
@@ -227,6 +227,8 @@
       transition: all 0.2s;
       background: #fff;
       text-align: center;
+      height: 100%;
+      box-sizing: border-box;
     }
 
     .radio-card input:checked + label {
@@ -449,30 +451,44 @@
         </div>
       </div>
 
-      <!-- PERGUNTA 2 (TIPO DE PAINEL) -->
       <div class="q-block" id="q_painel_tipo">
-        <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 24px; color: var(--text-main);">TIPO DE PAINEL (ISOLAMENTO)</h3>
+        <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 24px; color: var(--text-main); text-align: center;">TIPO DE PAINEL (ISOLAMENTO)</h3>
         
-        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-          <div class="radio-card" style="padding: 20px; text-align: left;">
+        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; align-items: stretch;">
+          
+          <!-- CARD PIR -->
+          <div class="radio-card">
             <input type="radio" name="painel_tipo" id="p_pir" value="PIR" onchange="checkQPainelTipo()" />
-            <label for="p_pir" style="display: block;">
-                <div style="font-size: 18px; font-weight: 800; color: var(--primary);">PIR</div>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; line-height: 1.4;">
-                    (poliisocianurato) - Opção com melhor custo benefício.<br>
-                    <b>Vantagens:</b> *Vida maior, *Menos umidade, *Fumaça não tóxica, *Aceito por seguradoras.
+            <label for="p_pir" style="display: flex; flex-direction: column; height: 100%; justify-content: flex-start;">
+                <div style="font-size: 22px; font-weight: 900; color: var(--dufrio-azul); margin-bottom: 12px;">PIR</div>
+                <div style="font-size: 13px; color: var(--text-main); line-height: 1.5; margin-bottom: 16px; font-weight: 600;">
+                    (POLIISOCIANURATO) - OPÇÃO COM MELHOR CUSTO BENEFÍCIO.
+                </div>
+                <div style="font-size: 11px; color: #475569; text-align: left; background: #f1f5f9; padding: 12px; border-radius: 8px; flex-grow: 1;">
+                    <b style="color: var(--dufrio-azul);">VANTAGENS:</b><br>
+                    • PRAZO DE VIDA MAIOR<br>
+                    • RETÉM MENOS UMIDADE<br>
+                    • FUMAÇA NÃO TÓXICA (TOTALMENTE BRANCA)<br>
+                    • ACEITO POR TODAS AS SEGURADORAS DO PAÍS.
                 </div>
             </label>
           </div>
-          <div class="radio-card" style="padding: 20px; text-align: left;">
+
+          <!-- CARD EPS -->
+          <div class="radio-card">
             <input type="radio" name="painel_tipo" id="p_eps" value="EPS" onchange="checkQPainelTipo()" />
-            <label for="p_eps" style="display: block;">
-                <div style="font-size: 18px; font-weight: 800; color: var(--primary);">EPS</div>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; line-height: 1.4;">
-                    (poliestireno) "isopor" - Opção mais utilizada por ser a mais barata.
+            <label for="p_eps" style="display: flex; flex-direction: column; height: 100%; justify-content: flex-start;">
+                <div style="font-size: 22px; font-weight: 900; color: var(--dufrio-azul); margin-bottom: 12px;">EPS</div>
+                <div style="font-size: 13px; color: var(--text-main); line-height: 1.5; margin-bottom: 16px; font-weight: 600;">
+                    (POLIESTIRENO) "ISOPOR" - OPÇÃO MAIS UTILIZADA POR SER A MAIS BARATA.
+                </div>
+                <div style="font-size: 11px; color: #475569; text-align: left; background: #f1f5f9; padding: 12px; border-radius: 8px; visibility: hidden;">
+                    <!-- Placeholder para manter simetria de altura se necessário, ou apenas deixar crescer -->
+                    VANTAGENS
                 </div>
             </label>
           </div>
+
         </div>
       </div>
 
