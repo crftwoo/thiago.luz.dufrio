@@ -373,6 +373,7 @@
       <div class="step-indicator" id="ind-6">6</div>
       <div class="step-indicator" id="ind-7">7</div>
       <div class="step-indicator" id="ind-8">8</div>
+      <div class="step-indicator" id="ind-9">9</div>
     </div>
 
     <!-- STAGE 1 (DADOS COMERCIAIS) -->
@@ -804,8 +805,41 @@
         </div>
     </div>
 
-    <!-- STAGE 8 -->
+    <!-- STAGE 8 - Capacidade e Movimentação -->
     <div class="step-content" id="step-8">
+        <h2 class="step-title">Capacidade &amp; Movimentação</h2>
+        <p class="step-desc">Informe a quantidade de produto que será armazenada e movimentada.</p>
+
+        <div class="form-grid">
+            <!-- Campo 1: Capacidade -->
+            <div class="form-group full">
+                <label>CAPAC. ARMAZENADA (kg)</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="number" id="f_capac_arm" min="1" placeholder="Ex: 1000" oninput="onCapacInput()"
+                        style="max-width: 220px; font-size: 20px; font-weight: 700; text-align: center;"
+                        onkeydown="if(event.key==='ArrowUp'||event.key==='ArrowDown') event.preventDefault()">
+                    <span style="font-size: 22px; font-weight: 800; color: var(--dufrio-azul);">kg</span>
+                </div>
+                <div style="font-size: 11px; margin-top: 8px; color: #64748b;">Total de kg que será estocado na câmara fria.</div>
+            </div>
+
+            <!-- Campo 2: Movimentação (aparece após preencher capacidade) -->
+            <div class="form-group full" id="bloco_movimentacao" style="display: none; margin-top: 8px;">
+                <div style="height: 1px; background: #e2e8f0; margin-bottom: 20px;"></div>
+                <label id="mov-label">MOVIMENTAÇÃO (kg)</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="number" id="f_movimentacao" min="1" placeholder="Ex: 500" oninput="validaPasso8()"
+                        style="max-width: 220px; font-size: 20px; font-weight: 700; text-align: center;"
+                        onkeydown="if(event.key==='ArrowUp'||event.key==='ArrowDown') event.preventDefault()">
+                    <span style="font-size: 22px; font-weight: 800; color: var(--dufrio-azul);">kg</span>
+                </div>
+                <div id="mov-desc" style="font-size: 11px; margin-top: 8px; color: #64748b;">Quantidade de kg que será movimentada no período de processo.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAGE 9 -->
+    <div class="step-content" id="step-9">
         <h2 class="step-title">Resumo e Envio</h2>
         <p class="step-desc">Aguardando conclusão das etapas anteriores.</p>
     </div>
@@ -821,7 +855,7 @@
 
   <script>
     let currentStep = 1;
-    const totalSteps = 8;
+    const totalSteps = 9;
 
     // Typeform Logic Step 1
     function checkQ1() {
@@ -1023,6 +1057,15 @@
             validaPasso6();
         }
         else if(currentStep === 7) validaPasso7();
+        else if(currentStep === 8) {
+            // Atualiza label de movimentação com o tempo de processo
+            const tempo = document.getElementById('f_tempo_processo_num').value.trim();
+            const movLabel = document.getElementById('mov-label');
+            const movDesc = document.getElementById('mov-desc');
+            if(tempo && movLabel) movLabel.textContent = `MOVIMENTAÇÃO NAS ${tempo}h (kg)`;
+            if(tempo && movDesc) movDesc.textContent = `Quantos kg serão movimentados durante as ${tempo}h de processo?`;
+            validaPasso8();
+        }
         else btnNext.disabled = false;
       }
     }
@@ -1254,6 +1297,34 @@
         validaPasso7();
     }
 
+    function onCapacInput() {
+        const v = document.getElementById('f_capac_arm').value.trim();
+        const bloco = document.getElementById('bloco_movimentacao');
+        const tempo = document.getElementById('f_tempo_processo_num').value.trim();
+        const movLabel = document.getElementById('mov-label');
+        const movDesc = document.getElementById('mov-desc');
+        if(v && parseInt(v) > 0) {
+            bloco.style.display = 'block';
+            if(tempo) {
+                if(movLabel) movLabel.textContent = `MOVIMENTAÇÃO NAS ${tempo}h (kg)`;
+                if(movDesc) movDesc.textContent = `Quantos kg serão movimentados durante as ${tempo}h de processo?`;
+            }
+        } else {
+            bloco.style.display = 'none';
+        }
+        validaPasso8();
+    }
+
+    function validaPasso8() {
+        const c = document.getElementById('f_capac_arm').value.trim();
+        const m = document.getElementById('f_movimentacao').value.trim();
+        const nextBtn = document.getElementById('btn-next');
+        if(currentStep === 8) {
+            const blocoVisible = document.getElementById('bloco_movimentacao').style.display !== 'none';
+            nextBtn.disabled = !(c && parseInt(c) > 0 && blocoVisible && m && parseInt(m) > 0);
+        }
+    }
+
     async function gerarPDF() {
         try {
             document.getElementById('btn-submit').innerText = "Processando PDF...";
@@ -1426,6 +1497,16 @@
             const fTempo = form.getTextField('Caixa de texto 2_16');
             const tempoVal = document.getElementById('f_tempo_processo_num').value.trim();
             if(fTempo && tempoVal) fTempo.setText(tempoVal + 'h');
+
+            // Capacidade Armazenada (Caixa de texto 2_17)
+            const fCapac = form.getTextField('Caixa de texto 2_17');
+            const capacVal = document.getElementById('f_capac_arm').value.trim();
+            if(fCapac && capacVal) fCapac.setText(capacVal + ' kg');
+
+            // Movimentação (Caixa de texto 2_18)
+            const fMov = form.getTextField('Caixa de texto 2_18');
+            const movVal = document.getElementById('f_movimentacao').value.trim();
+            if(fMov && movVal) fMov.setText(movVal + ' kg');
 
             form.flatten(); // Protege o documento
 
