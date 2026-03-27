@@ -375,6 +375,7 @@
       <div class="step-indicator" id="ind-8">8</div>
       <div class="step-indicator" id="ind-9">9</div>
       <div class="step-indicator" id="ind-10">10</div>
+      <div class="step-indicator" id="ind-11">11</div>
     </div>
 
     <!-- STAGE 1 (DADOS COMERCIAIS) -->
@@ -861,8 +862,26 @@
         </div>
     </div>
 
-    <!-- STAGE 10 -->
+    <!-- STAGE 10 - Observações Finais -->
     <div class="step-content" id="step-10">
+        <h2 class="step-title">Observações Gerais</h2>
+        <p class="step-desc">Adicione aqui qualquer observação adicional para o checklist.</p>
+
+        <div class="form-grid">
+            <div class="form-group full">
+                <label>OBSERVAÇÕES (TEXTO LIVRE)</label>
+                <textarea id="f_observacoes" rows="6" placeholder="Ex: Informações sobre local da máquina, dificuldades técnicas, etc."
+                    style="width: 100%; border-radius: 12px; border: 2px solid #e2e8f0; padding: 15px; font-size: 16px; font-family: inherit; resize: vertical;"
+                    oninput="validaPasso10()"></textarea>
+                <div style="font-size: 11px; margin-top: 10px; color: #64748b;">
+                    Este texto será incluído no campo de OBS do PDF oficial. Se houver mais de uma porta, os detalhes das mesmas serão listados antes deste texto.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAGE 11 -->
+    <div class="step-content" id="step-11">
         <h2 class="step-title">Resumo e Envio</h2>
         <p class="step-desc">Aguardando conclusão das etapas anteriores.</p>
     </div>
@@ -878,7 +897,7 @@
 
   <script>
     let currentStep = 1;
-    const totalSteps = 10;
+    const totalSteps = 11;
 
     // Typeform Logic Step 1
     function checkQ1() {
@@ -1090,6 +1109,7 @@
             validaPasso8();
         }
         else if(currentStep === 9) validaPasso9();
+        else if(currentStep === 10) validaPasso10();
         else btnNext.disabled = false;
       }
     }
@@ -1361,6 +1381,11 @@
         if(currentStep === 9) nextBtn.disabled = (v === '' || parseInt(v) < 1);
     }
 
+    function validaPasso10() {
+        const nextBtn = document.getElementById('btn-next');
+        if(currentStep === 10) nextBtn.disabled = false; // Opcional
+    }
+
     async function gerarPDF() {
         try {
             document.getElementById('btn-submit').innerText = "Processando PDF...";
@@ -1509,12 +1534,18 @@
             const fQtdAb = form.getTextField('Caixa de texto 2_11');
             if(fQtdAb) fQtdAb.setText(document.getElementById('f_qtd_abertura').value.toUpperCase());
 
-            // Escreve apenas o resumo das portas em OBS Finais (Caixa de texto 2_14)
-            if(resumoPortas !== "") {
-                const fieldObs = form.getTextField('Caixa de texto 2_14');
-                if(fieldObs) {
-                    fieldObs.setText(resumoPortas.toUpperCase());
+            // --- OBSERVAÇÕES E LISTA DE PORTAS (Caixa de texto 2_14) ---
+            const userObs = document.getElementById('f_observacoes').value.trim();
+            const fieldObs = form.getTextField('Caixa de texto 2_14');
+            
+            if(fieldObs) {
+                let finalObs = "";
+                if(nPortas > 1) {
+                    finalObs = ">>> LISTA DE PORTAS <<<\n" + resumoPortas + "\n>>> OBSERVAÇÕES <<<\n" + userObs;
+                } else {
+                    finalObs = userObs;
                 }
+                fieldObs.setText(finalObs.toUpperCase());
             }
 
             // Produto Armazenado (Caixa de texto 2_12)
