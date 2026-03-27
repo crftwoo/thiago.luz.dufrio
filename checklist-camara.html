@@ -621,8 +621,70 @@
         </div>
     </div>
 
-    <!-- STAGE 5 -->
+    <!-- STAGE 5 - Temperatura de Entrada -->
     <div class="step-content" id="step-5">
+        <h2 class="step-title">Temperatura de Entrada</h2>
+        <p class="step-desc">Informe a temperatura em que o produto chega para ser armazenado.</p>
+
+        <div class="form-grid">
+            <div class="form-group full">
+                <label>TEMP. DE ENTRADA DO PRODUTO (°C)</label>
+                <input type="text" id="f_temp_entrada" placeholder="Ex: +10°C, -15°C, +24°C" oninput="validaPasso5()" style="text-transform: uppercase;">
+                <div style="font-size: 11px; margin-top: 8px; color: #64748b; line-height: 1.4;">
+                    Informe a temperatura em que o produto chega (vindo do fornecedor/distribuidor). Consulte a tabela abaixo.
+                </div>
+            </div>
+        </div>
+
+        <!-- Atalhos de temperatura por produto -->
+        <div style="margin-top: 16px;">
+            <div style="font-size: 11px; font-weight: 800; color: var(--dufrio-azul); letter-spacing: 0.5px; margin-bottom: 10px;">ATALHOS RÁPIDOS — CLIQUE PARA PREENCHER:</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <button type="button" onclick="setTemp('+38°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🥩 Carne Frigorífico +38°C</button>
+                <button type="button" onclick="setTemp('+10°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🥩 Carne Mercado +10°C</button>
+                <button type="button" onclick="setTemp('+24°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🍞 Massa/Pão +24°C</button>
+                <button type="button" onclick="setTemp('+10°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🐟 Peixe Frigorífico +10°C</button>
+                <button type="button" onclick="setTemp('+28°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🍺 Bebidas Distribuidora +28°C</button>
+                <button type="button" onclick="setTemp('+24°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🥦 Vegetais/Frutas Agricultor +24°C</button>
+                <button type="button" onclick="setTemp('+10°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🥛 Laticínios +10°C</button>
+                <button type="button" onclick="setTemp('+1°C')" style="font-size: 11px; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd; background:#f0f9ff; color:#0369a1; cursor:pointer; font-weight:600;">🍦 Sorvete Fabricante +1°C</button>
+            </div>
+        </div>
+
+        <!-- Tabela de referência -->
+        <div style="margin-top: 20px; font-size: 11px; color: #64748b;">
+            <div style="font-weight: 800; color: var(--dufrio-azul); margin-bottom: 8px; letter-spacing: 0.5px;">📋 TABELA DE REFERÊNCIA — TEMP. ENTRADA:</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                <thead>
+                    <tr style="background: #e0f2fe; color: #0369a1; font-weight: 800;">
+                        <td style="padding: 6px 10px; border: 1px solid #bae6fd;">PRODUTO</td>
+                        <td style="padding: 6px 10px; border: 1px solid #bae6fd;">SEGMENTO</td>
+                        <td style="padding: 6px 10px; border: 1px solid #bae6fd; text-align:center;">RESFRIADO</td>
+                        <td style="padding: 6px 10px; border: 1px solid #bae6fd; text-align:center;">CONGELADO</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;" rowspan="2">Carnes</td><td style="padding:5px 10px;border:1px solid #e2e8f0;">Mercados / Açougues</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+10°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-15°C</td></tr>
+                    <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Frigoríficos / Abatedouros</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+38°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-18°C</td></tr>
+                    <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Massa / Pão</td><td style="padding:5px 10px;border:1px solid #e2e8f0;">Panificadoras / Padarias</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+24°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-18°C</td></tr>
+                    <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;" rowspan="2">Peixe</td><td style="padding:5px 10px;border:1px solid #e2e8f0;">Frigoríficos / Abatedouros</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+10°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">0°C</td></tr>
+                    <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Distribuidoras / Mercados</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-15°C</td></tr>
+                    <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;" rowspan="2">Sorvete</td><td style="padding:5px 10px;border:1px solid #e2e8f0;">Fabricante</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+1°C</td></tr>
+                    <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Distribuidoras / Mercados</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">-15°C</td></tr>
+                    <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;" rowspan="2">Bebidas</td><td style="padding:5px 10px;border:1px solid #e2e8f0;">Distribuidoras / Mercados</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+28°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                    <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Agricultor / Peq. Mercados</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+24°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                    <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;" rowspan="2">Vegetais</td><td style="padding:5px 10px;border:1px solid #e2e8f0;">Grandes Mercados</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+10°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                    <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Agricultor / Peq. Mercados</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+24°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                    <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;" rowspan="2">Frutas</td><td style="padding:5px 10px;border:1px solid #e2e8f0;">Agricultor / Peq. Mercados</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+24°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                    <tr><td style="padding:5px 10px;border:1px solid #e2e8f0;">Grandes Mercados</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+10°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                    <tr style="background:#f8fafc;"><td style="padding:5px 10px;border:1px solid #e2e8f0;">Laticínios</td><td style="padding:5px 10px;border:1px solid #e2e8f0;">Distribuidoras</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">+10°C</td><td style="padding:5px 10px;border:1px solid #e2e8f0;text-align:center;">—</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- STAGE 6 -->
+    <div class="step-content" id="step-6">
         <h2 class="step-title">Resumo e Envio</h2>
         <p class="step-desc">Aguardando conclusão das etapas anteriores.</p>
     </div>
@@ -638,7 +700,7 @@
 
   <script>
     let currentStep = 1;
-    const totalSteps = 5;
+    const totalSteps = 6;
 
     // Typeform Logic Step 1
     function checkQ1() {
@@ -826,6 +888,7 @@
             validaPasso3();
         }
         else if(currentStep === 4) validaPasso4();
+        else if(currentStep === 5) validaPasso5();
         else btnNext.disabled = false;
       }
     }
@@ -1023,6 +1086,17 @@
         if(currentStep === 4) nextBtn.disabled = v.length < 2;
     }
 
+    function validaPasso5() {
+        const v = document.getElementById('f_temp_entrada').value.trim();
+        const nextBtn = document.getElementById('btn-next');
+        if(currentStep === 5) nextBtn.disabled = v.length < 2;
+    }
+
+    function setTemp(val) {
+        document.getElementById('f_temp_entrada').value = val;
+        validaPasso5();
+    }
+
     async function gerarPDF() {
         try {
             document.getElementById('btn-submit').innerText = "Processando PDF...";
@@ -1182,6 +1256,10 @@
             // Produto Armazenado (Caixa de texto 2_12)
             const fProduto = form.getTextField('Caixa de texto 2_12');
             if(fProduto) fProduto.setText(document.getElementById('f_produto').value.toUpperCase());
+
+            // Temperatura de Entrada (Caixa de texto 2_13)
+            const fTempIn = form.getTextField('Caixa de texto 2_13');
+            if(fTempIn) fTempIn.setText(document.getElementById('f_temp_entrada').value.toUpperCase());
 
             form.flatten(); // Protege o documento
 
