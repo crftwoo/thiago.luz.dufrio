@@ -372,6 +372,7 @@
       <div class="step-indicator" id="ind-5">5</div>
       <div class="step-indicator" id="ind-6">6</div>
       <div class="step-indicator" id="ind-7">7</div>
+      <div class="step-indicator" id="ind-8">8</div>
     </div>
 
     <!-- STAGE 1 (DADOS COMERCIAIS) -->
@@ -781,8 +782,30 @@
         </div>
     </div>
 
-    <!-- STAGE 7 -->
+    <!-- STAGE 7 - Tempo de Processo -->
     <div class="step-content" id="step-7">
+        <h2 class="step-title">Tempo de Processo</h2>
+        <p class="step-desc">Em quanto tempo a temperatura desejada tem que ser atingida?</p>
+
+        <div class="form-grid">
+            <div class="form-group full">
+                <label>TEMPO DE PROCESSO</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="number" id="f_tempo_processo_num" min="1" max="999" placeholder="Ex: 24"
+                        oninput="formatTempoProcesso()" style="max-width: 180px; font-size: 20px; font-weight: 700; text-align: center;"
+                        onkeydown="if(event.key==='ArrowUp'||event.key==='ArrowDown') event.preventDefault()">
+                    <span id="f_tempo_h_display" style="font-size: 22px; font-weight: 800; color: var(--dufrio-azul); display: none;">h</span>
+                </div>
+                <div style="font-size: 11px; margin-top: 10px; color: #64748b; line-height: 1.6;">
+                    Tempo necessário para baixar a temperatura do produto estocado.<br>
+                    <b>Normalmente: 24h.</b>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAGE 8 -->
+    <div class="step-content" id="step-8">
         <h2 class="step-title">Resumo e Envio</h2>
         <p class="step-desc">Aguardando conclusão das etapas anteriores.</p>
     </div>
@@ -798,7 +821,7 @@
 
   <script>
     let currentStep = 1;
-    const totalSteps = 7;
+    const totalSteps = 8;
 
     // Typeform Logic Step 1
     function checkQ1() {
@@ -999,6 +1022,7 @@
             }
             validaPasso6();
         }
+        else if(currentStep === 7) validaPasso7();
         else btnNext.disabled = false;
       }
     }
@@ -1218,6 +1242,18 @@
         validaPasso6();
     }
 
+    function validaPasso7() {
+        const v = document.getElementById('f_tempo_processo_num').value.trim();
+        const nextBtn = document.getElementById('btn-next');
+        if(currentStep === 7) nextBtn.disabled = (v === '' || parseInt(v) < 1);
+    }
+
+    function formatTempoProcesso() {
+        const v = document.getElementById('f_tempo_processo_num').value.trim();
+        document.getElementById('f_tempo_h_display').style.display = v ? 'inline' : 'none';
+        validaPasso7();
+    }
+
     async function gerarPDF() {
         try {
             document.getElementById('btn-submit').innerText = "Processando PDF...";
@@ -1385,6 +1421,11 @@
             // Temperatura Final (Caixa de texto 2_15)
             const fTempFinal = form.getTextField('Caixa de texto 2_15');
             if(fTempFinal) fTempFinal.setText(document.getElementById('f_temp_final').value.toUpperCase());
+
+            // Tempo de Processo (Caixa de texto 2_16)
+            const fTempo = form.getTextField('Caixa de texto 2_16');
+            const tempoVal = document.getElementById('f_tempo_processo_num').value.trim();
+            if(fTempo && tempoVal) fTempo.setText(tempoVal + 'h');
 
             form.flatten(); // Protege o documento
 
