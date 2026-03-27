@@ -1557,27 +1557,42 @@
 
             // Temperatura Final (Caixa de texto 2_15)
             const fTempFinal = form.getTextField('Caixa de texto 2_15');
-            if(fTempFinal) fTempFinal.setText(document.getElementById('f_temp_final').value.toUpperCase());
+            const tFinalVal = document.getElementById('f_temp_final').value.toUpperCase();
+            if(fTempFinal && tFinalVal) fTempFinal.setText(tFinalVal);
 
             // Tempo de Processo (Caixa de texto 2_16)
             const fTempo = form.getTextField('Caixa de texto 2_16');
             const tempoVal = document.getElementById('f_tempo_processo_num').value.trim();
             if(fTempo && tempoVal) fTempo.setText(tempoVal + 'h');
 
-            // Capacidade Armazenada (Caixa de texto 2_17)
-            const fCapac = form.getTextField('Caixa de texto 2_17');
-            const capacVal = document.getElementById('f_capac_arm').value.trim();
-            if(fCapac && capacVal) fCapac.setText(capacVal + ' kg');
+            // 4. Consolidar tudo o que não tem campo específico no campo de OBS (2_14)
+            const fObs = form.getTextField('Caixa de texto 2_14');
+            if (fObs) {
+                const capacVal = document.getElementById('f_capac_arm').value.trim();
+                const movVal = document.getElementById('f_movimentacao').value.trim();
+                const distVal = document.getElementById('f_dist_uc_evap').value.trim();
+                const userObs = document.getElementById('f_observacoes').value.toUpperCase();
 
-            // Movimentação (Caixa de texto 2_18)
-            const fMov = form.getTextField('Caixa de texto 2_18');
-            const movVal = document.getElementById('f_movimentacao').value.trim();
-            if(fMov && movVal) fMov.setText(movVal + ' kg');
+                let consolidado = "";
+                
+                // Portas (se múltiplas)
+                if (parseInt(document.getElementById('f_qtd_portas').value) > 1) {
+                    consolidado += ">>> LISTA DE PORTAS <<<\n" + resumoPortas + "\n\n";
+                }
 
-            // Distancia UC x EVAP (Caixa de texto 2_19)
-            const fDist = form.getTextField('Caixa de texto 2_19');
-            const distVal = document.getElementById('f_dist_uc_evap').value.trim();
-            if(fDist && distVal) fDist.setText(distVal + 'm');
+                // Dados Técnicos Extras
+                consolidado += ">>> DADOS PROCESSO <<<\n";
+                if(capacVal) consolidado += `CAPACIDADE TOTAL: ${capacVal} KG\n`;
+                if(movVal) consolidado += `MOVIMENTACAO DIARIA: ${movVal} KG\n`;
+                if(distVal) consolidado += `DISTANCIA UC/EVAP: ${distVal} METROS\n`;
+                
+                // Observações do Usuário
+                if(userObs) {
+                    consolidado += "\n>>> ANOTACOES GERAIS <<<\n" + userObs;
+                }
+
+                fObs.setText(consolidado);
+            }
 
             form.flatten(); // Protege o documento
 
