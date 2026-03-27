@@ -133,9 +133,45 @@
 
     .step-content.active { display: block; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .door-entry {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      animation: fadeIn 0.4s ease;
+      position: relative;
+    }
+    .door-count-badge {
+      position: absolute;
+      top: -10px;
+      left: 20px;
+      background: var(--dufrio-azul);
+      color: white;
+      padding: 2px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .hint-box {
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #1e40af;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
     }
 
     .step-title {
@@ -538,10 +574,27 @@
       </div>
     </div>
 
-    <!-- STAGE 3 (A GUARDAR INSTRUÇÕES) -->
+    <!-- STAGE 3 -->
     <div class="step-content" id="step-3">
         <h2 class="step-title">Portas e Acessórios</h2>
-        <p class="step-desc">Aguardando definição do layout e campos...</p>
+        <p class="step-desc">Configure a quantidade e os modelos das portas da câmara.</p>
+
+        <div class="form-group" style="max-width: 200px; margin: 0 auto 32px auto; text-align: center;">
+            <label style="font-weight: 800; color: var(--dufrio-azul);">QUANTIDADE DE PORTAS</label>
+            <input type="number" id="f_qtd_portas" min="1" max="10" value="1" onchange="renderDoorRows()" style="text-align: center; font-size: 18px; font-weight: 800;">
+        </div>
+
+        <div id="door-list-container">
+            <!-- Dinâmico via JS -->
+        </div>
+
+        <div class="hint-box" style="margin-top: 32px;">
+            <b>DICAS TÉCNICAS:</b><br>
+            • <b>GIRATÓRIA:</b> Menor custo, maior espaço abert. <br>
+            • <b>CORRER:</b> Maior custo, menor espaço abert. <br>
+            • <b>3 BATENTES:</b> Piso nivelado. <br>
+            • <b>4 BATENTES:</b> Piso elevado e sem rampa.
+        </div>
     </div>
 
     <!-- STAGE 4 -->
@@ -741,14 +794,99 @@
         // Se mudou de step, re-checa disabled state do STEP atual
         if(currentStep === 1) validaPasso1();
         else if(currentStep === 2) validaPasso2();
-        else btnNext.disabled = false; // Os outros travaremos em breve
+        else if(currentStep === 3) {
+            if(document.getElementById('f_qtd_portas').value === "") {
+                document.getElementById('f_qtd_portas').value = "1";
+                renderDoorRows();
+            }
+            validaPasso3();
+        }
+        else btnNext.disabled = false;
       }
     }
 
-    function changeStep(dir) {
-      if ((currentStep === 1 && dir === -1) || (currentStep === totalSteps && dir === 1)) return;
-      currentStep += dir;
-      updateView();
+    // Typeform Logic Step 3
+    function renderDoorRows() {
+        const container = document.getElementById('door-list-container');
+        let n = parseInt(document.getElementById('f_qtd_portas').value) || 1;
+        if (n > 10) n = 10;
+        
+        container.innerHTML = "";
+
+        for(let i=1; i <= n; i++) {
+            const row = document.createElement('div');
+            row.className = 'door-entry';
+            row.innerHTML = `
+                <div class="door-count-badge">PORTA ${i}</div>
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>TIPO DE PORTA</label>
+                        <div class="radio-group grid-2">
+                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_gir3_${i}" value="Gir. 3 Bat." onchange="validaPasso3()"><label for="d_gir3_${i}">GIRATÓRIA 3 BAT.</label></div>
+                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_gir4_${i}" value="Gir. 4 Bat." onchange="validaPasso3()"><label for="d_gir4_${i}">GIRATÓRIA 4 BAT.</label></div>
+                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_cor3_${i}" value="Correr 3 Bat." onchange="validaPasso3()"><label for="d_cor3_${i}">CORRER 3 BAT.</label></div>
+                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_cor4_${i}" value="Correr 4 Bat." onchange="validaPasso3()"><label for="d_cor4_${i}">CORRER 4 BAT.</label></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>TAMANHO</label>
+                        <div class="radio-group grid-3" style="font-size: 11px;">
+                            <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_8018_${i}" value="0.80x1.80" onchange="toggleMedidaEsp(${i})"><label for="dt_8018_${i}">0.80 X 1.80</label></div>
+                            <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_1020_${i}" value="1.00x2.00" onchange="toggleMedidaEsp(${i})"><label for="dt_1020_${i}">1.00 X 2.00</label></div>
+                            <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_1421_${i}" value="1.40x2.10" onchange="toggleMedidaEsp(${i})"><label for="dt_1421_${i}">1.40 X 2.10</label></div>
+                            <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_1424_${i}" value="1.40x2.40" onchange="toggleMedidaEsp(${i})"><label for="dt_1424_${i}">1.40 X 2.40</label></div>
+                            <div class="radio-card"><input type="radio" name="d_tam_${i}" id="dt_esp_${i}" value="Especial" onchange="toggleMedidaEsp(${i})"><label for="dt_esp_${i}">ESPECIAL</label></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group full" id="block_esp_${i}" style="display: none;">
+                        <label>ESPECIFIQUE A MEDIDA (L X A)</label>
+                        <input type="text" id="f_medida_esp_${i}" placeholder="Ex: 2.00 x 2.50" oninput="validaPasso3()" style="text-transform: uppercase;">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>LADO DE ABERTURA</label>
+                        <div class="radio-group grid-2">
+                             <div class="radio-card"><input type="radio" name="d_lado_${i}" id="dl_dir_${i}" value="Direito" onchange="validaPasso3()"><label for="dl_dir_${i}">DIREITO</label></div>
+                             <div class="radio-card"><input type="radio" name="d_lado_${i}" id="dl_esq_${i}" value="Esquerdo" onchange="validaPasso3()"><label for="dl_esq_${i}">ESQUERDO</label></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(row);
+        }
+        validaPasso3();
+    }
+
+    function toggleMedidaEsp(idx) {
+        const isEsp = document.getElementById(`dt_esp_${idx}`).checked;
+        document.getElementById(`block_esp_${idx}`).style.display = isEsp ? 'block' : 'none';
+        validaPasso3();
+    }
+
+    function validaPasso3() {
+        const n = parseInt(document.getElementById('f_qtd_portas').value) || 0;
+        let allOk = n > 0;
+
+        for(let i=1; i <= n; i++) {
+            const t = document.querySelector(`input[name="d_tipo_${i}"]:checked`);
+            const s = document.querySelector(`input[name="d_tam_${i}"]:checked`);
+            const l = document.querySelector(`input[name="d_lado_${i}"]:checked`);
+            
+            if(!t || !s || !l) { allOk = false; break; }
+            
+            if(s.value === "Especial") {
+                if(document.getElementById(`f_medida_esp_${i}`).value.trim() === "") {
+                    allOk = false; break;
+                }
+            }
+        }
+
+        const nextBtn = document.getElementById('btn-next');
+        if(currentStep === 3) {
+            nextBtn.disabled = !allOk;
+        }
     }
 
     async function gerarPDF() {
@@ -857,7 +995,66 @@
             writeTextField('Caixa de texto 2_6', 'f_larg');
             writeTextField('Caixa de texto 2_7', 'f_alt');
 
-            form.flatten(); // Evita que possa ser quebrado por editores baratos, fixa o texto como imagem vetorizada
+            // --- PASSO 3 - PORTAS ---
+            const nPortas = parseInt(document.getElementById('f_qtd_portas').value) || 1;
+            const fQtdPortas = form.getTextField('Caixa de texto 2_3');
+            if(fQtdPortas) fQtdPortas.setText(nPortas.toString());
+
+            let resumoPortas = "";
+            for(let i=1; i <= nPortas; i++) {
+                const checkedTipo = document.querySelector(`input[name="d_tipo_${i}"]:checked`);
+                const checkedTam = document.querySelector(`input[name="d_tam_${i}"]:checked`);
+                const checkedLado = document.querySelector(`input[name="d_lado_${i}"]:checked`);
+                const mEspInput = document.getElementById(`f_medida_esp_${i}`);
+
+                if(!checkedTipo || !checkedTam || !checkedLado) continue;
+
+                let tamLabel = checkedTam.value;
+                if(checkedTam.value === "Especial") tamLabel = "ESP: " + mEspInput.value;
+
+                resumoPortas += `PORTA ${i}: ${checkedTipo.value} | ${tamLabel} | LADO: ${checkedLado.value.toUpperCase()}\n`;
+
+                // Carimba a PRIMEIRA porta nos campos específicos do PDF
+                if(i === 1) {
+                    // Tipo
+                    if(checkedTipo.id.startsWith('d_gir3')) writeCheckBox('Caixa de seleção 1_17');
+                    if(checkedTipo.id.startsWith('d_gir4')) writeCheckBox('Caixa de seleção 1_18');
+                    if(checkedTipo.id.startsWith('d_cor3')) writeCheckBox('Caixa de seleção 1_19');
+                    if(checkedTipo.id.startsWith('d_cor4')) writeCheckBox('Caixa de seleção 1_20');
+
+                    // Tamanho
+                    if(checkedTam.id.startsWith('dt_8018')) {
+                        if(checkedTipo.value.includes("Gir")) writeCheckBox('Caixa de seleção 2');
+                        else writeCheckBox('Caixa de seleção 2_3');
+                    }
+                    if(checkedTam.id.startsWith('dt_1020')) {
+                        if(checkedTipo.value.includes("Gir")) writeCheckBox('Caixa de seleção 2_2');
+                        else writeCheckBox('Caixa de seleção 2_4');
+                    }
+                    if(checkedTam.id.startsWith('dt_1421')) writeCheckBox('Caixa de seleção 2_5');
+                    if(checkedTam.id.startsWith('dt_1424')) writeCheckBox('Caixa de seleção 2_6');
+                    
+                    if(checkedTam.value === "Especial") {
+                        const fieldEsp = form.getTextField('Caixa de texto 2_10');
+                        if(fieldEsp) fieldEsp.setText(mEspInput.value.toUpperCase());
+                    }
+
+                    // Lado
+                    if(checkedLado.value === "Direito") writeCheckBox('Caixa de seleção 2_8');
+                    else writeCheckBox('Caixa de seleção 2_7');
+                }
+            }
+
+            // Escreve o resumo em OBS Finais (Caixa de texto 2_14)
+            if(resumoPortas !== "") {
+                const fieldObs = form.getTextField('Caixa de texto 2_14');
+                if(fieldObs) {
+                    // Se o usuário futuramente adicionar outras OBS, podemos concatenar
+                    fieldObs.setText(resumoPortas.toUpperCase());
+                }
+            }
+
+            form.flatten(); // Protege o documento
 
             const pdfBytesFilled = await pdfDoc.save();
             const blob = new Blob([pdfBytesFilled], { type: "application/pdf" });
