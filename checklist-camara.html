@@ -1426,24 +1426,37 @@
 
             // --- PREENCHIMENTO ---
 
-            // Passo 1
-            writeText('Caixa de texto 1', document.getElementById('f_cliente').value);
-            writeText('Caixa de texto 1_2', document.getElementById('f_obra').value);
-            writeText('Caixa de texto 1_4', getPagamentoString());
-            writeText('Caixa de texto 1_3', document.getElementById('f_vendedor').value);
+            // --- PREENCHIMENTO FINAL (VERIFICADO VISUALMENTE) ---
 
-            // Passo 2
-            const comp = document.getElementById('f_comp').value;
-            const larg = document.getElementById('f_larg').value;
-            const alt = document.getElementById('f_alt').value;
-            if(comp) writeText('Caixa de texto 2_5', comp + "M");
-            if(larg) writeText('Caixa de texto 2_6', larg + "M");
-            if(alt)  writeText('Caixa de texto 2_7', alt + "M");
+            // Passo 1 - Dados Comerciais
+            writeText('Caixa de texto 1', document.getElementById('f_cliente').value);      // CLIENTE
+            writeText('Caixa de texto 2_4', document.getElementById('f_codigo').value);     // CÓD.
+            writeText('Caixa de texto 1_2', document.getElementById('f_contato').value);    // CONTATO
+            writeText('Caixa de texto 1_3', document.getElementById('f_vendedor').value);   // VENDEDOR
+            writeText('Caixa de texto 1_4', getPagamentoString());                          // CONDIÇÃO PGTO
 
-            // --- PASSO 3 - PORTAS ---
+            // Passo 2 - Dimensões
+            writeText('Caixa de texto 2_5', document.getElementById('f_comp').value);       // COMPRIMENTO
+            writeText('Caixa de texto 2_6', document.getElementById('f_larg').value);       // LARGURA
+            writeText('Caixa de texto 2_7', document.getElementById('f_alt').value);        // ALTURA
+
+            // Passo 3 - Portas e Abertura
             const nPortas = parseInt(document.getElementById('f_qtd_portas').value) || 1;
-            writeText('Caixa de texto 2_3', nPortas);
+            writeText('Caixa de texto 2', nPortas);                                         // QTD PORTAS
+            writeText('Caixa de texto 2_11', document.getElementById('f_qtd_abertura').value); // QTD ABERTURA
 
+            // Passo 4, 5 e 6 - Produto e Temperaturas
+            writeText('Caixa de texto 2_8', document.getElementById('f_produto').value);     // PRODUTO
+            writeText('Caixa de texto 2_9', document.getElementById('f_temp_entrada').value); // TEMP ENTRADA
+            writeText('Caixa de texto 2_10', document.getElementById('f_temp_final').value); // TEMP FINAL
+
+            // Passo 7, 8 e 9 - Seção Técnica (Imagem 2)
+            writeText('Caixa de texto 2_13', document.getElementById('f_tempo_processo_num').value); // TEMPO PROCESSO
+            writeText('Caixa de texto 2_14', document.getElementById('f_dist_uc_evap').value);       // DISTÂNCIA
+            writeText('Caixa de texto 2_15', document.getElementById('f_capac_arm').value);          // CAPACIDADE
+            writeText('Caixa de texto 2_16', document.getElementById('f_movimentacao').value);       // MOVIMENTAÇÃO
+
+            // --- LÓGICA DE PORTAS MÚLTIPLAS & OBSERVAÇÕES ---
             let resumoPortas = "";
             for(let i=1; i <= nPortas; i++) {
                 const d = doorData[i];
@@ -1451,6 +1464,7 @@
                 resumoPortas += `PORTA ${i}: ${d.tipo} ${d.bat} | ${d.tam} | LADO: ${d.lado.toUpperCase()}\n`;
 
                 if(i === 1) {
+                    // Preenche checkboxes da primeira porta
                     if(d.tipo === "Giratória" && d.bat.includes("3")) check('Caixa de seleção 1_17');
                     if(d.tipo === "Giratória" && d.bat.includes("4")) check('Caixa de seleção 1_18');
                     if(d.tipo === "Correr" && d.bat.includes("3")) check('Caixa de seleção 1_19');
@@ -1467,47 +1481,28 @@
                     if(d.tamId.startsWith('dt_1421')) check('Caixa de seleção 2_5');
                     if(d.tamId.startsWith('dt_1424')) check('Caixa de seleção 2_6');
                     
-                    if(d.tam.startsWith('ESP')) {
-                        writeText('Caixa de texto 2_10', d.tam.replace('ESP: ',''));
-                    }
                     if(d.lado === "Direito") check('Caixa de seleção 2_8');
                     else check('Caixa de seleção 2_7');
                 }
             }
 
-            // Passo 4 em diante
-            writeText('Caixa de texto 2_11', document.getElementById('f_qtd_abertura').value);
-            writeText('Caixa de texto 2_12', document.getElementById('f_produto').value);
-            writeText('Caixa de texto 2_13', document.getElementById('f_temp_entrada').value);
-            writeText('Caixa de texto 2_15', document.getElementById('f_temp_final').value);
-            
-            const tempoVal = document.getElementById('f_tempo_processo_num').value;
-            writeText('Caixa de texto 2_16', tempoVal ? tempoVal + 'H' : '');
-
-            // --- CONSOLIDAÇÃO FINAL NO CAMPO DE OBS (2_14) ---
-            const capacVal = document.getElementById('f_capac_arm').value;
-            const movVal = document.getElementById('f_movimentacao').value;
-            const distVal = document.getElementById('f_dist_uc_evap').value;
             const userObs = document.getElementById('f_observacoes').value;
-
             let consolidado = "";
+            
             if (nPortas > 1) {
-                consolidado += ">>> RELATÓRIO DE PORTAS <<<\n" + resumoPortas + "\n";
+                consolidado += ">>> RELATÓRIO DE TODAS AS PORTAS <<<\n" + resumoPortas + "\n";
             }
-
-            consolidado += ">>> INFORMAÇÕES TÉCNICAS <<<\n";
-            if(capacVal) consolidado += `CAPACIDADE TOTAL: ${capacVal} KG\n`;
-            if(movVal)   consolidado += `MOVIMENTAÇÃO DIÁRIA: ${movVal} KG\n`;
-            if(distVal)  consolidado += `DISTÂNCIA UC/EVAP: ${distVal} METROS\n`;
 
             if(userObs) {
-                consolidado += "\n>>> ANOTAÇÕES GERAIS <<<\n" + userObs;
+                consolidado += ">>> ANOTAÇÕES GERAIS <<<\n" + userObs;
             }
 
-            writeText('Caixa de texto 2_14', consolidado);
+            writeText('Caixa de texto 2_12', consolidado); // GRANDE CAIXA DE OBS (Y BOTTOM)
 
             form.flatten();
             const pdfBytesFilled = await pdfDoc.save();
+
+
             const blob = new Blob([pdfBytesFilled], { type: "application/pdf" });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
