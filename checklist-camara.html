@@ -781,6 +781,12 @@
         return "";
     }
 
+    function changeStep(dir) {
+      if ((currentStep === 1 && dir === -1) || (currentStep === totalSteps && dir === 1)) return;
+      currentStep += dir;
+      updateView();
+    }
+
     function updateView() {
       // Esconder steps
       for (let i = 1; i <= totalSteps; i++) {
