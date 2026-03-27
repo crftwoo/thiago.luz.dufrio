@@ -606,8 +606,19 @@
 
     <!-- STAGE 4 -->
     <div class="step-content" id="step-4">
-        <h2 class="step-title">Carga Térmica</h2>
-        <p class="step-desc">Aguardando definição...</p>
+        <h2 class="step-title">Produto Armazenado</h2>
+        <p class="step-desc">Informe o produto que será armazenado na câmara fria.</p>
+
+        <div class="form-grid">
+            <div class="form-group full">
+                <label>PRODUTO ARMAZENADO</label>
+                <input type="text" id="f_produto" placeholder="Ex: Carne, Peixe, Bebidas..." oninput="validaPasso4()" style="text-transform: uppercase;">
+                <div style="font-size: 11px; margin-top: 8px; color: #64748b; line-height: 1.6;">
+                    <b>⚠️ IMPORTANTE:</b> Especificar pois cada produto tem sua aplicação.<br>
+                    <b>EX:</b> Gelo, Massa, Pão, Carne, Peixe, Vegetais, Fruta, Laticínio, Cerveja, Bebidas, Sorvete.
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- STAGE 5 -->
@@ -814,6 +825,7 @@
             }
             validaPasso3();
         }
+        else if(currentStep === 4) validaPasso4();
         else btnNext.disabled = false;
       }
     }
@@ -1005,6 +1017,12 @@
         }
     }
 
+    function validaPasso4() {
+        const v = document.getElementById('f_produto').value.trim();
+        const nextBtn = document.getElementById('btn-next');
+        if(currentStep === 4) nextBtn.disabled = v.length < 2;
+    }
+
     async function gerarPDF() {
         try {
             document.getElementById('btn-submit').innerText = "Processando PDF...";
@@ -1160,6 +1178,10 @@
                     fieldObs.setText(resumoPortas.toUpperCase());
                 }
             }
+
+            // Produto Armazenado (Caixa de texto 2_12)
+            const fProduto = form.getTextField('Caixa de texto 2_12');
+            if(fProduto) fProduto.setText(document.getElementById('f_produto').value.toUpperCase());
 
             form.flatten(); // Protege o documento
 
