@@ -448,139 +448,75 @@
             <img src="./dimensoes-camara.png" alt="Esquema de Dimensões" style="width: 100%; max-width: 350px; height: auto; mix-blend-mode: multiply;">
         </div>
       </div>
-    </div>
 
-    <!-- STAGE 3 -->
-    <div class="step-content" id="step-3">
-      <h2 class="step-title">Painéis e Portas</h2>
-      <p class="step-desc">Tipo de retenção térmica e especificações de entrada do frigorífico.</p>
-
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Família de Painel</label>
-          <div class="radio-group">
-            <div class="radio-card">
-              <input type="radio" name="tipo_painel" id="painel_pir" value="Caixa de seleção 1_4" onchange="togglePainel()" />
-              <label for="painel_pir">PIR (Poliisocianurato)</label>
-            </div>
-            <div class="radio-card">
-              <input type="radio" name="tipo_painel" id="painel_eps" value="Caixa de seleção 1_2" onchange="togglePainel()" />
-              <label for="painel_eps">EPS (Isopor)</label>
-            </div>
-          </div>
-        </div>
+      <!-- PERGUNTA 2 (TIPO DE PAINEL) -->
+      <div class="q-block" id="q_painel_tipo">
+        <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 24px; color: var(--text-main);">TIPO DE PAINEL (ISOLAMENTO)</h3>
         
-        <div class="form-group full" id="espessura_block" style="display: none;">
-            <label>Temperatura e Espessura (Baseadas na Família)</label>
-            <select id="f_espessura" class="form-group full"></select>
-        </div>
-
-        <div class="form-group full" style="margin-top: 16px;">
-          <label>Estilo de Portas e Batentes</label>
-          <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr);">
-            <div class="radio-card"><input type="radio" name="porta_tipo" id="p_gir_3" value="Caixa de seleção 1_17" /><label for="p_gir_3">Giratória - 3 Batentes</label></div>
-            <div class="radio-card"><input type="radio" name="porta_tipo" id="p_gir_4" value="Caixa de seleção 1_18" /><label for="p_gir_4">Giratória - 4 Batentes</label></div>
-            <div class="radio-card"><input type="radio" name="porta_tipo" id="p_cor_3" value="Caixa de seleção 1_19" /><label for="p_cor_3">Correr - 3 Batentes</label></div>
-            <div class="radio-card"><input type="radio" name="porta_tipo" id="p_cor_4" value="Caixa de seleção 1_20" /><label for="p_cor_4">Correr - 4 Batentes</label></div>
+        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+          <div class="radio-card" style="padding: 20px; text-align: left;">
+            <input type="radio" name="painel_tipo" id="p_pir" value="PIR" onchange="checkQPainelTipo()" />
+            <label for="p_pir" style="display: block;">
+                <div style="font-size: 18px; font-weight: 800; color: var(--primary);">PIR</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; line-height: 1.4;">
+                    (poliisocianurato) - Opção com melhor custo benefício.<br>
+                    <b>Vantagens:</b> *Vida maior, *Menos umidade, *Fumaça não tóxica, *Aceito por seguradoras.
+                </div>
+            </label>
           </div>
-        </div>
-
-        <div class="form-group full">
-            <label>Tamanho da Porta Padrão</label>
-            <div class="radio-group" style="display: grid; grid-template-columns: repeat(3, 1fr);">
-              <div class="radio-card"><input type="radio" name="porta_tam" id="t_g080" value="Caixa de seleção 2" /><label for="t_g080">Gir. 0,80x1,80</label></div>
-              <div class="radio-card"><input type="radio" name="porta_tam" id="t_g100" value="Caixa de seleção 2_2" /><label for="t_g100">Gir. 1,00x2,00</label></div>
-              <div class="radio-card"><input type="radio" name="porta_tam" id="t_c080" value="Caixa de seleção 2_3" /><label for="t_c080">Cor. 0,80x1,80</label></div>
-              <div class="radio-card"><input type="radio" name="porta_tam" id="t_c100" value="Caixa de seleção 2_4" /><label for="t_c100">Cor. 1,00x2,00</label></div>
-              <div class="radio-card"><input type="radio" name="porta_tam" id="t_c14021" value="Caixa de seleção 2_5" /><label for="t_c14021">Cor. 1,40x2,10</label></div>
-              <div class="radio-card"><input type="radio" name="porta_tam" id="t_c14024" value="Caixa de seleção 2_6" /><label for="t_c14024">Cor. 1,40x2,40</label></div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Qtd. de Portas</label>
-            <input type="text" id="f_qtd_portas" placeholder="Ex: 1" />
-        </div>
-        <div class="form-group">
-            <label>Medida Especial (Se houver)</label>
-            <input type="text" id="f_medida_especial" placeholder="L x A Especial" />
-        </div>
-        <div class="form-group">
-            <label>Lado de Abertura</label>
-            <div class="radio-group">
-                <div class="radio-card"><input type="radio" name="porta_lado" id="pl_dir" value="Caixa de seleção 2_8" /><label for="pl_dir">Direito</label></div>
-                <div class="radio-card"><input type="radio" name="porta_lado" id="pl_esq" value="Caixa de seleção 2_7" /><label for="pl_esq">Esquerdo</label></div>
-            </div>
-        </div>
-        <div class="form-group">
-            <label>Frequência de Abertura (Qtd/Dia)</label>
-            <input type="text" id="f_aberturas" placeholder="Ex: Frequente / 25x" />
-        </div>
-        <div class="form-group full">
-            <label>Observação (Portas)</label>
-            <input type="text" id="f_obs_portas" placeholder="..." />
+          <div class="radio-card" style="padding: 20px; text-align: left;">
+            <input type="radio" name="painel_tipo" id="p_eps" value="EPS" onchange="checkQPainelTipo()" />
+            <label for="p_eps" style="display: block;">
+                <div style="font-size: 18px; font-weight: 800; color: var(--primary);">EPS</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; line-height: 1.4;">
+                    (poliestireno) "isopor" - Opção mais utilizada por ser a mais barata.
+                </div>
+            </label>
+          </div>
         </div>
       </div>
+
+      <!-- PERGUNTA 3 (ESPESSURA PIR) -->
+      <div class="q-block" id="q_painel_pir_val" style="display: none;">
+        <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 16px; color: var(--text-main);">ESPESSURA DO PAINEL PIR (°C)</h3>
+        <div class="radio-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+          <div class="radio-card"><input type="radio" name="espessura" id="pir_50" value="50mm" onchange="validaPasso2()"><label for="pir_50">50mm (0°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="pir_70" value="70mm" onchange="validaPasso2()"><label for="pir_70">70mm (-10°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="pir_100" value="100mm" onchange="validaPasso2()"><label for="pir_100">100mm (-20°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="pir_120" value="120mm" onchange="validaPasso2()"><label for="pir_120">120mm (-24°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="pir_150" value="150mm" onchange="validaPasso2()"><label for="pir_150">150mm (-30°C)</label></div>
+        </div>
+      </div>
+
+      <!-- PERGUNTA 3 (ESPESSURA EPS) -->
+      <div class="q-block" id="q_painel_eps_val" style="display: none;">
+        <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 16px; color: var(--text-main);">ESPESSURA DO PAINEL EPS (°C)</h3>
+        <div class="radio-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+          <div class="radio-card"><input type="radio" name="espessura" id="eps_50" value="50mm" onchange="validaPasso2()"><label for="eps_50">50mm (+5°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="eps_100" value="100mm" onchange="validaPasso2()"><label for="eps_100">100mm (-10°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="eps_150" value="150mm" onchange="validaPasso2()"><label for="eps_150">150mm (-20°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="eps_200" value="200mm" onchange="validaPasso2()"><label for="eps_200">200mm (-24°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="eps_250" value="250mm" onchange="validaPasso2()"><label for="eps_250">250mm (-30°C)</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 3 (A GUARDAR INSTRUÇÕES) -->
+    <div class="step-content" id="step-3">
+        <h2 class="step-title">Portas e Acessórios</h2>
+        <p class="step-desc">Aguardando definição do layout e campos...</p>
     </div>
 
     <!-- STAGE 4 -->
     <div class="step-content" id="step-4">
-      <h2 class="step-title">Carga Térmica (Produto)</h2>
-      <p class="step-desc">Determina o esforço necessário que os motores e placa fria farão.</p>
-
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Qual(is) Produto(s) será(ão) Armazenado(s)?</label>
-          <input type="text" id="f_produto_armazenado" placeholder="Ex: Carne Bovina e Frango Congelado" />
-        </div>
-        <div class="form-group">
-          <label>Temperatura de Entrada (°C)</label>
-          <input type="text" id="f_temp_entrada" placeholder="Ex: +10°C" />
-        </div>
-        <div class="form-group">
-          <label>Temperatura Interna Final (°C)</label>
-          <input type="text" id="f_temp_final" placeholder="Ex: -18°C" />
-        </div>
-        <div class="form-group">
-            <label>Capacidade Total Armazenada (Kg)</label>
-            <input type="text" id="f_capacidade" placeholder="Ex: 3.500 Kg" />
-        </div>
-        <div class="form-group">
-            <label>Movimentação Diária (Kg/Dia)</label>
-            <input type="text" id="f_movimentacao" placeholder="Ex: 500 Kg" />
-        </div>
-      </div>
+        <h2 class="step-title">Carga Térmica</h2>
+        <p class="step-desc">Aguardando definição...</p>
     </div>
 
     <!-- STAGE 5 -->
     <div class="step-content" id="step-5">
-      <h2 class="step-title">Equipamento & Elétrica</h2>
-      <p class="step-desc">Rede elétrica industrial e tempos operacionais do maquinário.</p>
-
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Tensão Elétrica (Energia)</label>
-          <div class="radio-group">
-            <div class="radio-card"><input type="radio" name="tensao" id="ten_220m" value="Caixa de seleção 2_9" /><label for="ten_220m">220V Mono</label></div>
-            <div class="radio-card"><input type="radio" name="tensao" id="ten_220t" value="Caixa de seleção 2_10" /><label for="ten_220t">220V Tri</label></div>
-            <div class="radio-card"><input type="radio" name="tensao" id="ten_380t" value="Caixa de seleção 2_11" /><label for="ten_380t">380V Tri</label></div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Tempo de Processo (h) *Normalmente 24h</label>
-          <input type="text" id="f_tempo_processo" value="24" placeholder="Ex: 24" />
-        </div>
-        <div class="form-group">
-          <label>Distância UC x EVAP (Metros)</label>
-          <input type="text" id="f_distancia" placeholder="Ex: 15m" />
-        </div>
-
-        <div class="form-group full" style="margin-top: 24px;">
-            <label>Observações Gerais Finais do Projeto</label>
-            <input type="text" id="f_obs_final" placeholder="Avisos, peculiaridades ou observações adicionais..." />
-        </div>
-      </div>
+        <h2 class="step-title">Resumo e Envio</h2>
+        <p class="step-desc">Aguardando conclusão das etapas anteriores.</p>
     </div>
 
     <!-- BUTTON BOX -->
@@ -595,43 +531,6 @@
   <script>
     let currentStep = 1;
     const totalSteps = 5;
-
-    // Dict for dynamic combobox "Painel Espessura" mappings
-    const PIR_OPTIONS = [
-        { label: "PIR 50mm (0°C)", pdfValue: "Caixa de seleção 1" },
-        { label: "PIR 70mm (-10°C)", pdfValue: "Caixa de seleção 1_5" },
-        { label: "PIR 100mm (-20°C)", pdfValue: "Caixa de seleção 1_6" },
-        { label: "PIR 120mm (-24°C)", pdfValue: "Caixa de seleção 1_7" },
-        { label: "PIR 150mm (-30°C)", pdfValue: "Caixa de seleção 1_8" }
-    ];
-
-    const EPS_OPTIONS = [
-        { label: "EPS 50mm (+5°C)", pdfValue: "Caixa de seleção 1_3" },
-        { label: "EPS 100mm (-10°C)", pdfValue: "Caixa de seleção 1_9" },
-        { label: "EPS 150mm (-20°C)", pdfValue: "Caixa de seleção 1_10" },
-        { label: "EPS 200mm (-24°C)", pdfValue: "Caixa de seleção 1_11" },
-        { label: "EPS 250mm (-30°C)", pdfValue: "Caixa de seleção 1_12" }
-    ];
-
-    function togglePainel() {
-        const d_block = document.getElementById("espessura_block");
-        const selectBox = document.getElementById("f_espessura");
-        selectBox.innerHTML = "";
-        
-        let opts = [];
-        if (document.getElementById("painel_pir").checked) opts = PIR_OPTIONS;
-        else if (document.getElementById("painel_eps").checked) opts = EPS_OPTIONS;
-
-        if (opts.length > 0) {
-            d_block.style.display = 'flex';
-            opts.forEach(o => {
-                let opt = document.createElement("option");
-                opt.value = o.pdfValue;
-                opt.text = o.label;
-                selectBox.add(opt);
-            });
-        }
-    }
 
     // Typeform Logic Step 1
     function checkQ1() {
@@ -703,6 +602,30 @@
 
     // Typeform Logic Step 2
     function checkQDim() {
+        const comp = document.getElementById('f_comp').value.trim();
+        const larg = document.getElementById('f_larg').value.trim();
+        const alt = document.getElementById('f_alt').value.trim();
+        
+        if (comp.length > 0 && larg.length > 0 && alt.length > 0) {
+            document.getElementById('q_painel_tipo').classList.add('active');
+        }
+        validaPasso2();
+    }
+
+    function checkQPainelTipo() {
+        const tipo = document.querySelector('input[name="painel_tipo"]:checked').value;
+        const qPir = document.getElementById('q_painel_pir_val');
+        const qEps = document.getElementById('q_painel_eps_val');
+
+        if (tipo === "PIR") {
+            qPir.style.display = 'block';
+            qPir.classList.add('active');
+            qEps.style.display = 'none';
+        } else {
+            qEps.style.display = 'block';
+            qEps.classList.add('active');
+            qPir.style.display = 'none';
+        }
         validaPasso2();
     }
 
@@ -718,12 +641,17 @@
         const comp = document.getElementById('f_comp').value.trim();
         const larg = document.getElementById('f_larg').value.trim();
         const alt = document.getElementById('f_alt').value.trim();
-        
         const c1 = (comp.length > 0 && larg.length > 0 && alt.length > 0);
         
+        const tipo = document.querySelector('input[name="painel_tipo"]:checked');
+        const c2 = tipo !== null;
+
+        const esp = document.querySelector('input[name="espessura"]:checked');
+        const c3 = esp !== null;
+
         const nextBtn = document.getElementById('btn-next');
         if(currentStep === 2) {
-            nextBtn.disabled = !c1;
+            nextBtn.disabled = !(c1 && c2 && c3);
         }
     }
 
@@ -822,6 +750,35 @@
                 }
             };
 
+            // 6. Preenchimento de Checkboxes (exemplo)
+            const fillCheckbox = (fieldName, id) => {
+                const element = document.getElementById(id);
+                if (element && element.checked) {
+                    try {
+                        const checkbox = form.getCheckBox(fieldName);
+                        if (checkbox) checkbox.check();
+                    } catch(e) { console.warn("Missing Checkbox:", fieldName); }
+                }
+            };
+            
+            // 7. Preenchimento dos Campos de Painel e Espessura
+            fillCheckbox('Caixa de seleção 1_17', 'p_pir');
+            fillCheckbox('Caixa de seleção 1_18', 'p_eps');
+            
+            // PIR Thicknesses
+            fillCheckbox('Caixa de seleção 1_19', 'pir_50');
+            fillCheckbox('Caixa de seleção 1_20', 'pir_70');
+            fillCheckbox('Caixa de seleção 1_21', 'pir_100');
+            fillCheckbox('Caixa de seleção 1_22', 'pir_120');
+            fillCheckbox('Caixa de seleção 1_23', 'pir_150');
+            
+            // EPS Thicknesses
+            fillCheckbox('Caixa de seleção 1_24', 'eps_50');
+            fillCheckbox('Caixa de seleção 1_25', 'eps_100');
+            fillCheckbox('Caixa de seleção 1_26', 'eps_150');
+            fillCheckbox('Caixa de seleção 1_27', 'eps_200');
+            fillCheckbox('Caixa de seleção 1_28', 'eps_250');
+
             const writeRadioGroup = (htmlName) => {
                 const checkedEl = document.querySelector(`input[name="${htmlName}"]:checked`);
                 if (checkedEl) writeCheckBox(checkedEl.value);
@@ -845,34 +802,6 @@
             writeTextField('Caixa de texto 2_5', 'f_comp');
             writeTextField('Caixa de texto 2_6', 'f_larg');
             writeTextField('Caixa de texto 2_7', 'f_alt');
-            writeRadioGroup('piso'); // checkboxes do Piso Painel/Civil...
-
-            // Passo 3
-            writeRadioGroup('tipo_painel'); // PIR / EPS
-            // The Dropdown for thickness
-            const espessuraDrop = document.getElementById("f_espessura");
-            if(espessuraDrop.value) writeCheckBox(espessuraDrop.value);
-            
-            writeRadioGroup('porta_tipo');
-            writeRadioGroup('porta_tam');
-            writeRadioGroup('porta_lado');
-            writeTextField('Caixa de texto 2_3', 'f_qtd_portas'); // Qtd portas
-            writeTextField('Caixa de texto 2_10', 'f_medida_especial');
-            writeTextField('Caixa de texto 2_8', 'f_aberturas'); // Frequencia abertura
-            writeTextField('Caixa de texto 2_9', 'f_obs_portas');
-
-            // Passo 4
-            writeTextField('Caixa de texto 2_11', 'f_produto_armazenado');
-            writeTextField('Caixa de texto 2_12', 'f_temp_entrada');
-            writeTextField('Caixa de texto 2_13', 'f_temp_final');
-            writeTextField('Caixa de texto 2_16', 'f_capacidade');
-            writeTextField('Caixa de texto 2_15', 'f_movimentacao');
-
-            // Passo 5
-            writeRadioGroup('tensao');
-            writeTextField('Caixa de texto 2', 'f_tempo_processo');
-            writeTextField('Caixa de texto 2_2', 'f_distancia');
-            writeTextField('Caixa de texto 2_14', 'f_obs_final');
 
             form.flatten(); // Evita que possa ser quebrado por editores baratos, fixa o texto como imagem vetorizada
 
