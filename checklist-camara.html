@@ -496,11 +496,11 @@
       <div class="q-block" id="q_painel_pir_val" style="display: none;">
         <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 16px; color: var(--text-main);">ESPESSURA DO PAINEL PIR (°C)</h3>
         <div class="radio-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-          <div class="radio-card"><input type="radio" name="espessura" id="pir_50" value="50mm" onchange="validaPasso2()"><label for="pir_50">50mm (0°C)</label></div>
-          <div class="radio-card"><input type="radio" name="espessura" id="pir_70" value="70mm" onchange="validaPasso2()"><label for="pir_70">70mm (-10°C)</label></div>
-          <div class="radio-card"><input type="radio" name="espessura" id="pir_100" value="100mm" onchange="validaPasso2()"><label for="pir_100">100mm (-20°C)</label></div>
-          <div class="radio-card"><input type="radio" name="espessura" id="pir_120" value="120mm" onchange="validaPasso2()"><label for="pir_120">120mm (-24°C)</label></div>
-          <div class="radio-card"><input type="radio" name="espessura" id="pir_150" value="150mm" onchange="validaPasso2()"><label for="pir_150">150mm (-30°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="pir_50" value="50mm" onchange="checkQEsp()"><label for="pir_50">50mm (0°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="pir_70" value="70mm" onchange="checkQEsp()"><label for="pir_70">70mm (-10°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="pir_100" value="100mm" onchange="checkQEsp()"><label for="pir_100">100mm (-20°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="pir_120" value="120mm" onchange="checkQEsp()"><label for="pir_120">120mm (-24°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="pir_150" value="150mm" onchange="checkQEsp()"><label for="pir_150">150mm (-30°C)</label></div>
         </div>
       </div>
 
@@ -508,11 +508,32 @@
       <div class="q-block" id="q_painel_eps_val" style="display: none;">
         <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 16px; color: var(--text-main);">ESPESSURA DO PAINEL EPS (°C)</h3>
         <div class="radio-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-          <div class="radio-card"><input type="radio" name="espessura" id="eps_50" value="50mm" onchange="validaPasso2()"><label for="eps_50">50mm (+5°C)</label></div>
-          <div class="radio-card"><input type="radio" name="espessura" id="eps_100" value="100mm" onchange="validaPasso2()"><label for="eps_100">100mm (-10°C)</label></div>
-          <div class="radio-card"><input type="radio" name="espessura" id="eps_150" value="150mm" onchange="validaPasso2()"><label for="eps_150">150mm (-20°C)</label></div>
-          <div class="radio-card"><input type="radio" name="espessura" id="eps_200" value="200mm" onchange="validaPasso2()"><label for="eps_200">200mm (-24°C)</label></div>
-          <div class="radio-card"><input type="radio" name="espessura" id="eps_250" value="250mm" onchange="validaPasso2()"><label for="eps_250">250mm (-30°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="eps_50" value="50mm" onchange="checkQEsp()"><label for="eps_50">50mm (+5°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="eps_100" value="100mm" onchange="checkQEsp()"><label for="eps_100">100mm (-10°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="eps_150" value="150mm" onchange="checkQEsp()"><label for="eps_150">150mm (-20°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="eps_200" value="200mm" onchange="checkQEsp()"><label for="eps_200">200mm (-24°C)</label></div>
+          <div class="radio-card"><input type="radio" name="espessura" id="eps_250" value="250mm" onchange="checkQEsp()"><label for="eps_250">250mm (-30°C)</label></div>
+        </div>
+      </div>
+
+      <!-- PERGUNTA 4 (ISOLAMENTO DO PISO) -->
+      <div class="q-block" id="q_piso">
+        <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 24px; color: var(--text-main); text-align: center;">ISOLAMENTO DO PISO</h3>
+        
+        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+          <div class="radio-card"><input type="radio" name="piso_tipo" id="floor_painel" value="Painel" onchange="validaPasso2()"><label for="floor_painel">PAINEL</label></div>
+          <div class="radio-card"><input type="radio" name="piso_tipo" id="floor_elevado" value="Civil elevado" onchange="validaPasso2()"><label for="floor_elevado">CIVIL ELEVADO</label></div>
+          <div class="radio-card"><input type="radio" name="piso_tipo" id="floor_enterrado" value="Civil enterrado" onchange="validaPasso2()"><label for="floor_enterrado">CIVIL ENTERRADO</label></div>
+          <div class="radio-card"><input type="radio" name="piso_tipo" id="floor_sem" value="Sem isolamento" onchange="validaPasso2()"><label for="floor_sem">SEM ISOLAMENTO</label></div>
+        </div>
+
+        <div style="background: #f8fafc; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; text-align: left;">
+            <div style="font-size: 11px; line-height: 1.5; color: var(--text-main);">
+                <b style="color: var(--dufrio-azul); text-decoration: underline;">PISO PAINEL:</b> MESMO PAINEL DAS PAREDES E TETO, MONTAGEM RÁPIDA, NÃO DANIFICA O PISO EXISTENTE, RECOMENDA-SE O USO DE ESTRADO REFORÇADO.
+            </div>
+            <div style="font-size: 11px; line-height: 1.5; color: var(--text-main);">
+                <b style="color: var(--dufrio-azul); text-decoration: underline;">PISO CIVIL:</b> UTILIZADO PLACA EPS, MANTA ASFÁLTICA, FRIO ASFALTO, NECESSÁRIO A CONSTRUÇÃO DE UM PISO CIVIL APÓS ISOLAMENTO, PISO MAIS RESISTENTE.
+            </div>
         </div>
       </div>
     </div>
@@ -645,6 +666,14 @@
         validaPasso2();
     }
 
+    function checkQEsp() {
+        const esp = document.querySelector('input[name="espessura"]:checked');
+        if (esp) {
+            document.getElementById('q_piso').classList.add('active');
+        }
+        validaPasso2();
+    }
+
     function formatMeters(el) {
         let val = el.value.trim().replace(/m/gi, '').trim();
         if (val.length > 0 && !isNaN(val.replace(',', '.'))) {
@@ -665,9 +694,12 @@
         const esp = document.querySelector('input[name="espessura"]:checked');
         const c3 = esp !== null;
 
+        const piso = document.querySelector('input[name="piso_tipo"]:checked');
+        const c4 = piso !== null;
+
         const nextBtn = document.getElementById('btn-next');
         if(currentStep === 2) {
-            nextBtn.disabled = !(c1 && c2 && c3);
+            nextBtn.disabled = !(c1 && c2 && c3 && c4);
         }
     }
 
@@ -780,6 +812,12 @@
             // 7. Preenchimento dos Campos de Painel e Espessura
             fillCheckbox('Caixa de seleção 1_17', 'p_pir');
             fillCheckbox('Caixa de seleção 1_18', 'p_eps');
+            
+            // 8. Preenchimento do Piso
+            fillCheckbox('Caixa de seleção 1_13', 'floor_painel');
+            fillCheckbox('Caixa de seleção 1_14', 'floor_elevado');
+            fillCheckbox('Caixa de seleção 1_15', 'floor_enterrado');
+            fillCheckbox('Caixa de seleção 1_16', 'floor_sem');
             
             // PIR Thicknesses
             fillCheckbox('Caixa de seleção 1_19', 'pir_50');
