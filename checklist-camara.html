@@ -417,15 +417,15 @@
             <div style="flex: 1; min-width: 300px; max-width: 400px; display: flex; flex-direction: column; gap: 16px;">
                 <div style="display: flex; align-items: center; justify-content: flex-end;">
                     <label style="font-style: italic; font-size: 16px; font-weight: 700; text-transform: none; margin-bottom: 0;">Comprimento:</label>
-                    <input type="text" id="f_comp" style="width: 160px; margin-left: 20px;" placeholder="Ex: 4.50" onkeyup="checkQDim()" />
+                    <input type="text" id="f_comp" style="width: 160px; margin-left: 20px;" placeholder="Ex: 4.50" onkeyup="checkQDim()" onblur="formatMeters(this)" />
                 </div>
                 <div style="display: flex; align-items: center; justify-content: flex-end;">
                     <label style="font-style: italic; font-size: 16px; font-weight: 700; text-transform: none; margin-bottom: 0;">Largura:</label>
-                    <input type="text" id="f_larg" style="width: 160px; margin-left: 20px;" placeholder="Ex: 3.20" onkeyup="checkQDim()" />
+                    <input type="text" id="f_larg" style="width: 160px; margin-left: 20px;" placeholder="Ex: 3.20" onkeyup="checkQDim()" onblur="formatMeters(this)" />
                 </div>
                 <div style="display: flex; align-items: center; justify-content: flex-end;">
                     <label style="font-style: italic; font-size: 16px; font-weight: 700; text-transform: none; margin-bottom: 0;">Altura:</label>
-                    <input type="text" id="f_alt" style="width: 160px; margin-left: 20px;" placeholder="" onkeyup="checkQDim()" />
+                    <input type="text" id="f_alt" style="width: 160px; margin-left: 20px;" placeholder="" onkeyup="checkQDim()" onblur="formatMeters(this)" />
                 </div>
             </div>
 
@@ -439,11 +439,8 @@
         </div>
 
         <!-- IMAGEM DA CAMARA (Fornecida pelo Usuário) -->
-        <div style="margin-top: 40px; text-align: center; border-radius: 16px; background: #f8fafc; padding: 24px;">
-            <img src="./dimensoes-camara.png" alt="Esquema de Dimensões" style="width: 100%; max-width: 450px; height: auto; border-radius: 8px;">
-            <p style="font-size: 11px; color: var(--text-secondary); margin-top: 12px; font-style: italic;">
-                (Nota: Certifique-se de salvar a sua imagem com o nome exato <strong>dimensoes-camara.png</strong> na pasta para ela aparecer aqui)
-            </p>
+        <div style="margin-top: 40px; text-align: center; border-radius: 16px; background: transparent; padding: 0;">
+            <img src="./dimensoes-camara.png" alt="Esquema de Dimensões" style="width: 100%; max-width: 350px; height: auto; mix-blend-mode: multiply;">
         </div>
       </div>
     </div>
@@ -702,6 +699,14 @@
     // Typeform Logic Step 2
     function checkQDim() {
         validaPasso2();
+    }
+
+    function formatMeters(el) {
+        let val = el.value.trim().replace(/m/gi, '').trim();
+        if (val.length > 0 && !isNaN(val.replace(',', '.'))) {
+            el.value = val + 'm';
+        }
+        checkQDim();
     }
 
     function validaPasso2() {
