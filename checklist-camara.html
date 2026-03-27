@@ -844,11 +844,17 @@
                 <div class="form-grid">
                     <div class="form-group full">
                         <label>TIPO DE PORTA</label>
-                        <div class="radio-group grid-2">
-                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_gir3_${i}" value="Gir. 3 Bat." onchange="validaPasso3()"><label for="d_gir3_${i}">GIRATÓRIA 3 BAT.</label></div>
-                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_gir4_${i}" value="Gir. 4 Bat." onchange="validaPasso3()"><label for="d_gir4_${i}">GIRATÓRIA 4 BAT.</label></div>
-                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_cor3_${i}" value="Correr 3 Bat." onchange="validaPasso3()"><label for="d_cor3_${i}">CORRER 3 BAT.</label></div>
-                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_cor4_${i}" value="Correr 4 Bat." onchange="validaPasso3()"><label for="d_cor4_${i}">CORRER 4 BAT.</label></div>
+                        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_gir_${i}" value="Giratória" onchange="validaPasso3()"><label for="d_gir_${i}">GIRATÓRIA</label></div>
+                             <div class="radio-card"><input type="radio" name="d_tipo_${i}" id="d_cor_${i}" value="Correr" onchange="validaPasso3()"><label for="d_cor_${i}">CORRER</label></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>QUANTIDADE DE BATENTES</label>
+                        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                             <div class="radio-card"><input type="radio" name="d_bat_${i}" id="d_bat3_${i}" value="3 Bat." onchange="validaPasso3()"><label for="d_bat3_${i}">3 BATENTES</label></div>
+                             <div class="radio-card"><input type="radio" name="d_bat_${i}" id="d_bat4_${i}" value="4 Bat." onchange="validaPasso3()"><label for="d_bat4_${i}">4 BATENTES</label></div>
                         </div>
                     </div>
 
@@ -870,7 +876,7 @@
 
                     <div class="form-group full">
                         <label>LADO DE ABERTURA</label>
-                        <div class="radio-group grid-2">
+                        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                              <div class="radio-card"><input type="radio" name="d_lado_${i}" id="dl_dir_${i}" value="Direito" onchange="validaPasso3()"><label for="dl_dir_${i}">DIREITO</label></div>
                              <div class="radio-card"><input type="radio" name="d_lado_${i}" id="dl_esq_${i}" value="Esquerdo" onchange="validaPasso3()"><label for="dl_esq_${i}">ESQUERDO</label></div>
                         </div>
@@ -894,10 +900,11 @@
 
         for(let i=1; i <= n; i++) {
             const t = document.querySelector(`input[name="d_tipo_${i}"]:checked`);
+            const b = document.querySelector(`input[name="d_bat_${i}"]:checked`);
             const s = document.querySelector(`input[name="d_tam_${i}"]:checked`);
             const l = document.querySelector(`input[name="d_lado_${i}"]:checked`);
             
-            if(!t || !s || !l) { allOk = false; break; }
+            if(!t || !b || !s || !l) { allOk = false; break; }
             
             if(s.value === "Especial") {
                 if(document.getElementById(`f_medida_esp_${i}`).value.trim() === "") {
@@ -1029,32 +1036,35 @@
             let resumoPortas = "";
             for(let i=1; i <= nPortas; i++) {
                 const checkedTipo = document.querySelector(`input[name="d_tipo_${i}"]:checked`);
+                const checkedBat = document.querySelector(`input[name="d_bat_${i}"]:checked`);
                 const checkedTam = document.querySelector(`input[name="d_tam_${i}"]:checked`);
                 const checkedLado = document.querySelector(`input[name="d_lado_${i}"]:checked`);
                 const mEspInput = document.getElementById(`f_medida_esp_${i}`);
 
-                if(!checkedTipo || !checkedTam || !checkedLado) continue;
+                if(!checkedTipo || !checkedBat || !checkedTam || !checkedLado) continue;
 
                 let tamLabel = checkedTam.value;
                 if(checkedTam.value === "Especial") tamLabel = "ESP: " + mEspInput.value;
 
-                resumoPortas += `PORTA ${i}: ${checkedTipo.value} | ${tamLabel} | LADO: ${checkedLado.value.toUpperCase()}\n`;
+                let descTipoBat = checkedTipo.value + " " + checkedBat.value;
+
+                resumoPortas += `PORTA ${i}: ${descTipoBat} | ${tamLabel} | LADO: ${checkedLado.value.toUpperCase()}\n`;
 
                 // Carimba a PRIMEIRA porta nos campos específicos do PDF
                 if(i === 1) {
-                    // Tipo
-                    if(checkedTipo.id.startsWith('d_gir3')) writeCheckBox('Caixa de seleção 1_17');
-                    if(checkedTipo.id.startsWith('d_gir4')) writeCheckBox('Caixa de seleção 1_18');
-                    if(checkedTipo.id.startsWith('d_cor3')) writeCheckBox('Caixa de seleção 1_19');
-                    if(checkedTipo.id.startsWith('d_cor4')) writeCheckBox('Caixa de seleção 1_20');
+                    // Tipo + Batente
+                    if(checkedTipo.value === "Giratória" && checkedBat.value.includes("3")) writeCheckBox('Caixa de seleção 1_17');
+                    if(checkedTipo.value === "Giratória" && checkedBat.value.includes("4")) writeCheckBox('Caixa de seleção 1_18');
+                    if(checkedTipo.value === "Correr" && checkedBat.value.includes("3")) writeCheckBox('Caixa de seleção 1_19');
+                    if(checkedTipo.value === "Correr" && checkedBat.value.includes("4")) writeCheckBox('Caixa de seleção 1_20');
 
                     // Tamanho
                     if(checkedTam.id.startsWith('dt_8018')) {
-                        if(checkedTipo.value.includes("Gir")) writeCheckBox('Caixa de seleção 2');
+                        if(checkedTipo.value === "Giratória") writeCheckBox('Caixa de seleção 2');
                         else writeCheckBox('Caixa de seleção 2_3');
                     }
                     if(checkedTam.id.startsWith('dt_1020')) {
-                        if(checkedTipo.value.includes("Gir")) writeCheckBox('Caixa de seleção 2_2');
+                        if(checkedTipo.value === "Giratória") writeCheckBox('Caixa de seleção 2_2');
                         else writeCheckBox('Caixa de seleção 2_4');
                     }
                     if(checkedTam.id.startsWith('dt_1421')) writeCheckBox('Caixa de seleção 2_5');
