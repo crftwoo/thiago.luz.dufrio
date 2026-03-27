@@ -299,6 +299,10 @@
     .q-block.active { display: block; }
     .q-block:last-child { border-bottom: none; }
 
+    input[type="text"] {
+      text-transform: uppercase;
+    }
+
     .btn-next:disabled {
       background: #cbd5e1;
       color: #94a3b8;
@@ -403,38 +407,58 @@
       <h2 class="step-title">Gabarito Físico</h2>
       <p class="step-desc">Medidas externas e definição estrutural do piso da Câmara.</p>
       
-      <div class="form-grid-3" style="margin-bottom: 24px;">
-        <div class="form-group">
-          <label>Comprimento (m)</label>
-          <input type="text" id="f_comp" placeholder="Ex: 4.50" />
-        </div>
-        <div class="form-group">
-          <label>Largura (m)</label>
-          <input type="text" id="f_larg" placeholder="Ex: 3.20" />
-        </div>
-        <div class="form-group">
-          <label>Altura (m) *Padrão 2.40</label>
-          <input type="text" id="f_alt" value="2.40" placeholder="Ex: 2.40" />
+      <!-- PERGUNTA 1 (DIMENSOES) -->
+      <div class="q-block active" id="q_dimensoes">
+        <label>Medidas Externas da Câmara</label>
+        
+        <div style="display: flex; gap: 24px; margin-top: 16px; align-items: flex-start; flex-wrap: wrap;">
+            <!-- IMAGEM DIDATICA -->
+            <div style="flex: 1; min-width: 250px; background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center;">
+                <img src="./dimensoes-camara.png" alt="Esquema de Dimensões" style="width: 100%; max-width: 280px; height: auto; border-radius: 8px;" onerror="this.style.display='none'">
+                <p style="font-size: 11px; color: var(--text-secondary); margin-top: 8px; font-style: italic;">(Coloque a imagem de referência na pasta do projeto como dimensoes-camara.png)</p>
+            </div>
+
+            <div style="flex: 2; min-width: 300px;">
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label>Comprimento (m)</label>
+                        <input type="text" id="f_comp" placeholder="Ex: 4.50" onkeyup="checkQDim()" />
+                    </div>
+                    <div class="form-group">
+                        <label>Largura (m)</label>
+                        <input type="text" id="f_larg" placeholder="Ex: 3.20" onkeyup="checkQDim()" />
+                    </div>
+                    <div class="form-group">
+                        <label>Altura (m)</label>
+                        <input type="text" id="f_alt" value="2.40" onkeyup="checkQDim()" />
+                    </div>
+                </div>
+                <div style="margin-top: 16px; padding: 12px 16px; background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 8px;">
+                    <strong style="color: #b45309; font-size: 13px;">💡 DICA:</strong>
+                    <span style="color: #92400e; font-size: 13px;">Se o cliente não informar ou não souber a altura, podemos indicar <b>2,40m</b> interno como o padrão inicial de mercado.</span>
+                </div>
+            </div>
         </div>
       </div>
 
-      <div class="form-group full">
+      <!-- PERGUNTA 2 (PISO) -->
+      <div class="q-block" id="q_piso">
         <label>Isolamento do Piso</label>
-        <div class="radio-group" style="display: grid; grid-template-columns: repeat(4, 1fr);">
+        <div class="radio-group" style="display: grid; grid-template-columns: repeat(2, 1fr); margin-top: 8px;">
           <div class="radio-card">
-            <input type="radio" name="piso" id="piso_painel" value="Caixa de seleção 1_13" />
+            <input type="radio" name="piso" id="piso_painel" value="Caixa de seleção 1_13" onchange="checkQPiso()" />
             <label for="piso_painel">Piso Painel</label>
           </div>
           <div class="radio-card">
-            <input type="radio" name="piso" id="piso_civil_elevado" value="Caixa de seleção 1_14" />
+            <input type="radio" name="piso" id="piso_civil_elevado" value="Caixa de seleção 1_14" onchange="checkQPiso()" />
             <label for="piso_civil_elevado">Civil Elevado</label>
           </div>
           <div class="radio-card">
-            <input type="radio" name="piso" id="piso_civil_enterrado" value="Caixa de seleção 1_15" />
+            <input type="radio" name="piso" id="piso_civil_enterrado" value="Caixa de seleção 1_15" onchange="checkQPiso()" />
             <label for="piso_civil_enterrado">Civil Enterrado</label>
           </div>
           <div class="radio-card">
-            <input type="radio" name="piso" id="piso_sem" value="Caixa de seleção 1_16" />
+            <input type="radio" name="piso" id="piso_sem" value="Caixa de seleção 1_16" onchange="checkQPiso()" />
             <label for="piso_sem">Sem Isolamento</label>
           </div>
         </div>
@@ -692,6 +716,37 @@
         }
     }
 
+    // Typeform Logic Step 2
+    function checkQDim() {
+        const comp = document.getElementById('f_comp').value.trim();
+        const larg = document.getElementById('f_larg').value.trim();
+        const alt = document.getElementById('f_alt').value.trim();
+        
+        if (comp.length > 0 && larg.length > 0 && alt.length > 0) {
+            document.getElementById('q_piso').classList.add('active');
+        }
+        validaPasso2();
+    }
+
+    function checkQPiso() {
+        validaPasso2();
+    }
+
+    function validaPasso2() {
+        const comp = document.getElementById('f_comp').value.trim();
+        const larg = document.getElementById('f_larg').value.trim();
+        const alt = document.getElementById('f_alt').value.trim();
+        const c1 = (comp.length > 0 && larg.length > 0 && alt.length > 0);
+        
+        const pisoRadio = document.querySelector('input[name="piso"]:checked');
+        const c2 = pisoRadio !== null;
+
+        const nextBtn = document.getElementById('btn-next');
+        if(currentStep === 2) {
+            nextBtn.disabled = !(c1 && c2);
+        }
+    }
+
     function getPagamentoString() {
         const tipo = document.getElementById('pagamento_tipo').value;
         if (tipo === "A vista") return "À vista";
@@ -727,9 +782,10 @@
         btnNext.style.display = 'block';
         btnSubmit.style.display = 'none';
         
-        // Se mudou de step, re-checa disabled state
+        // Se mudou de step, re-checa disabled state do STEP atual
         if(currentStep === 1) validaPasso1();
-        else btnNext.disabled = false; // Em breve travaremos os outros steps tbm
+        else if(currentStep === 2) validaPasso2();
+        else btnNext.disabled = false; // Os outros travaremos em breve
       }
     }
 
@@ -759,13 +815,13 @@
                 return;
             }
 
-            // 3. Helper to write safely
+            // 3. Helper to write safely with UPPERCASE force
             const writeTextField = (fieldName, id) => {
                 const element = document.getElementById(id);
                 if (element && element.value.trim() !== "") {
                     try {
                         const field = form.getTextField(fieldName);
-                        if (field) field.setText(element.value.trim());
+                        if (field) field.setText(element.value.trim().toUpperCase());
                     } catch(e) { console.warn("Missing Text field in PDF:", fieldName); }
                 }
             };
