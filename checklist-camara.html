@@ -303,6 +303,11 @@
       text-transform: uppercase;
     }
 
+    /* Exceção para medidas (unidade m minúscula) */
+    #f_comp, #f_larg, #f_alt {
+      text-transform: none;
+    }
+
     .btn-next:disabled {
       background: #cbd5e1;
       color: #94a3b8;
@@ -790,13 +795,21 @@
                 return;
             }
 
-            // 3. Helper to write safely with UPPERCASE force
+            // 3. Helper to write safely with UPPERCASE force (except dimensions with 'm')
             const writeTextField = (fieldName, id) => {
                 const element = document.getElementById(id);
                 if (element && element.value.trim() !== "") {
                     try {
                         const field = form.getTextField(fieldName);
-                        if (field) field.setText(element.value.trim().toUpperCase());
+                        if (field) {
+                            let val = element.value.trim();
+                            // Se for campo de medida, mantemos o 'm' minúsculo
+                            if (id === 'f_comp' || id === 'f_larg' || id === 'f_alt') {
+                                field.setText(val);
+                            } else {
+                                field.setText(val.toUpperCase());
+                            }
+                        }
                     } catch(e) { console.warn("Missing Text field in PDF:", fieldName); }
                 }
             };
