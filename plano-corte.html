@@ -283,14 +283,12 @@
     <h1>Plano de Corte – Painéis</h1>
     <div class="sub-title">Otimize os cortes de painéis PIR/EPS para minimizar o desperdício de material.</div>
 
-    <!-- NOVA ETAPA: SOLICITAÇÃO DO CLIENTE -->
     <div class="box">
       <h3>Solicitação do cliente</h3>
       <textarea id="raw" rows="6" style="width:100%;" placeholder="Cole aqui o texto do cliente..."></textarea><br>
       <button onclick="interpretar()">Interpretar</button>
     </div>
 
-    <!-- DEMANDA INTERPRETADA -->
     <div class="box hidden" id="editor">
       <h3>Demanda interpretada (editável)</h3>
       <div class="table-responsive">
@@ -306,7 +304,6 @@
       <button onclick="confirmar()">OK</button>
     </div>
 
-    <!-- DEMANDA FINAL -->
     <div class="box hidden" id="boxDemanda">
       <h3>Demanda</h3>
       <textarea id="input" rows="8" style="width:100%;" readonly></textarea><br>
@@ -324,8 +321,6 @@
       PIR: ["70mm", "100mm", "120mm", "150mm"],
       EPS: ["50mm", "100mm", "150mm", "200mm"]
     };
-
-
 
     function interpretar() {
       let linhas = raw.value.split(/\n+/).map(l => l.trim()).filter(l => l);
@@ -368,8 +363,14 @@
         let qtdMatch = ll.match(/^(\d+)/);
         let qtd = qtdMatch ? fmtQtd(qtdMatch[1]) : "";
 
-        let compMatch = ll.match(/(\d+[\.,]\d+)\s*m?/);
-        let comp = compMatch ? compMatch[1].replace(",", ".") : "";
+        // Pega número com vírgula/ponto OU número inteiro seguido de 'm' e formata com vírgula
+        let compMatch = ll.match(/(\d+[\.,]\d+)(?:\s*m)?|(\d+)\s*m(?!\w)/i);
+        let comp = "";
+        if (compMatch) {
+            let numRaw = compMatch[1] || compMatch[2];
+            let numFloat = parseFloat(numRaw.replace(',', '.'));
+            comp = numFloat.toFixed(2).replace('.', ',');
+        }
 
         if (!qtd && !comp) return;
 
@@ -397,8 +398,6 @@
 
       editor.classList.remove("hidden"); normalizeAllLengths();
     }
-
-
 
     function ajustarEsp(sel) {
       let tipo = sel.value;
@@ -429,7 +428,7 @@
       editor.classList.add("hidden"); document.getElementById("boxDemanda").classList.remove("hidden");
     }
 
-    /* ===== MOTOR ORIGINAL DE CÁLCULO (INALTERADO) ===== */
+    /* ===== MOTOR ORIGINAL DE CÁLCULO ===== */
     const PAINEL_PADRAO = 12.05;
     const PAINEIS_ALT = [2.4, 3, 4, 6];
     const LIMITE_SOBRA = 1.5;
@@ -490,7 +489,10 @@
         let sobra = tamanhoPainel - ultimo.reduce((s, v) => s + v, 0);
         planos[chave] = { base: paineis, ultimo: ultimo };
         
-        let temAlternativa = (chave !== "EPS 50mm");
+        let maiorPeca = Math.max(...ultimo);
+        let altExiste = PAINEIS_ALT.find(p => p >= maiorPeca);
+        let temAlternativa = (chave !== "EPS 50mm") && (altExiste !== undefined);
+        
         if (sobra > LIMITE_SOBRA && temAlternativa) ordem.push(chave);
         else { decisoes[chave] = "PADRAO"; }
       });
@@ -549,15 +551,15 @@
           let tam = p.tamAlt || tamanhoPainel;
           cont[tam] = (cont[tam] || 0) + 1;
           let usado = p.reduce((s, v) => s + v, 0);
-          out += `<tr><td>Painel ${i + 1}<br><span class="sub">${tam.toFixed(2)} m</span></td>`;
-          for (let c = 0; c < max; c++) out += `<td>${p[c] ? p[c].toFixed(2) : ""}</td>`;
-          out += `<td>${(tam - usado).toFixed(2)}</td></tr>`;
+          out += `<tr><td>Painel ${i + 1}<br><span class="sub">${tam.toFixed(2).replace('.', ',')} m</span></td>`;
+          for (let c = 0; c < max; c++) out += `<td>${p[c] ? p[c].toFixed(2).replace('.', ',') : ""}</td>`;
+          out += `<td>${(tam - usado).toFixed(2).replace('.', ',')}</td></tr>`;
         });
         out += "</table></div>";
         resultado.innerHTML += out;
 
         Object.keys(cont).forEach(t => {
-          resumoTxt += `${cont[t]} pçs – Painel ${chave.split(" ")[0]} ${chave.split(" ")[1]} de ${Number(t).toFixed(2)} m\n`;
+          resumoTxt += `${cont[t]} pçs – Painel ${chave.split(" ")[0]} ${chave.split(" ")[1]} de ${Number(t).toFixed(2).replace('.', ',')} m\n`;
         });
         resumoTxt += "\n";
       });
@@ -574,7 +576,7 @@
       if (v === null || v === undefined || v === "") return "";
       let n = parseFloat(String(v).replace(",", "."));
       if (isNaN(n)) return "";
-      return n.toFixed(2);
+      return n.toFixed(2).replace('.', ',');
     }
 
     function normalizeAllLengths() {
@@ -591,9 +593,6 @@
       return n < 10 ? "0" + n : String(n);
     }
   </script>
-
-
-
 
 </body>
 
