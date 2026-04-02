@@ -1747,11 +1747,14 @@
             const h = parseFloat(document.getElementById('input_alt').value) || 0.1;
             const d_depth = parseFloat(document.getElementById('input_larg').value) || 0.1;
 
-            const offset = Math.max(w, h, d_depth) * 0.08; 
+            const offset = Math.max(w, h, d_depth) * 0.12; 
 
+            // Frente-Esquerda no eixo Z (Comprimento)
             const posComp = new THREE.Vector3(0, 0, d_depth/2 + offset); 
+            // Frente-Direita no eixo X (Largura)
             const posLarg = new THREE.Vector3(w/2 + offset, 0, 0);       
-            const posAlt = new THREE.Vector3(w/2 + offset, h/2, d_depth/2 + offset); 
+            // Movido estrategicamente para a aresta VERTICAL DIREITA extrema para não atropelar a base
+            const posAlt = new THREE.Vector3(-w/2 - offset, h/2, d_depth/2 + offset); 
 
             const container = document.getElementById('canvas-container');
             const width = container.clientWidth;
