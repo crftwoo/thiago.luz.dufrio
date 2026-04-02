@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Checklist Câmara Frigorífica</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;800;900&display=swap');
+
+        :root {
+            --green: #102E82;
+            --dufrio-azul: #102E82;
+            --dufrio-azul-claro: #2BAAE2;
+            --border: #e5e7eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-secondary: #6b7280;
+            --text-main: #1f2937;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 600px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            font-style: italic;
+            color: var(--dufrio-azul);
+            text-align: center;
+        }
+        
+        .sub-head {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px;
+            text-align: center;
+        }
+
+        .pergunta-container {
+            background-color: var(--card-bg);
+            margin-bottom: 24px;
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        
+        .pergunta-container.oculta {
+            display: none !important;
+        }
+
+        .pergunta-container:not(.oculta) {
+            animation: slideUpFade 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        label, h3 {
+            font-weight: 900;
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+            font-size: 16px;
+            color: var(--text-main);
+            display: block;
+        }
+
+        h3 {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+            margin-bottom: 16px !important;
+            color: var(--dufrio-azul) !important;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            max-width: 400px;
+            padding: 14px 16px;
+            margin-top: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        input::placeholder { color: #aaa; font-weight: 500; }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--dufrio-azul-claro);
+            box-shadow: 0 0 0 3px rgba(43, 170, 226, 0.1);
+        }
+
+        .sub-pergunta {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--bg-color);
+            border-left: 4px solid var(--dufrio-azul-claro);
+            border-radius: 8px;
+        }
+
+        .dica {
+            color: #d97706; /* amber-600 */
+            font-size: 0.85em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .info-box {
+            background-color: #f1f5f9; /* slate-100 */
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .info-box strong { color: var(--dufrio-azul); font-weight: 800; }
+
+        button {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            padding: 16px 32px;
+            color: var(--dufrio-azul);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            font-family: 'Inter', sans-serif;
+            margin-top: 24px;
+        }
+
+        button:hover {
+            background: var(--dufrio-azul);
+            color: #fff;
+            border-color: var(--dufrio-azul);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16,46,130,0.15);
+        }
+
+        .btn-finalizar {
+            background-color: #059669; /* emerald-600 */
+            color: white;
+            border-color: #059669;
+        }
+        .btn-finalizar:hover {
+            background-color: #047857;
+            border-color: #047857;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+        }
+
+        /* Radio Buttons */
+        .radio-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            background-color: var(--bg-color);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        .radio-option:hover { border-color: var(--dufrio-azul-claro); }
+        .radio-option input[type="radio"] {
+            transform: scale(1.2);
+            accent-color: var(--dufrio-azul);
+            margin: 0;
+        }
+
+        /* ESTILOS DO SIMULADOR 3D */
+        .simulador-wrapper {
+            display: flex;
+            flex-direction: row; 
+            gap: 30px;
+            background-color: var(--bg-color);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-top: 15px;
+            align-items: stretch;
+        }
+        .controles-3d {
+            display: flex;
+            flex-direction: column; 
+            gap: 15px;
+            width: 350px; 
+            justify-content: center;
+        }
+        .controle-grupo {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            gap: 10px;
+        }
+        .controle-grupo label {
+            font-size: 13px;
+            color: var(--text-main);
+            margin: 0;
+        }
+        .inputs-linha { display: flex; align-items: center; gap: 15px; }
+        .input-numero {
+            width: 70px;
+            padding: 8px;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 800;
+        }
+        input[type=range] { flex: 1; accent-color: var(--dufrio-azul); cursor: pointer; }
+        
+        .btn-resetar {
+            width: 100%;
+            margin-top: 10px;
+            background: var(--bg-color);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        #canvas-container {
+            flex: 1; 
+            min-height: 400px; 
+            position: relative;
+            background-color: #e2e8f0;  /* lighter visual for canvas */
+            border-radius: 12px;
+            overflow: hidden; 
+            border: 1px solid var(--border);
+        }
+        .label-3d {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.95); 
+            color: var(--dufrio-azul); 
+            padding: 4px 8px;
+            border: 1px solid var(--dufrio-azul-claro);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            pointer-events: none; 
+            transform: translate(-50%, -50%); 
+            z-index: 10;
+            white-space: nowrap;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* LAYOUT DE PORTAS EM LINHA */
+        .container-portas {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .linha-porta {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 16px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+        .porta-titulo {
+            display: flex;
+            align-items: center;
+            color: var(--dufrio-azul);
+            font-weight: 900;
+            font-size: 14px;
+            min-width: 80px;
+            margin-bottom: 8px;
+        }
+        .campo-linha {
+            flex: 1;
+            min-width: 140px;
+            display: flex;
+            flex-direction: column;
+        }
+        .campo-linha label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 800;
+        }
+        .campo-linha select, .campo-linha input {
+            margin-top: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .porta-btn-container {
+            display: flex;
+            align-items: center;
+        }
+        .btn-confirmar-porta {
+            margin-top: 0;
+            background-color: #059669;
+            color: white;
+            border-color: #059669;
+            padding: 14px 24px;
+        }
+        .btn-confirmar-porta:hover {
+            background-color: #047857;
+        }
+
+        /* Estilos da Tabela */
+        .tabela-referencia {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--card-bg);
+        }
+        .tabela-referencia th, .tabela-referencia td {
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .tabela-referencia th:last-child, .tabela-referencia td:last-child {
+            border-right: none;
+        }
+        .tabela-referencia tr:last-child td {
+            border-bottom: none;
+        }
+        .tabela-referencia th {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-weight: 800;
+        }
+        .tabela-referencia td:first-child {
+            text-align: left;
+            color: var(--dufrio-azul);
+        }
+
+        /* Spans de Variaveis Highlight */
+        span[id^="display_"] {
+            color: var(--dufrio-azul);
+            font-style: italic;
+            background: #e0f2fe;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 900;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 24px; }
+            .simulador-wrapper { flex-direction: column; }
+            .controles-3d { width: 100%; }
+            #canvas-container { min-height: 300px; }
+            .linha-porta { flex-direction: column; align-items: stretch; }
+            .porta-titulo, .porta-btn-container { margin-top: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <img id="logo-dufrio" src="Logo_Dufrio_3_1_.webp" style="display:none;" crossorigin="anonymous" />
+
+    <div class="container">
+        <h1>Orçamento - Câmara Frigorífica</h1>
+        <div class="sub-head">Checklist Oficial Passo a Passo</div>
+        
+        <form id="formulario-checklist">
+        
+        <div id="etapa-1" class="pergunta-container">
+            <label for="nome_cliente">1. Qual o nome do cliente?</label><br>
+            <input type="text" id="nome_cliente" name="nome_cliente" placeholder="Digite o nome completo" autofocus oninput="formatarNome(this)">
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(1, 2)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-2" class="pergunta-container oculta">
+            <label for="codigo_cliente">2. Qual o código do cliente? (Apenas números)</label><br>
+            <input type="text" id="codigo_cliente" name="codigo_cliente" placeholder="Ex: 12345" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(2, 3)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-3" class="pergunta-container oculta">
+            <label for="contato_cliente">3. Qual o contato do cliente? (Telefone/WhatsApp)</label><br>
+            <input type="text" id="contato_cliente" name="contato_cliente" placeholder="(00) 00000-0000" maxlength="15" oninput="formatarTelefone(this)">
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(3, 4)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-4" class="pergunta-container oculta">
+            <label for="nome_vendedor">4. Qual o nome do vendedor?</label><br>
+            <input type="text" id="nome_vendedor" name="nome_vendedor" placeholder="Digite o nome do vendedor" oninput="formatarNome(this)">
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(4, 5)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-5" class="pergunta-container oculta">
+            <label for="forma_pagamento">5. Qual a condição de pagamento?</label><br>
+            <select id="forma_pagamento" name="forma_pagamento" onchange="mostrarOpcoesPagamento()">
+                <option value="">Selecione uma opção...</option>
+                <option value="a_vista">À Vista</option>
+                <option value="boleto">Boleto</option>
+                <option value="cartao">Cartão de Crédito</option>
+            </select>
+
+            <div id="opcoes_boleto" class="sub-pergunta oculta">
+                <label for="parcelas_boleto">Escolha o parcelamento (Boleto):</label><br>
+                <select id="parcelas_boleto" name="parcelas_boleto">
+                    <option value="">Selecione...</option>
+                    <option value="1x_28">1x - 28 dias</option>
+                    <option value="2x_28_56">2x - 28/56 dias</option>
+                    <option value="3x_28_56_84">3x - 28/56/84 dias</option>
+                    <option value="4x_28_56_84_112">4x - 28/56/84/112 dias</option>
+                    <option value="5x_28_56_84_112_140">5x - 28/56/84/112/140 dias</option>
+                </select>
+            </div>
+
+            <div id="opcoes_cartao" class="sub-pergunta oculta">
+                <label for="parcelas_cartao">Escolha o parcelamento (Cartão):</label><br>
+                <select id="parcelas_cartao" name="parcelas_cartao">
+                    <option value="">Selecione...</option>
+                    <option value="1x">1x</option><option value="2x">2x</option><option value="3x">3x</option>
+                    <option value="4x">4x</option><option value="5x">5x</option><option value="6x">6x</option>
+                    <option value="7x">7x</option><option value="8x">8x</option><option value="9x">9x</option>
+                    <option value="10x">10x</option>
+                </select>
+            </div>
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(5, 6)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-6" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">6. Medidas Externas da Câmara</h3>
+            <p class="dica">💡 Dica: Se o cliente não souber a altura, use 2,40m como padrão.</p>
+            
+            <div class="simulador-wrapper">
+                <div class="controles-3d">
+                    <div class="controle-grupo">
+                        <label>Comprimento (m)</label>
+                        <div class="inputs-linha">
+                            <input type="number" id="input_comp" class="input-numero" value="2.5" step="0.1" oninput="atualizarRange('comp')">
+                            <input type="range" id="range_comp" min="1" max="60" step="0.1" value="2.5" oninput="atualizarInput('comp')">
+                        </div>
+                    </div>
+                    <div class="controle-grupo">
+                        <label>Largura (m)</label>
+                        <div class="inputs-linha">
+                            <input type="number" id="input_larg" class="input-numero" value="2.0" step="0.1" oninput="atualizarRange('larg')">
+                            <input type="range" id="range_larg" min="1" max="60" step="0.1" value="2.0" oninput="atualizarInput('larg')">
+                        </div>
+                    </div>
+                    <div class="controle-grupo">
+                        <label>Altura (m)</label>
+                        <div class="inputs-linha">
+                            <input type="number" id="input_alt" class="input-numero" value="2.4" step="0.1" oninput="atualizarRange('alt')">
+                            <input type="range" id="range_alt" min="2" max="10" step="0.1" value="2.4" oninput="atualizarInput('alt')">
+                        </div>
+                    </div>
+                    <button type="button" class="btn-resetar" onclick="resetarValores()">Resetar Valores</button>
+                </div>
+
+                <div id="canvas-container">
+                    <div id="lbl-comp" class="label-3d"></div>
+                    <div id="lbl-larg" class="label-3d"></div>
+                    <div id="lbl-alt" class="label-3d"></div>
+                </div>
+            </div>
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(6, 7)">Próxima Pergunta</button>
+        </div>
+        <div id="etapa-7" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">7. Tipo de Painel e Espessura</h3>
+            
+            <div class="info-box">
+                <strong>Opção 01: EPS (poliestireno) "isopor"</strong> - Opção mais utilizada por ser a mais barata.<br><br>
+                <strong>Opção 02: PIR (poliisocianurato)</strong> - Opção com melhor custo benefício.<br>
+                <em>Vantagens: *Prazo de vida maior, *Retém menos umidade, *Fumaça não tóxica (totalmente branca), *É aceito por todas as seguradoras do país.</em>
+            </div>
+
+            <label>Selecione o tipo de Painel:</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="tipo_painel" value="PIR" onchange="mostrarOpcoesPainel()"> PIR
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="tipo_painel" value="EPS" onchange="mostrarOpcoesPainel()"> EPS
+                </label>
+            </div>
+            
+            <div id="opcoes_pir" class="sub-pergunta oculta">
+                <label for="espessura_pir">Selecione a Espessura / Temperatura (PIR):</label><br>
+                <select id="espessura_pir" name="espessura_pir">
+                    <option value="">Selecione...</option>
+                    <option value="50mm_0c">50mm | 0°C</option>
+                    <option value="70mm_-10c">70mm | -10°C</option>
+                    <option value="100mm_-20c">100mm | -20°C</option>
+                    <option value="120mm_-24c">120mm | -24°C</option>
+                    <option value="150mm_-30c">150mm | -30°C</option>
+                </select>
+            </div>
+
+            <div id="opcoes_eps" class="sub-pergunta oculta">
+                <label for="espessura_eps">Selecione a Espessura / Temperatura (EPS):</label><br>
+                <select id="espessura_eps" name="espessura_eps">
+                    <option value="">Selecione...</option>
+                    <option value="50mm_5c">50mm | +5°C</option>
+                    <option value="100mm_-10c">100mm | -10°C</option>
+                    <option value="150mm_-20c">150mm | -20°C</option>
+                    <option value="200mm_-24c">200mm | -24°C</option>
+                    <option value="250mm_-30c">250mm | -30°C</option>
+                </select>
+            </div>
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(7, 8)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-8" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">8. Isolamento do Piso</h3>
+            
+            <div class="info-box">
+                <strong>Opção 01: Piso Painel:</strong> Mesmo painel das paredes e teto, montagem rápida, não danifica o piso existente, recomenda-se o uso de estrado reforçado.<br><br>
+                <strong>Opção 02: Piso Civil (elevado ou enterrado):</strong> Utilizado placa EPS, manta asfáltica, frio asfalto. Necessário a construção de um piso civil após isolamento, piso mais resistente.
+            </div>
+
+            <label>Selecione o tipo de isolamento do piso:</label>
+            <div class="radio-group">
+                <label class="radio-option"><input type="radio" name="isolamento_piso" value="Painel"> Painel</label>
+                <label class="radio-option"><input type="radio" name="isolamento_piso" value="Civil Elevado"> Civil Elevado</label>
+                <label class="radio-option"><input type="radio" name="isolamento_piso" value="Civil Enterrado"> Civil Enterrado</label>
+                <label class="radio-option"><input type="radio" name="isolamento_piso" value="Sem Isolamento"> Sem Isolamento</label>
+            </div>
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(8, 9)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-9" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">9. Portas</h3>
+            
+            <div class="info-box">
+                <strong>Giratória:</strong> Menor custo, maior espaço de abertura.<br>
+                <strong>Correr:</strong> Maior custo, menor espaço de abertura.<br><br>
+                <strong>3 Batentes:</strong> Para piso nivelado.<br>
+                <strong>4 Batentes:</strong> Para piso elevado e sem rampa.
+            </div>
+
+            <div id="setup_qtd_portas">
+                <label for="qtd_portas">Quantas portas a câmara terá?</label><br>
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+                    <input type="number" id="qtd_portas" min="1" value="1" style="width: 100px; margin-top: 0;">
+                    <button type="button" onclick="gerarLinhasPortas()" style="margin-top: 0; background-color: #ffcc00; color: #000; font-weight: bold;">Gerar Linhas</button>
+                </div>
+            </div>
+
+            <div id="container_grade_portas" class="container-portas"></div>
+
+            <br>
+            <button type="button" id="btn_avancar_9" class="btn-prox-etapa oculta" onclick="avancar(9, 10)">Confirmar e ir para Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-10" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">10. Frequência de Abertura da Porta</h3>
+            
+            <div class="info-box">
+                <strong>Frequente:</strong> Acima de 20x ao dia.<br>
+                <strong>Moderado:</strong> Cerca de 10x ao dia.<br>
+                <strong>Raramente:</strong> Abaixo de 5x ao dia.
+            </div>
+
+            <label for="qtd_abertura">Selecione a quantidade de abertura diária:</label><br>
+            <select id="qtd_abertura" name="qtd_abertura">
+                <option value="">Selecione...</option>
+                <option value="frequente">Frequente - Acima de 20x Dia</option>
+                <option value="moderado">Moderado - Cerca de 10x Dia</option>
+                <option value="raramente">Raramente - Abaixo de 5x Dia</option>
+            </select>
+            
+            <br><br>
+            <label for="obs_abertura">Observações (OBS):</label><br>
+            <input type="text" id="obs_abertura" name="obs_abertura" placeholder="Ex: A porta fica aberta muito tempo durante a carga..." oninput="formatarNome(this)">
+
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(10, 11)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-11" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">11. Produto Armazenado</h3>
+            
+            <div class="info-box">
+                <strong>IMPORTANTE:</strong> Especificar pois cada produto tem sua aplicação (temperatura, umidade, tempo de resfriamento, etc).
+            </div>
+
+            <label for="produto_armazenado">Qual produto será armazenado na câmara?</label><br>
+            <input type="text" id="produto_armazenado" name="produto_armazenado" placeholder="Ex: Gelo, Massa, Carne, Fruta, Cerveja, Sorvete..." oninput="formatarNome(this)">
+            
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="irParaEtapa12()">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-12" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">12. Temperatura de Entrada</h3>
+            
+            <label id="lbl_pergunta_12" for="temp_entrada">Qual a temperatura em que o produto (<span id="display_produto_armazenado" style="color: #ffcc00;">...</span>) entra na câmara fria?</label><br>
+            <input type="text" id="temp_entrada" name="temp_entrada" placeholder="Ex: 10 ou -15" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
+            
+            <div class="info-box" style="margin-top: 25px;">
+                <p style="margin-top: 0; color: #ffcc00; font-weight: bold; margin-bottom: 5px;">Tabela de Referência Padrão:</p>
+                <table class="tabela-referencia">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Segmento</th>
+                            <th>Resf.</th>
+                            <th>Cong.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Carnes</td><td>Mercados/Açougues</td><td>+10°C</td><td>-15°C</td></tr>
+                        <tr><td>Carnes</td><td>Frigoríficos/Abatedouros</td><td>+38°C</td><td>-18°C</td></tr>
+                        <tr><td>Massa/Pão</td><td>Panificadoras/Padarias</td><td>+24°C</td><td>-18°C</td></tr>
+                        <tr><td>Peixe</td><td>Frigoríficos/Abatedouros</td><td>+10°C</td><td>0°C</td></tr>
+                        <tr><td>Peixe</td><td>Distribuidora/Mercados</td><td>-</td><td>-15°C</td></tr>
+                        <tr><td>Sorvete</td><td>Fabricante</td><td>-</td><td>+1°C</td></tr>
+                        <tr><td>Sorvete</td><td>Distribuidora/Mercados</td><td>-</td><td>-15°C</td></tr>
+                        <tr><td>Bebidas</td><td>Distribuidoras/Mercados</td><td>+28°C</td><td>-</td></tr>
+                        <tr><td>Vegetais</td><td>Agricultor/Peq. Mercados</td><td>+24°C</td><td>-</td></tr>
+                        <tr><td>Vegetais</td><td>Grandes Mercados</td><td>+10°C</td><td>-</td></tr>
+                        <tr><td>Frutas</td><td>Agricultor/Peq. Mercados</td><td>+24°C</td><td>-</td></tr>
+                        <tr><td>Frutas</td><td>Grandes Mercados</td><td>+10°C</td><td>-</td></tr>
+                        <tr><td>Laticínios</td><td>Distribuidoras</td><td>+10°C</td><td>-</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="irParaEtapa13()">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-13" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">13. Temperatura Interna Final</h3>
+            
+            <label id="lbl_pergunta_13" for="temp_final">O produto (<span id="display_produto_13" style="color: #ffcc00;">...</span>) entra na câmara a (<span id="display_temp_entrada_13" style="color: #ffcc00;">...</span>). Qual a temperatura interna final (desejada) que ele deve atingir?</label><br>
+            <input type="text" id="temp_final" name="temp_final" placeholder="Ex: -18" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
+            
+            <div class="info-box" style="margin-top: 25px;">
+                <p style="margin-top: 0; color: #ffcc00; font-weight: bold; margin-bottom: 10px;">Tabela de Referência Padrão (Temp. Interna Final):</p>
+                
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <table class="tabela-referencia" style="flex: 1; min-width: 250px;">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Resfriado</th>
+                                <th>Congelado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Gelo</td><td>-</td><td>-18°C</td></tr>
+                            <tr><td>Sorvete</td><td>-</td><td>-24°C</td></tr>
+                            <tr><td>Massa/Pão</td><td>+2°C</td><td>-18°C</td></tr>
+                            <tr><td>Carne/Peixe</td><td>0°C</td><td>-18°C</td></tr>
+                            <tr><td>Fruta</td><td>+2°C</td><td>-10°C</td></tr>
+                            <tr><td>Cerveja</td><td>-2,0°C</td><td>-</td></tr>
+                            <tr><td>Bebidas</td><td>0°C</td><td>-</td></tr>
+                            <tr><td>Laticínios</td><td>+2°C</td><td>-</td></tr>
+                            <tr><td>Vegetais</td><td>+6°C</td><td>-</td></tr>
+                        </tbody>
+                    </table>
+
+                    <table class="tabela-referencia" style="flex: 1; min-width: 200px;">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Ponto de Congelamento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Gelo</td><td>0°C</td></tr>
+                            <tr><td>Massa/Pão</td><td>0°C</td></tr>
+                            <tr><td>Carne</td><td>-2,2°C</td></tr>
+                            <tr><td>Peixe</td><td>-2,2°C</td></tr>
+                            <tr><td>Sorvete</td><td>-5,5°C</td></tr>
+                            <tr><td>Vegetais</td><td>-0,5°C</td></tr>
+                            <tr><td>Frutas</td><td>-1°C</td></tr>
+                            <tr><td>Laticínios</td><td>-6,5°C</td></tr>
+                            <tr><td>Bebidas</td><td>-2,2°C</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="irParaEtapa14()">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-14" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">14. Tempo de Processo</h3>
+            
+            <label id="lbl_pergunta_14" for="tempo_processo">Em quanto tempo o produto (<span id="display_produto_14" style="color: #ffcc00;">...</span>) deve baixar da temperatura de (<span id="display_temp_entrada_14" style="color: #ffcc00;">...</span>) para a temperatura desejada de (<span id="display_temp_final_14" style="color: #ffcc00;">...</span>)?</label><br>
+            <input type="text" id="tempo_processo" name="tempo_processo" placeholder="Ex: 24" oninput="formatarHorasInput(this)" onblur="formatarHorasBlur(this)">
+
+            <div class="info-box" style="margin-top: 25px;">
+                Tempo necessário para baixar a temperatura do produto estocado?
+            </div>
+            <p class="dica">💡 Dica: Normalmente 24h. Responda em horas.</p>
+            
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="irParaEtapa15()">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-15" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">15. Capacidade Armazenada</h3>
+            
+            <label id="lbl_pergunta_15" for="capacidade_armazenada">Qual a capacidade total de (<span id="display_produto_15" style="color: #ffcc00;">...</span>) que ficará estocada na câmara?</label><br>
+            <input type="text" id="capacidade_armazenada" name="capacidade_armazenada" placeholder="Ex: 1000" oninput="formatarKgInput(this)" onblur="formatarKgBlur(this)">
+            
+            <div class="info-box" style="margin-top: 25px;">
+                Quantos kg do produto serão estocados no tempo de processo informado?
+            </div>
+            <p class="dica">💡 Dica: Responda em quilogramas (kg).</p>
+            
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="irParaEtapa16()">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-16" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">16. Movimentação</h3>
+            
+            <label id="lbl_pergunta_16" for="movimentacao">Da capacidade total de (<span id="display_capacidade_16" style="color: #ffcc00;">...</span>), quantos kg de (<span id="display_produto_16" style="color: #ffcc00;">...</span>) serão movimentados (entram/saem) a cada (<span id="display_tempo_processo_16" style="color: #ffcc00;">...</span>)?</label><br>
+            <input type="text" id="movimentacao" name="movimentacao" placeholder="Ex: 200" oninput="formatarKgInput(this)" onblur="formatarKgBlur(this)">
+            
+            <div class="info-box" style="margin-top: 25px;">
+                Quantos kg serão movimentados no tempo de processo que foi informado?
+            </div>
+            <p class="dica">💡 Dica: Responda em quilogramas (kg).</p>
+            
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(16, 17)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-17" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">17. Distância UC x EVAP</h3>
+            
+            <label id="lbl_pergunta_17" for="distancia_uc_evap">Qual a distância da evaporadora para a Unidade Condensadora?</label><br>
+            <input type="text" id="distancia_uc_evap" name="distancia_uc_evap" placeholder="Ex: 5" oninput="formatarMetrosInput(this)" onblur="formatarMetrosBlur(this)">
+            
+            <p class="dica">💡 Dica: Responda em metros (m).</p>
+            
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(17, 18)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-18" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">18. Tensão Elétrica</h3>
+
+            <label id="lbl_pergunta_18">Selecione a tensão elétrica do local:</label>
+            <div class="radio-group">
+                <label class="radio-option"><input type="radio" name="tensao_eletrica" value="220V - Monofásico"> 220V - Monofásico</label>
+                <label class="radio-option"><input type="radio" name="tensao_eletrica" value="220V - Trifásico"> 220V - Trifásico</label>
+                <label class="radio-option"><input type="radio" name="tensao_eletrica" value="380V - Trifásico"> 380V - Trifásico</label>
+            </div>
+            
+            <br>
+            <button type="button" class="btn-prox-etapa" onclick="avancar(18, 19)">Próxima Pergunta</button>
+        </div>
+
+        <div id="etapa-19" class="pergunta-container oculta">
+            <h3 style="margin-top: 0; color: #e0e0e0;">19. Observações Finais</h3>
+            
+            <label id="lbl_pergunta_19" for="observacoes_finais">OBS:</label><br>
+            <input type="text" id="observacoes_finais" name="observacoes_finais" placeholder="Digite as observações (Opcional)" oninput="formatarNome(this)" style="height: 50px;">
+            
+            <br>
+            <button type="button" class="btn-finalizar btn-prox-etapa" onclick="gerarPDF()">Finalizar e Gerar PDF</button>
+        </div>
+
+    </form>
+    <script>
+        function ocultarBotaoAvancar(etapa) {
+            const btn = document.querySelector(`#etapa-${etapa} .btn-prox-etapa`);
+            if(btn) btn.classList.add('oculta');
+        }
+
+        function formatarNome(elemento) {
+            let inicio = elemento.selectionStart;
+            let fim = elemento.selectionEnd;
+            let textoFormatado = elemento.value.toLowerCase().replace(/(?:^|\s)\S/g, function(letra) {
+                return letra.toUpperCase();
+            });
+            elemento.value = textoFormatado;
+            if(elemento.type === "text") { elemento.setSelectionRange(inicio, fim); }
+        }
+
+        function formatarTelefone(elemento) {
+            let valor = elemento.value.replace(/\D/g, ''); 
+            if (valor.length > 0) valor = valor.replace(/^(\d{2})(\d)/g, '($1) $2');
+            if (valor.length > 9) valor = valor.replace(/(\d)(\d{4})$/, '$1-$2');
+            elemento.value = valor;
+        }
+
+        function formatarTemperaturaInput(elemento) {
+            let val = elemento.value.replace(/[^0-9-]/g, '');
+            if(val.indexOf('-') > 0) val = val.replace(/-/g, '');
+            elemento.value = val;
+        }
+
+        function formatarTemperaturaBlur(elemento) {
+            let val = elemento.value.trim();
+            if (val !== "" && val !== "-") {
+                if (!val.endsWith('°C')) {
+                    elemento.value = val + '°C';
+                }
+            } else {
+                elemento.value = ""; 
+            }
+        }
+
+        function extrairGrausSeguro(idElemento) {
+            let val = document.getElementById(idElemento).value.trim();
+            if (val && val !== "-" && !val.includes('°')) {
+                return val + '°C';
+            }
+            return val || "Não informado";
+        }
+
+        function formatarHorasInput(elemento) {
+            elemento.value = elemento.value.replace(/[^0-9]/g, '');
+        }
+
+        function formatarHorasBlur(elemento) {
+            let val = elemento.value.trim();
+            if (val !== "") {
+                if (!val.endsWith('h')) {
+                    elemento.value = val + 'h';
+                }
+            }
+        }
+
+        function extrairHorasSeguro(idElemento) {
+            let val = document.getElementById(idElemento).value.trim();
+            if (val && !val.includes('h')) {
+                return val + 'h';
+            }
+            return val || "Não informado";
+        }
+
+        function formatarKgInput(elemento) {
+            elemento.value = elemento.value.replace(/[^0-9]/g, '');
+        }
+
+        function formatarKgBlur(elemento) {
+            let val = elemento.value.trim();
+            if (val !== "") {
+                if (!val.endsWith(' kg') && !val.endsWith('kg')) {
+                    elemento.value = val + ' kg';
+                }
+            }
+        }
+
+        function extrairKgSeguro(idElemento) {
+            let val = document.getElementById(idElemento).value.trim();
+            if (val && !val.includes('kg')) {
+                return val + ' kg';
+            }
+            return val || "Não informado";
+        }
+
+        function formatarMetrosInput(elemento) {
+            // Permite números e vírgula para medidas como "5,5"
+            elemento.value = elemento.value.replace(/[^0-9,]/g, '');
+        }
+
+        function formatarMetrosBlur(elemento) {
+            let val = elemento.value.trim();
+            if (val !== "") {
+                if (!val.endsWith('m') && !val.endsWith(' m')) {
+                    elemento.value = val + 'm';
+                }
+            }
+        }
+
+        function extrairMetrosSeguro(idElemento) {
+            let val = document.getElementById(idElemento).value.trim();
+            if (val && !val.includes('m')) {
+                return val + 'm';
+            }
+            return val || "Não informado";
+        }
+
+        function mostrarOpcoesPagamento() {
+            const f = document.getElementById('forma_pagamento').value;
+            document.getElementById('opcoes_boleto').classList.toggle('oculta', f !== 'boleto');
+            document.getElementById('opcoes_cartao').classList.toggle('oculta', f !== 'cartao');
+        }
+
+        function mostrarOpcoesPainel() {
+            const painelSelecionado = document.querySelector('input[name="tipo_painel"]:checked').value;
+            const divPir = document.getElementById('opcoes_pir');
+            const divEps = document.getElementById('opcoes_eps');
+            divPir.classList.add('oculta');
+            divEps.classList.add('oculta');
+            if (painelSelecionado === 'PIR') {
+                divPir.classList.remove('oculta');
+                document.getElementById('espessura_eps').value = ""; 
+            } else if (painelSelecionado === 'EPS') {
+                divEps.classList.remove('oculta');
+                document.getElementById('espessura_pir').value = "";
+            }
+        }
+
+        // ==========================================
+        // LÓGICA DAS PORTAS EM LINHA (ETAPA 9)
+        // ==========================================
+        let totalPortas = 0;
+        let portasConfirmadas = 0;
+
+        function gerarLinhasPortas() {
+            totalPortas = parseInt(document.getElementById('qtd_portas').value);
+            if(totalPortas < 1 || isNaN(totalPortas)) {
+                alert("Por favor, insira uma quantidade válida de portas.");
+                return;
+            }
+
+            portasConfirmadas = 0; 
+            document.getElementById('btn_avancar_9').classList.add('oculta'); 
+            const container = document.getElementById('container_grade_portas');
+            container.innerHTML = ''; 
+
+            for(let i = 1; i <= totalPortas; i++) {
+                container.innerHTML += `
+                    <div class="linha-porta" id="linha_porta_${i}">
+                        <div class="porta-titulo">🚪 Porta ${i}</div>
+                        
+                        <div class="campo-linha">
+                            <label>Tipo</label>
+                            <select id="tipo_porta_${i}">
+                                <option value="Giratória">Giratória</option>
+                                <option value="Correr">De Correr</option>
+                            </select>
+                        </div>
+
+                        <div class="campo-linha">
+                            <label>Batentes</label>
+                            <select id="batentes_porta_${i}">
+                                <option value="3 Batentes">3 Batentes</option>
+                                <option value="4 Batentes">4 Batentes</option>
+                            </select>
+                        </div>
+
+                        <div class="campo-linha" style="position: relative;">
+                            <label>Tamanho</label>
+                            <select id="tamanho_porta_${i}" onchange="verificarMedidaEspecial(${i})">
+                                <option value="0,80x1,80">0,80 x 1,80</option>
+                                <option value="1,00x2,00">1,00 x 2,00</option>
+                                <option value="1,40x2,10">1,40 x 2,10</option>
+                                <option value="1,40x2,40">1,40 x 2,40</option>
+                                <option value="especial">Especial...</option>
+                            </select>
+                            <input type="text" id="medida_especial_porta_${i}" class="oculta" placeholder="Ex: 2,50x3,00" oninput="formatarSomenteNumerosPorta(this)" onblur="adicionarMetroPorta(this)" style="border-color: #ffcc00; margin-top: 5px;">
+                        </div>
+
+                        <div class="campo-linha">
+                            <label>Lado</label>
+                            <select id="lado_porta_${i}">
+                                <option value="Direito">Direito</option>
+                                <option value="Esquerdo">Esquerdo</option>
+                            </select>
+                        </div>
+
+                        <div class="porta-btn-container">
+                            <button type="button" class="btn-confirmar-porta" id="btn_confirma_porta_${i}" onclick="confirmarPorta(${i})">OK</button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            setTimeout(() => { document.getElementById('tipo_porta_1').focus(); }, 100);
+        }
+
+        function verificarMedidaEspecial(index) {
+            const selectSize = document.getElementById(`tamanho_porta_${index}`).value;
+            const inputEspecial = document.getElementById(`medida_especial_porta_${index}`);
+            if(selectSize === 'especial') {
+                inputEspecial.classList.remove('oculta');
+                inputEspecial.focus();
+            } else {
+                inputEspecial.classList.add('oculta');
+            }
+        }
+
+        function formatarSomenteNumerosPorta(elemento) {
+            elemento.value = elemento.value.replace(/[^0-9,xX ]/g, ''); 
+        }
+
+        function adicionarMetroPorta(elemento) {
+            let val = elemento.value.trim();
+            if(val !== "" && !val.endsWith('m') && !val.endsWith('M')) {
+                elemento.value = val + "m";
+            }
+        }
+
+        function confirmarPorta(index) {
+            const selectSize = document.getElementById(`tamanho_porta_${index}`).value;
+            const inputEspecial = document.getElementById(`medida_especial_porta_${index}`);
+            if (selectSize === 'especial' && inputEspecial.value.trim() === '') {
+                alert("Por favor, preencha a medida especial da Porta " + index);
+                inputEspecial.focus();
+                return;
+            }
+
+            const linha = document.getElementById(`linha_porta_${index}`);
+            linha.style.opacity = '0.6';
+            linha.style.pointerEvents = 'none'; 
+            linha.style.border = '1px solid #28a745'; 
+
+            const btn = document.getElementById(`btn_confirma_porta_${index}`);
+            btn.innerText = "✔ OK";
+            btn.style.backgroundColor = "#218838";
+
+            portasConfirmadas++;
+
+            if(portasConfirmadas === totalPortas) {
+                const btnAvancar9 = document.getElementById('btn_avancar_9');
+                btnAvancar9.classList.remove('oculta');
+                setTimeout(() => {
+                    // Mira e desce suavemente e especificamente para o botão
+                    btnAvancar9.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    btnAvancar9.focus({ preventScroll: true });
+                }, 150);
+            }
+        }
+
+        // ==========================================
+        // LÓGICA DA ETAPA 12 a 16 (Transições e Validações)
+        // ==========================================
+        function irParaEtapa12() {
+            let produtoDigitado = document.getElementById('produto_armazenado').value.trim();
+            if(!produtoDigitado) {
+                alert("ATENÇÃO: Preencha o produto armazenado para avançar.");
+                document.getElementById('produto_armazenado').focus();
+                return;
+            }
+            
+            document.getElementById('display_produto_armazenado').innerText = produtoDigitado;
+            avancar(11, 12);
+        }
+
+        function irParaEtapa13() {
+            let tempEntradaRaw = document.getElementById('temp_entrada').value.trim();
+            if(!tempEntradaRaw) {
+                alert("ATENÇÃO: Preencha a temperatura de entrada para avançar.");
+                document.getElementById('temp_entrada').focus();
+                return;
+            }
+
+            let produtoDigitado = document.getElementById('produto_armazenado').value.trim();
+            let tempEntradaFormatada = extrairGrausSeguro('temp_entrada');
+
+            document.getElementById('display_produto_13').innerText = produtoDigitado;
+            document.getElementById('display_temp_entrada_13').innerText = tempEntradaFormatada;
+            
+            avancar(12, 13);
+        }
+
+        function irParaEtapa14() {
+            let tempFinalRaw = document.getElementById('temp_final').value.trim();
+            if(!tempFinalRaw) {
+                alert("ATENÇÃO: Preencha a temperatura interna final para avançar.");
+                document.getElementById('temp_final').focus();
+                return;
+            }
+
+            let produtoDigitado = document.getElementById('produto_armazenado').value.trim();
+            let tempEntradaFormatada = extrairGrausSeguro('temp_entrada');
+            let tempFinalFormatada = extrairGrausSeguro('temp_final');
+
+            document.getElementById('display_produto_14').innerText = produtoDigitado;
+            document.getElementById('display_temp_entrada_14').innerText = tempEntradaFormatada;
+            document.getElementById('display_temp_final_14').innerText = tempFinalFormatada;
+
+            avancar(13, 14);
+        }
+
+        function irParaEtapa15() {
+            let tempoProcessoRaw = document.getElementById('tempo_processo').value.trim();
+            if(!tempoProcessoRaw) {
+                alert("ATENÇÃO: Preencha o tempo de processo para avançar.");
+                document.getElementById('tempo_processo').focus();
+                return;
+            }
+
+            let produtoDigitado = document.getElementById('produto_armazenado').value.trim();
+
+            document.getElementById('display_produto_15').innerText = produtoDigitado;
+            
+            avancar(14, 15);
+        }
+
+        function irParaEtapa16() {
+            let capacidadeRaw = document.getElementById('capacidade_armazenada').value.trim();
+            if(!capacidadeRaw) {
+                alert("ATENÇÃO: Preencha a capacidade armazenada para avançar.");
+                document.getElementById('capacidade_armazenada').focus();
+                return;
+            }
+
+            let produtoDigitado = document.getElementById('produto_armazenado').value.trim();
+            let capacidadeFormatada = extrairKgSeguro('capacidade_armazenada');
+            let tempoProcessoFormatado = extrairHorasSeguro('tempo_processo');
+
+            document.getElementById('display_capacidade_16').innerText = capacidadeFormatada;
+            document.getElementById('display_produto_16').innerText = produtoDigitado;
+            document.getElementById('display_tempo_processo_16').innerText = tempoProcessoFormatado;
+
+            avancar(15, 16);
+        }
+        // ==========================================
+        // NAVEGAÇÃO E VALIDAÇÃO GERAL ENTRE ETAPAS
+        // ==========================================
+        function avancar(etapaAtual, proximaEtapa) {
+            
+            // VALIDAÇÕES OBRIGATÓRIAS POR ETAPA
+            if (etapaAtual === 1 && !document.getElementById('nome_cliente').value.trim()) { alert("Preencha o nome do cliente."); document.getElementById('nome_cliente').focus(); return; }
+            if (etapaAtual === 2 && !document.getElementById('codigo_cliente').value.trim()) { alert("Preencha o código do cliente."); document.getElementById('codigo_cliente').focus(); return; }
+            if (etapaAtual === 3 && !document.getElementById('contato_cliente').value.trim()) { alert("Preencha o contato do cliente."); document.getElementById('contato_cliente').focus(); return; }
+            if (etapaAtual === 4 && !document.getElementById('nome_vendedor').value.trim()) { alert("Preencha o nome do vendedor."); document.getElementById('nome_vendedor').focus(); return; }
+            
+            if (etapaAtual === 5) {
+                const fp = document.getElementById('forma_pagamento').value;
+                if (!fp) { alert("Selecione a condição de pagamento."); document.getElementById('forma_pagamento').focus(); return; }
+                if (fp === 'boleto' && !document.getElementById('parcelas_boleto').value) { alert("Selecione o parcelamento do boleto."); document.getElementById('parcelas_boleto').focus(); return; }
+                if (fp === 'cartao' && !document.getElementById('parcelas_cartao').value) { alert("Selecione o parcelamento do cartão."); document.getElementById('parcelas_cartao').focus(); return; }
+            }
+            
+            if (etapaAtual === 6) {
+                if (!document.getElementById('input_comp').value || !document.getElementById('input_larg').value || !document.getElementById('input_alt').value) {
+                    alert("Preencha todas as medidas corretamente."); return;
+                }
+            }
+
+            if (etapaAtual === 7) {
+                const painel = document.querySelector('input[name="tipo_painel"]:checked');
+                if (!painel) { alert("Selecione o tipo de painel."); return; }
+                if (painel.value === 'PIR' && !document.getElementById('espessura_pir').value) { alert("Selecione a espessura do PIR."); document.getElementById('espessura_pir').focus(); return; }
+                if (painel.value === 'EPS' && !document.getElementById('espessura_eps').value) { alert("Selecione a espessura do EPS."); document.getElementById('espessura_eps').focus(); return; }
+            }
+
+            if (etapaAtual === 8) {
+                const piso = document.querySelector('input[name="isolamento_piso"]:checked');
+                if (!piso) { alert("Selecione o tipo de isolamento do piso."); return; }
+            }
+
+            if (etapaAtual === 10 && !document.getElementById('qtd_abertura').value) { alert("Selecione a frequência de abertura."); document.getElementById('qtd_abertura').focus(); return; }
+            if (etapaAtual === 16 && !document.getElementById('movimentacao').value.trim()) { alert("Preencha a movimentação."); document.getElementById('movimentacao').focus(); return; }
+            if (etapaAtual === 17 && !document.getElementById('distancia_uc_evap').value.trim()) { alert("Preencha a distância entre a evaporadora e a unidade condensadora."); document.getElementById('distancia_uc_evap').focus(); return; }
+            
+            // Validação Etapa 18 (Tensão Elétrica)
+            if (etapaAtual === 18) {
+                const tensao = document.querySelector('input[name="tensao_eletrica"]:checked');
+                if (!tensao) { alert("Selecione a tensão elétrica."); return; }
+            }
+
+            // Oculta o botão de avançar da etapa ATUAL, deixando a tela mais limpa
+            ocultarBotaoAvancar(etapaAtual);
+
+            // Executa o avanço
+            const divProxima = document.getElementById('etapa-' + proximaEtapa);
+            if (divProxima) {
+                divProxima.classList.remove('oculta');
+                
+                setTimeout(() => {
+                    const alvoScroll = divProxima.querySelector('h3, label[id^="lbl_"]') || divProxima.querySelector('label') || divProxima;
+                    alvoScroll.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 10);
+                
+                if(proximaEtapa === 6 && typeof init3D === 'function' && !window.threeIniciado) {
+                    setTimeout(() => {
+                        init3D();
+                        redesenharCubo();
+                        window.threeIniciado = true;
+                    }, 100);
+                }
+
+                const proximoInput = divProxima.querySelector('input:not(.oculta):not([type="radio"]), select:not(.oculta), textarea:not(.oculta)');
+                if (proximoInput) {
+                    setTimeout(() => {
+                        proximoInput.focus({ preventScroll: true }); 
+                    }, 500);
+                }
+            } else {
+                alert("A próxima pergunta ainda não foi criada!");
+            }
+        }
+
+        // ==========================================
+        // GERAÇÃO DO PDF (JSPDF + AUTOTABLE)
+        // ==========================================
+        function gerarPDF() {
+            // Oculta o último botão para a tela ficar totalmente limpa ao gerar
+            ocultarBotaoAvancar(19);
+
+            // 1. Extração dos Dados do Formulário
+            const nomeCliente = document.getElementById('nome_cliente').value.trim() || 'Não informado';
+            const codCliente = document.getElementById('codigo_cliente').value.trim() || 'Não informado';
+            const contatoCliente = document.getElementById('contato_cliente').value.trim() || 'Não informado';
+            const vendedor = document.getElementById('nome_vendedor').value.trim() || 'Não informado';
+            
+            let formaPgto = document.getElementById('forma_pagamento').options[document.getElementById('forma_pagamento').selectedIndex].text;
+            if(document.getElementById('forma_pagamento').value === 'boleto') {
+                formaPgto += ' (' + document.getElementById('parcelas_boleto').options[document.getElementById('parcelas_boleto').selectedIndex].text + ')';
+            } else if (document.getElementById('forma_pagamento').value === 'cartao') {
+                formaPgto += ' (' + document.getElementById('parcelas_cartao').options[document.getElementById('parcelas_cartao').selectedIndex].text + ')';
+            }
+
+            const comp = document.getElementById('input_comp').value + 'm';
+            const larg = document.getElementById('input_larg').value + 'm';
+            const alt = document.getElementById('input_alt').value + 'm';
+
+            const painelEl = document.querySelector('input[name="tipo_painel"]:checked');
+            const tipoPainel = painelEl ? painelEl.value : 'Não informado';
+            let espessuraPainel = 'Não informado';
+            if(tipoPainel === 'PIR') espessuraPainel = document.getElementById('espessura_pir').options[document.getElementById('espessura_pir').selectedIndex].text;
+            if(tipoPainel === 'EPS') espessuraPainel = document.getElementById('espessura_eps').options[document.getElementById('espessura_eps').selectedIndex].text;
+
+            const pisoEl = document.querySelector('input[name="isolamento_piso"]:checked');
+            const piso = pisoEl ? pisoEl.value : 'Não informado';
+
+            let portasArray = [];
+            for(let i = 1; i <= totalPortas; i++) {
+                let tipo = document.getElementById(`tipo_porta_${i}`).value;
+                let batente = document.getElementById(`batentes_porta_${i}`).value;
+                let lado = document.getElementById(`lado_porta_${i}`).value;
+                
+                let tamSelect = document.getElementById(`tamanho_porta_${i}`);
+                let tamanho = tamSelect.options[tamSelect.selectedIndex].text;
+                if(tamSelect.value === 'especial') tamanho = document.getElementById(`medida_especial_porta_${i}`).value;
+                
+                portasArray.push([`Porta ${i}`, tipo, batente, tamanho, lado]);
+            }
+            if(portasArray.length === 0) portasArray.push(['Nenhuma porta informada', '-', '-', '-', '-']);
+
+            const freqAbertura = document.getElementById('qtd_abertura').options[document.getElementById('qtd_abertura').selectedIndex].text;
+            const obsAbertura = document.getElementById('obs_abertura').value.trim();
+            
+            const produto = document.getElementById('produto_armazenado').value.trim() || 'Não informado';
+            const tempEnt = extrairGrausSeguro('temp_entrada');
+            const tempFin = extrairGrausSeguro('temp_final');
+            const tempoProc = extrairHorasSeguro('tempo_processo');
+            const capArmazenada = extrairKgSeguro('capacidade_armazenada');
+            const movim = extrairKgSeguro('movimentacao');
+
+            const distUC = extrairMetrosSeguro('distancia_uc_evap');
+            const tensaoEl = document.querySelector('input[name="tensao_eletrica"]:checked');
+            const tensao = tensaoEl ? tensaoEl.value : 'Não informado';
+            const obsFinais = document.getElementById('observacoes_finais').value.trim();
+
+            // 2. Criação do Documento PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const corPrimaria = [26, 43, 76]; // Azul Escuro Tabela
+            const corFundoCelulas = [245, 245, 245]; // Cinza claro
+
+            // INSERINDO A LOGO (Processo Seguro)
+            let imgData = null;
+            try {
+                const imgLogo = document.getElementById('logo-dufrio');
+                if(imgLogo.complete && imgLogo.naturalWidth > 0) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = imgLogo.naturalWidth;
+                    canvas.height = imgLogo.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(imgLogo, 0, 0);
+                    // Exportamos para PNG na memória do navegador para o PDF aceitar
+                    imgData = canvas.toDataURL('image/png');
+                }
+            } catch(e) {
+                console.warn('Não foi possível carregar a imagem da logo para o PDF.', e);
+            }
+
+            if (imgData) {
+                // Desenha a logo no PDF (Largura 45, Altura 15)
+                doc.addImage(imgData, 'PNG', 14, 12, 45, 15);
+            } else {
+                // Fallback de segurança se a imagem não existir na pasta
+                doc.setTextColor(26, 43, 76);
+                doc.setFontSize(24);
+                doc.setFont("helvetica", "bold");
+                doc.text("DUFRIO", 14, 25); 
+            }
+            
+            doc.setTextColor(100, 100, 100);
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "normal");
+            doc.text("Checklist de Câmara Frigorífica", 195, 20, null, null, "right");
+
+            let startY = 30;
+
+            // ------------------------------------------
+            // TABELA 1: DADOS DO CLIENTE E VENDA
+            // ------------------------------------------
+            doc.autoTable({
+                startY: startY,
+                theme: 'grid',
+                headStyles: { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', halign: 'left' },
+                bodyStyles: { textColor: 40 },
+                head: [['DADOS DO CLIENTE/VENDA', '']],
+                body: [
+                    ['Cliente:', nomeCliente],
+                    ['Código Cliente:', codCliente],
+                    ['Contato:', contatoCliente],
+                    ['Vendedor:', vendedor],
+                    ['Condição de Pagto:', formaPgto],
+                ],
+                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
+            });
+            startY = doc.lastAutoTable.finalY + 8;
+
+            // ------------------------------------------
+            // TABELA 2: ESTRUTURA FÍSICA E PAINÉIS
+            // ------------------------------------------
+            doc.autoTable({
+                startY: startY,
+                theme: 'grid',
+                headStyles: { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', halign: 'left' },
+                bodyStyles: { textColor: 40 },
+                head: [['ESTRUTURA FÍSICA E ISOLAMENTO', '']],
+                body: [
+                    ['Medidas Externas (C x L x A):', `${comp} x ${larg} x ${alt}`],
+                    ['Tipo de Painel:', tipoPainel],
+                    ['Espessura / Temp. Referência:', espessuraPainel],
+                    ['Isolamento do Piso:', piso]
+                ],
+                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
+            });
+            startY = doc.lastAutoTable.finalY + 8;
+
+            // ------------------------------------------
+            // TABELA 3: PORTAS
+            // ------------------------------------------
+            doc.autoTable({
+                startY: startY,
+                theme: 'grid',
+                headStyles: { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', halign: 'center' },
+                bodyStyles: { textColor: 40, halign: 'center' },
+                // ADICIONADO O CABEÇALHO 'PORTAS'
+                head: [
+                    [{ content: 'PORTAS', colSpan: 5, styles: { halign: 'left', fillColor: corPrimaria } }],
+                    ['Identificação', 'Tipo', 'Batentes', 'Tamanho', 'Lado de Abert.']
+                ],
+                body: portasArray
+            });
+            startY = doc.lastAutoTable.finalY + 8;
+
+            // ------------------------------------------
+            // TABELA 4: CONDIÇÕES DE OPERAÇÃO
+            // ------------------------------------------
+            let condicoesBody = [
+                ['Produto Armazenado:', produto],
+                ['Temperatura de Entrada:', tempEnt],
+                ['Temperatura Interna Final:', tempFin],
+                ['Tempo de Processo:', tempoProc],
+                ['Capacidade Armazenada:', capArmazenada],
+                ['Movimentação no Período:', movim],
+                ['Frequência de Abertura:', freqAbertura]
+            ];
+
+            // Condição para não mostrar Obs vazia ou "Nenhuma"
+            if (obsAbertura && obsAbertura.trim() !== '' && obsAbertura.toLowerCase() !== 'nenhuma' && obsAbertura.toLowerCase() !== 'não informado') {
+                condicoesBody.push(['Obs. da Abertura:', obsAbertura]);
+            }
+
+            doc.autoTable({
+                startY: startY,
+                theme: 'grid',
+                headStyles: { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', halign: 'left' },
+                bodyStyles: { textColor: 40 },
+                head: [['CONDIÇÕES DE OPERAÇÃO', '']],
+                body: condicoesBody,
+                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
+            });
+            startY = doc.lastAutoTable.finalY + 8;
+
+            // Checa se a próxima tabela cabe na página, se não, pula folha.
+            if(startY > 250) {
+                doc.addPage();
+                startY = 20;
+            }
+
+            // ------------------------------------------
+            // TABELA 5: DADOS TÉCNICOS E OBSERVAÇÕES
+            // ------------------------------------------
+            let dadosTecnicosBody = [
+                ['Distância UC x EVAP:', distUC],
+                ['Tensão Elétrica:', tensao]
+            ];
+
+            // Condição para não mostrar Obs Final vazia ou "Nenhuma"
+            if (obsFinais && obsFinais.trim() !== '' && obsFinais.toLowerCase() !== 'nenhuma' && obsFinais.toLowerCase() !== 'não informado') {
+                dadosTecnicosBody.push(['Observações Gerais:', obsFinais]);
+            }
+
+            doc.autoTable({
+                startY: startY,
+                theme: 'grid',
+                headStyles: { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', halign: 'left' },
+                bodyStyles: { textColor: 40 },
+                head: [['DADOS TÉCNICOS E OBSERVAÇÕES FINAIS', '']],
+                body: dadosTecnicosBody,
+                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
+            });
+
+            // 3. Download do Arquivo PDF
+            const nomeArquivo = `Orcamento_${nomeCliente.replace(/\s+/g, '_')}.pdf`;
+            doc.save(nomeArquivo);
+        }
+
+        // ===============================================
+        // Simulador 3D (Etapa 6)
+        // ===============================================
+        let scene, camera, renderer, cubo, edges;
+        window.threeIniciado = false; 
+
+        function init3D() {
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            scene = new THREE.Scene();
+
+            const aspect = width / height;
+            const d = 5; 
+            camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+            camera.position.set(20, 20, 20); 
+            camera.lookAt(scene.position);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            container.appendChild(renderer.domElement);
+
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshBasicMaterial({ color: 0x1a2b4c, transparent: true, opacity: 0.4 });
+            cubo = new THREE.Mesh(geometry, material);
+            scene.add(cubo);
+
+            const edgesGeometry = new THREE.EdgesGeometry(geometry);
+            const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x8bb4f7, linewidth: 2 });
+            edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+            scene.add(edges);
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(renderer && scene && camera) {
+                renderer.render(scene, camera);
+                atualizarEtiquetas(); 
+            }
+        }
+
+        function redesenharCubo() {
+            if(!cubo) return;
+
+            const w = parseFloat(document.getElementById('input_comp').value) || 0.1;
+            const h = parseFloat(document.getElementById('input_alt').value) || 0.1;
+            const d_depth = parseFloat(document.getElementById('input_larg').value) || 0.1;
+
+            cubo.geometry.dispose();
+            cubo.geometry = new THREE.BoxGeometry(w, h, d_depth);
+            
+            edges.geometry.dispose();
+            edges.geometry = new THREE.EdgesGeometry(cubo.geometry);
+
+            cubo.position.y = h/2; 
+            edges.position.y = h/2;
+
+            const maiorMedida = Math.max(w, h, d_depth);
+            const folga = maiorMedida * 0.8; 
+            const novoD = Math.max(5, folga); 
+
+            const container = document.getElementById('canvas-container');
+            if(container) {
+                const aspect = container.clientWidth / container.clientHeight;
+                camera.left = -novoD * aspect;
+                camera.right = novoD * aspect;
+                camera.top = novoD;
+                camera.bottom = -novoD;
+                camera.updateProjectionMatrix();
+            }
+
+            scene.children.forEach(child => {
+                if (child.type === "GridHelper") scene.remove(child);
+            });
+            const novoTamanhoGrid = Math.max(20, maiorMedida * 2);
+            const gridHelper = new THREE.GridHelper(novoTamanhoGrid, novoTamanhoGrid, 0x444444, 0x222222);
+            gridHelper.position.y = 0;
+            scene.add(gridHelper);
+        }
+
+        function atualizarEtiquetas() {
+            if(!camera || !cubo) return;
+
+            const w = parseFloat(document.getElementById('input_comp').value) || 0.1;
+            const h = parseFloat(document.getElementById('input_alt').value) || 0.1;
+            const d_depth = parseFloat(document.getElementById('input_larg').value) || 0.1;
+
+            const offset = Math.max(w, h, d_depth) * 0.08; 
+
+            const posComp = new THREE.Vector3(0, 0, d_depth/2 + offset); 
+            const posLarg = new THREE.Vector3(w/2 + offset, 0, 0);       
+            const posAlt = new THREE.Vector3(w/2 + offset, h/2, d_depth/2 + offset); 
+
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            function moverEtiqueta(id, vetor3D, texto) {
+                const label = document.getElementById(id);
+                const vetorCopia = vetor3D.clone(); 
+                vetorCopia.project(camera);
+                
+                const x = (vetorCopia.x * 0.5 + 0.5) * width;
+                const y = (vetorCopia.y * -0.5 + 0.5) * height;
+                
+                label.style.left = `${x}px`;
+                label.style.top = `${y}px`;
+                label.innerText = `${texto} m`;
+            }
+
+            moverEtiqueta('lbl-comp', posComp, w);
+            moverEtiqueta('lbl-larg', posLarg, d_depth);
+            moverEtiqueta('lbl-alt', posAlt, h);
+        }
+
+        function atualizarInput(tipo) {
+            const val = document.getElementById('range_' + tipo).value;
+            document.getElementById('input_' + tipo).value = val;
+            redesenharCubo();
+        }
+
+        function atualizarRange(tipo) {
+            let val = document.getElementById('input_' + tipo).value;
+            if (val > 60) val = 60; 
+            document.getElementById('range_' + tipo).value = val;
+            redesenharCubo();
+        }
+
+        function resetarValores() {
+            document.getElementById('range_comp').value = 2.5;
+            document.getElementById('input_comp').value = 2.5;
+            document.getElementById('range_larg').value = 2.0;
+            document.getElementById('input_larg').value = 2.0;
+            document.getElementById('range_alt').value = 2.4;
+            document.getElementById('input_alt').value = 2.4;
+            redesenharCubo();
+        }
+
+        window.addEventListener('resize', () => {
+            if(!camera || !renderer) return;
+            const container = document.getElementById('canvas-container');
+            if(!container) return;
+            
+            redesenharCubo(); 
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            renderer.setSize(width, height);
+        });
+    </script>
+    </div>
+</body>
+</html>
