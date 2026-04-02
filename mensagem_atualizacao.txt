@@ -1,0 +1,1 @@
+Checklist adaptado para uso nativo no celular, sem zoom quebrado e teclados numéricos diretos.
