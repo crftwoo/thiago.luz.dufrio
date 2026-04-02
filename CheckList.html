@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Checklist Câmara Frigorífica</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
@@ -111,7 +112,7 @@
             color: var(--text-main);
             border: 1px solid var(--border);
             border-radius: 10px;
-            font-size: 14px;
+            font-size: 16px;
             font-family: 'Inter', sans-serif;
             font-weight: 600;
             transition: all 0.2s;
@@ -414,6 +415,8 @@
             #canvas-container { min-height: 300px; }
             .linha-porta { flex-direction: column; align-items: stretch; }
             .porta-titulo, .porta-btn-container { margin-top: 0; }
+            input[type="text"], input[type="number"], select { max-width: 100%; }
+            .pergunta-container { padding: 20px; }
         }
     </style>
 </head>
@@ -436,14 +439,14 @@
 
         <div id="etapa-2" class="pergunta-container oculta">
             <label for="codigo_cliente">2. Qual o código do cliente? (Apenas números)</label><br>
-            <input type="text" id="codigo_cliente" name="codigo_cliente" placeholder="Ex: 12345" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <input type="text" inputmode="numeric" id="codigo_cliente" name="codigo_cliente" placeholder="Ex: 12345" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             <br>
             <button type="button" class="btn-prox-etapa" onclick="avancar(2, 3)">Próxima Pergunta</button>
         </div>
 
         <div id="etapa-3" class="pergunta-container oculta">
             <label for="contato_cliente">3. Qual o contato do cliente? (Telefone/WhatsApp)</label><br>
-            <input type="text" id="contato_cliente" name="contato_cliente" placeholder="(00) 00000-0000" maxlength="15" oninput="formatarTelefone(this)">
+            <input type="text" inputmode="tel" id="contato_cliente" name="contato_cliente" placeholder="(00) 00000-0000" maxlength="15" oninput="formatarTelefone(this)">
             <br>
             <button type="button" class="btn-prox-etapa" onclick="avancar(3, 4)">Próxima Pergunta</button>
         </div>
@@ -660,8 +663,8 @@
         <div id="etapa-12" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">12. Temperatura de Entrada</h3>
             
-            <label id="lbl_pergunta_12" for="temp_entrada">Qual a temperatura em que o produto (<span id="display_produto_armazenado">...</span>) entra na câmara fria?</label><br>
-            <input type="text" id="temp_entrada" name="temp_entrada" placeholder="Ex: 10 ou -15" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
+            <label id="lbl_pergunta_12" for="temp_entrada">Qual a temperatura do produto (<span id="display_produto_armazenado">...</span>) ao entrar na câmara?</label><br>
+            <input type="text" inputmode="numeric" id="temp_entrada" name="temp_entrada" placeholder="Ex: 10 ou -15" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
                 <p style="margin-top: 0; color: #ea580c; font-weight: bold; margin-bottom: 5px;">Tabela de Referência Padrão:</p>
@@ -699,8 +702,8 @@
         <div id="etapa-13" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">13. Temperatura Interna Final</h3>
             
-            <label id="lbl_pergunta_13" for="temp_final">Qual será a temperatura interna da câmara para armazenar o produto (<span id="display_produto_13">...</span>) que entra a (<span id="display_temp_entrada_13">...</span>)?</label><br>
-            <input type="text" id="temp_final" name="temp_final" placeholder="Ex: -18" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
+            <label id="lbl_pergunta_13" for="temp_final">Qual deve ser a temperatura interna final para o produto (<span id="display_produto_13">...</span>)?<span id="display_temp_entrada_13" style="display:none;"></span></label><br>
+            <input type="text" inputmode="numeric" id="temp_final" name="temp_final" placeholder="Ex: -18" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
                 <p style="margin-top: 0; color: #ea580c; font-weight: bold; margin-bottom: 10px;">Tabela de Referência Padrão (Temp. Interna Final):</p>
@@ -755,8 +758,8 @@
         <div id="etapa-14" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">14. Tempo de Processo</h3>
             
-            <label id="lbl_pergunta_14" for="tempo_processo">Em quanto tempo o produto (<span id="display_produto_14">...</span>) deve baixar da temperatura de (<span id="display_temp_entrada_14">...</span>) para a marca de (<span id="display_temp_final_14">...</span>)?</label><br>
-            <input type="text" id="tempo_processo" name="tempo_processo" placeholder="Ex: 24" oninput="formatarHorasInput(this)" onblur="formatarHorasBlur(this)">
+            <label id="lbl_pergunta_14" for="tempo_processo">Em quanto tempo o produto (<span id="display_produto_14">...</span>) deve atingir a temperatura final desejada?<span id="display_temp_entrada_14" style="display:none;"></span><span id="display_temp_final_14" style="display:none;"></span></label><br>
+            <input type="text" inputmode="numeric" id="tempo_processo" name="tempo_processo" placeholder="Ex: 24" oninput="formatarHorasInput(this)" onblur="formatarHorasBlur(this)">
 
             <div class="info-box" style="margin-top: 25px;">
                 Tempo necessário para baixar a temperatura do produto estocado?
@@ -770,8 +773,8 @@
         <div id="etapa-15" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">15. Capacidade Armazenada</h3>
             
-            <label id="lbl_pergunta_15" for="capacidade_armazenada">Qual a capacidade total de (<span id="display_produto_15">...</span>) que ficará estocada na câmara?</label><br>
-            <input type="text" id="capacidade_armazenada" name="capacidade_armazenada" placeholder="Ex: 1000" oninput="formatarKgInput(this)" onblur="formatarKgBlur(this)">
+            <label id="lbl_pergunta_15" for="capacidade_armazenada">Quantos quilos (Kg) de (<span id="display_produto_15">...</span>) serão estocados no total?</label><br>
+            <input type="text" inputmode="numeric" id="capacidade_armazenada" name="capacidade_armazenada" placeholder="Ex: 1000" oninput="formatarKgInput(this)" onblur="formatarKgBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
                 Quantos kg do produto serão estocados no tempo de processo informado?
@@ -785,8 +788,8 @@
         <div id="etapa-16" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">16. Movimentação</h3>
             
-            <label id="lbl_pergunta_16" for="movimentacao">Da capacidade total de (<span id="display_capacidade_16">...</span>), quantos kg de (<span id="display_produto_16">...</span>) serão movimentados (entram/saem) a cada (<span id="display_tempo_processo_16">...</span>)?</label><br>
-            <input type="text" id="movimentacao" name="movimentacao" placeholder="Ex: 200" oninput="formatarKgInput(this)" onblur="formatarKgBlur(this)">
+            <label id="lbl_pergunta_16" for="movimentacao">Deste total de (<span id="display_capacidade_16">...</span>), qual a quantidade (Kg) de (<span id="display_produto_16">...</span>) movimentada a cada (<span id="display_tempo_processo_16">...</span>)?</label><br>
+            <input type="text" inputmode="numeric" id="movimentacao" name="movimentacao" placeholder="Ex: 200" oninput="formatarKgInput(this)" onblur="formatarKgBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
                 Quantos kg serão movimentados no tempo de processo que foi informado?
@@ -801,7 +804,7 @@
             <h3 style="margin-top: 0; color: #e0e0e0;">17. Distância UC x EVAP</h3>
             
             <label id="lbl_pergunta_17" for="distancia_uc_evap">Qual a distância da evaporadora para a Unidade Condensadora?</label><br>
-            <input type="text" id="distancia_uc_evap" name="distancia_uc_evap" placeholder="Ex: 5" oninput="formatarMetrosInput(this)" onblur="formatarMetrosBlur(this)">
+            <input type="text" inputmode="decimal" id="distancia_uc_evap" name="distancia_uc_evap" placeholder="Ex: 5" oninput="formatarMetrosInput(this)" onblur="formatarMetrosBlur(this)">
             
             <p class="dica">💡 Dica: Responda em metros (m).</p>
             
