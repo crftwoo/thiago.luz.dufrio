@@ -702,7 +702,7 @@
         <div id="etapa-13" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">13. Temperatura Interna Final</h3>
             
-            <label id="lbl_pergunta_13" for="temp_final">Qual deve ser a temperatura interna final para o produto (<span id="display_produto_13">...</span>)?<span id="display_temp_entrada_13" style="display:none;"></span></label><br>
+            <label id="lbl_pergunta_13" for="temp_final">Qual temperatura o produto (<span id="display_produto_13">...</span>) deve atingir?<span id="display_temp_entrada_13" style="display:none;"></span></label><br>
             <input type="text" id="temp_final" name="temp_final" placeholder="Ex: -18" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
@@ -758,7 +758,7 @@
         <div id="etapa-14" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">14. Tempo de Processo</h3>
             
-            <label id="lbl_pergunta_14" for="tempo_processo">Em quanto tempo o produto (<span id="display_produto_14">...</span>) deve atingir a temperatura final desejada?<span id="display_temp_entrada_14" style="display:none;"></span><span id="display_temp_final_14" style="display:none;"></span></label><br>
+            <label id="lbl_pergunta_14" for="tempo_processo">Em quanto tempo o produto deve atingir a temperatura desejada? (de <span id="display_temp_entrada_14">...</span> para <span id="display_temp_final_14">...</span>)<span id="display_produto_14" style="display:none;"></span></label><br>
             <input type="text" inputmode="numeric" id="tempo_processo" name="tempo_processo" placeholder="Ex: 24" oninput="formatarHorasInput(this)" onblur="formatarHorasBlur(this)">
 
             <div class="info-box" style="margin-top: 25px;">
@@ -773,11 +773,11 @@
         <div id="etapa-15" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">15. Capacidade Armazenada</h3>
             
-            <label id="lbl_pergunta_15" for="capacidade_armazenada">Quantos quilos (Kg) de (<span id="display_produto_15">...</span>) serão estocados no total?</label><br>
+            <label id="lbl_pergunta_15" for="capacidade_armazenada">Quantos quilos (KG) do produto (<span id="display_produto_15">...</span>) serão estocados no total?</label><br>
             <input type="text" inputmode="numeric" id="capacidade_armazenada" name="capacidade_armazenada" placeholder="Ex: 1000" oninput="formatarKgInput(this)" onblur="formatarKgBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
-                Quantos kg do produto serão estocados no tempo de processo informado?
+                Quantos kg do produto (<span id="display_produto_15_b">...</span>) serão estocados no local?
             </div>
             <p class="dica">💡 Dica: Responda em quilogramas (kg).</p>
             
@@ -788,7 +788,7 @@
         <div id="etapa-16" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">16. Movimentação</h3>
             
-            <label id="lbl_pergunta_16" for="movimentacao">Deste total de (<span id="display_capacidade_16">...</span>), qual a quantidade (Kg) de (<span id="display_produto_16">...</span>) movimentada a cada (<span id="display_tempo_processo_16">...</span>)?</label><br>
+            <label id="lbl_pergunta_16" for="movimentacao">Deste total de (<span id="display_capacidade_16">...</span>), qual a quantidade de produto (<span id="display_produto_16">...</span>) movimentada a cada (<span id="display_tempo_processo_16">...</span>)?</label><br>
             <input type="text" inputmode="numeric" id="movimentacao" name="movimentacao" placeholder="Ex: 200" oninput="formatarKgInput(this)" onblur="formatarKgBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
@@ -1154,6 +1154,8 @@
             let produtoDigitado = document.getElementById('produto_armazenado').value.trim();
 
             document.getElementById('display_produto_15').innerText = produtoDigitado;
+            let prod15b = document.getElementById('display_produto_15_b');
+            if (prod15b) prod15b.innerText = produtoDigitado;
             
             avancar(14, 15);
         }

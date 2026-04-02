@@ -1,1 +1,1 @@
-Checklist adaptado para uso nativo no celular, sem zoom quebrado e teclados numéricos diretos.
+Checklist: Refinamento final nos textos dinâmicos das perguntas 13, 14, 15 e 16 para alinhamento exato das informações.
