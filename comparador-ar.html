@@ -577,8 +577,8 @@
       </div>
 
       <div class="compare-actions">
-        <button class="tech-btn solid" onclick="copiarCaixa(this)" style="--btn-color: var(--green);">Copiar Texto da
-          Caixa 📋</button>
+        <button class="tech-btn solid" onclick="copiarCaixa(this)" style="--btn-color: var(--green);">Copiar Texto da Caixa 📋</button>
+        <button class="tech-btn" onclick="puxarAbasAbertas(this)" id="btn-puxar-extensao" style="--btn-color: #4b9ce3;">Puxar da Extensão 📥</button>
         <button class="tech-btn" onclick="gerarCardsVisuais()" style="--btn-color: #b08d57;">Gerar Cards 🖼️</button>
       </div>
       <p id="product-counter" style="color: #666; font-size: 13px; margin-top: 10px;"></p>
@@ -947,16 +947,11 @@
       renderizarCaixa();
     });
 
-    // Assim que a página abre, limpa tudo para começar uma sessão fresca (pedido do usuário)
+    // Em vez de apagar os dados quando a página abre, automaticamente "Puxa" da extensão
+    // para recuperar a sessão caso ele tenha aberto a página agora.
     setTimeout(() => {
-      // Envia o comando para apagar a memória da extensão
-      window.postMessage({ type: "TWO_CLEAR_COMPARADOR_DATA" }, "*");
-      // Garante que a tela comece vazia
-      dadosExtensaoBrutos = {};
-      isSorted = true;
-      updateDynamicFilters(dadosExtensaoBrutos);
-      renderizarCaixa();
-    }, 1000);
+      window.postMessage({ type: "TWO_GET_COMPARADOR_DATA" }, "*");
+    }, 500);
 
     // Helpers para formatar (idênticos à extensão)
     function extractProductInfo(titleStr) {
@@ -1401,12 +1396,47 @@
         return;
       }
 
-      // COPIA O TEXTO LIMPO PRE-CALCULADO
-      navigator.clipboard.writeText(clipboardTextClean).then(() => {
-        const old = btnElement.innerText;
+      const txtOriginal = "Copiar Texto da Caixa 📋";
+
+      function sucesso() {
         btnElement.innerText = "Texto Copiado! ✔️";
-        setTimeout(() => btnElement.innerText = old, 3000);
-      });
+        setTimeout(() => btnElement.innerText = txtOriginal, 3000);
+      }
+
+      function erroFallback() {
+         try {
+            const textarea = document.createElement('textarea');
+            textarea.value = clipboardTextClean;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            sucesso();
+         } catch (e) {
+            alert("Erro ao copiar o texto. Tente selecionar manualmente.");
+         }
+      }
+
+      // Tenta usar a API moderna primeiro
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(clipboardTextClean)
+              .then(() => sucesso())
+              .catch(() => erroFallback());
+      } else {
+          erroFallback(); // Usa no file:// onde o clipboard API pode estar bloqueado
+      }
+    }
+
+    function puxarDaExtensao() {
+      // Requisita manualmente os dados atuais da extensão em caso de falha silenciosa
+      window.postMessage({ type: "TWO_GET_COMPARADOR_DATA" }, "*");
+      
+      const btnElement = document.querySelector('button[onclick="puxarDaExtensao()"]');
+      const old = btnElement.innerText;
+      btnElement.innerText = "Puxando... 📥";
+      setTimeout(() => btnElement.innerText = old, 1500);
     }
 
 
