@@ -72,7 +72,7 @@
             transition: all 0.3s ease;
         }
         
-        .pergunta-container.oculta {
+        .oculta {
             display: none !important;
         }
 
@@ -423,7 +423,7 @@
 
     <div class="container">
         <h1>Orçamento - Câmara Frigorífica</h1>
-        <div class="sub-head">Checklist Oficial Passo a Passo</div>
+        <div class="sub-head">Checklist - Câmara Fria (Gerar PDF)</div>
         
         <form id="formulario-checklist">
         
@@ -608,7 +608,7 @@
                 <label for="qtd_portas">Quantas portas a câmara terá?</label><br>
                 <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
                     <input type="number" id="qtd_portas" min="1" value="1" style="width: 100px; margin-top: 0;">
-                    <button type="button" onclick="gerarLinhasPortas()" style="margin-top: 0; background-color: #ffcc00; color: #000; font-weight: bold;">Gerar Linhas</button>
+                    <button type="button" onclick="gerarLinhasPortas()" style="margin-top: 0; background-color: #059669; color: white; font-weight: bold; padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer;">Gerar Linhas</button>
                 </div>
             </div>
 
@@ -660,11 +660,11 @@
         <div id="etapa-12" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">12. Temperatura de Entrada</h3>
             
-            <label id="lbl_pergunta_12" for="temp_entrada">Qual a temperatura em que o produto (<span id="display_produto_armazenado" style="color: #ffcc00;">...</span>) entra na câmara fria?</label><br>
+            <label id="lbl_pergunta_12" for="temp_entrada">Qual a temperatura em que o produto (<span id="display_produto_armazenado">...</span>) entra na câmara fria?</label><br>
             <input type="text" id="temp_entrada" name="temp_entrada" placeholder="Ex: 10 ou -15" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
-                <p style="margin-top: 0; color: #ffcc00; font-weight: bold; margin-bottom: 5px;">Tabela de Referência Padrão:</p>
+                <p style="margin-top: 0; color: #ea580c; font-weight: bold; margin-bottom: 5px;">Tabela de Referência Padrão:</p>
                 <table class="tabela-referencia">
                     <thead>
                         <tr>
@@ -699,11 +699,11 @@
         <div id="etapa-13" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">13. Temperatura Interna Final</h3>
             
-            <label id="lbl_pergunta_13" for="temp_final">O produto (<span id="display_produto_13" style="color: #ffcc00;">...</span>) entra na câmara a (<span id="display_temp_entrada_13" style="color: #ffcc00;">...</span>). Qual a temperatura interna final (desejada) que ele deve atingir?</label><br>
+            <label id="lbl_pergunta_13" for="temp_final">Qual será a temperatura interna da câmara para armazenar o produto (<span id="display_produto_13">...</span>) que entra a (<span id="display_temp_entrada_13">...</span>)?</label><br>
             <input type="text" id="temp_final" name="temp_final" placeholder="Ex: -18" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
-                <p style="margin-top: 0; color: #ffcc00; font-weight: bold; margin-bottom: 10px;">Tabela de Referência Padrão (Temp. Interna Final):</p>
+                <p style="margin-top: 0; color: #ea580c; font-weight: bold; margin-bottom: 10px;">Tabela de Referência Padrão (Temp. Interna Final):</p>
                 
                 <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                     <table class="tabela-referencia" style="flex: 1; min-width: 250px;">
@@ -755,7 +755,7 @@
         <div id="etapa-14" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">14. Tempo de Processo</h3>
             
-            <label id="lbl_pergunta_14" for="tempo_processo">Em quanto tempo o produto (<span id="display_produto_14" style="color: #ffcc00;">...</span>) deve baixar da temperatura de (<span id="display_temp_entrada_14" style="color: #ffcc00;">...</span>) para a temperatura desejada de (<span id="display_temp_final_14" style="color: #ffcc00;">...</span>)?</label><br>
+            <label id="lbl_pergunta_14" for="tempo_processo">Em quanto tempo o produto (<span id="display_produto_14">...</span>) deve baixar da temperatura de (<span id="display_temp_entrada_14">...</span>) para a marca de (<span id="display_temp_final_14">...</span>)?</label><br>
             <input type="text" id="tempo_processo" name="tempo_processo" placeholder="Ex: 24" oninput="formatarHorasInput(this)" onblur="formatarHorasBlur(this)">
 
             <div class="info-box" style="margin-top: 25px;">
@@ -770,7 +770,7 @@
         <div id="etapa-15" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">15. Capacidade Armazenada</h3>
             
-            <label id="lbl_pergunta_15" for="capacidade_armazenada">Qual a capacidade total de (<span id="display_produto_15" style="color: #ffcc00;">...</span>) que ficará estocada na câmara?</label><br>
+            <label id="lbl_pergunta_15" for="capacidade_armazenada">Qual a capacidade total de (<span id="display_produto_15">...</span>) que ficará estocada na câmara?</label><br>
             <input type="text" id="capacidade_armazenada" name="capacidade_armazenada" placeholder="Ex: 1000" oninput="formatarKgInput(this)" onblur="formatarKgBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
@@ -785,7 +785,7 @@
         <div id="etapa-16" class="pergunta-container oculta">
             <h3 style="margin-top: 0; color: #e0e0e0;">16. Movimentação</h3>
             
-            <label id="lbl_pergunta_16" for="movimentacao">Da capacidade total de (<span id="display_capacidade_16" style="color: #ffcc00;">...</span>), quantos kg de (<span id="display_produto_16" style="color: #ffcc00;">...</span>) serão movimentados (entram/saem) a cada (<span id="display_tempo_processo_16" style="color: #ffcc00;">...</span>)?</label><br>
+            <label id="lbl_pergunta_16" for="movimentacao">Da capacidade total de (<span id="display_capacidade_16">...</span>), quantos kg de (<span id="display_produto_16">...</span>) serão movimentados (entram/saem) a cada (<span id="display_tempo_processo_16">...</span>)?</label><br>
             <input type="text" id="movimentacao" name="movimentacao" placeholder="Ex: 200" oninput="formatarKgInput(this)" onblur="formatarKgBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
@@ -1498,12 +1498,12 @@
             container.appendChild(renderer.domElement);
 
             const geometry = new THREE.BoxGeometry(1, 1, 1);
-            const material = new THREE.MeshBasicMaterial({ color: 0x1a2b4c, transparent: true, opacity: 0.4 });
+            const material = new THREE.MeshBasicMaterial({ color: 0x2BAAE2, transparent: true, opacity: 0.15 });
             cubo = new THREE.Mesh(geometry, material);
             scene.add(cubo);
 
             const edgesGeometry = new THREE.EdgesGeometry(geometry);
-            const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x8bb4f7, linewidth: 2 });
+            const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x102E82, linewidth: 2 });
             edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
             scene.add(edges);
 
@@ -1551,8 +1551,10 @@
             scene.children.forEach(child => {
                 if (child.type === "GridHelper") scene.remove(child);
             });
-            const novoTamanhoGrid = Math.max(20, maiorMedida * 2);
-            const gridHelper = new THREE.GridHelper(novoTamanhoGrid, novoTamanhoGrid, 0x444444, 0x222222);
+            
+            // Grid mais bonito em tons claros (slate-300 e slate-200)
+            const novoTamanhoGrid = Math.ceil(Math.max(20, maiorMedida * 2));
+            const gridHelper = new THREE.GridHelper(novoTamanhoGrid, novoTamanhoGrid, 0x94a3b8, 0xcbd5e1);
             gridHelper.position.y = 0;
             scene.add(gridHelper);
         }
