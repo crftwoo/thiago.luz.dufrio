@@ -419,7 +419,7 @@
 </head>
 <body>
 
-    <img id="logo-dufrio" src="Logo_Dufrio_3_1_.webp" style="display:none;" crossorigin="anonymous" />
+    <img id="logo-dufrio" src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" style="display:none;" crossorigin="anonymous" />
 
     <div class="container">
         <h1>Orçamento - Câmara Frigorífica</h1>
@@ -1255,8 +1255,7 @@
         // GERAÇÃO DO PDF (JSPDF + AUTOTABLE)
         // ==========================================
         function gerarPDF() {
-            // Oculta o último botão para a tela ficar totalmente limpa ao gerar
-            ocultarBotaoAvancar(19);
+            // Removemos a ocultação do botão para o usuário poder clicar várias vezes se quiser
 
             // 1. Extração dos Dados do Formulário
             const nomeCliente = document.getElementById('nome_cliente').value.trim() || 'Não informado';
@@ -1317,8 +1316,8 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            const corPrimaria = [26, 43, 76]; // Azul Escuro Tabela
-            const corFundoCelulas = [245, 245, 245]; // Cinza claro
+            const corPrimaria = [16, 46, 130]; // #102E82
+            const corFundoCelulas = [239, 246, 255]; // #EFF6FF
 
             // INSERINDO A LOGO (Processo Seguro)
             let imgData = null;
@@ -1342,16 +1341,16 @@
                 doc.addImage(imgData, 'PNG', 14, 12, 45, 15);
             } else {
                 // Fallback de segurança se a imagem não existir na pasta
-                doc.setTextColor(26, 43, 76);
+                doc.setTextColor(16, 46, 130);
                 doc.setFontSize(24);
                 doc.setFont("helvetica", "bold");
                 doc.text("DUFRIO", 14, 25); 
             }
             
-            doc.setTextColor(100, 100, 100);
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "normal");
-            doc.text("Checklist de Câmara Frigorífica", 195, 20, null, null, "right");
+            doc.setTextColor(16, 46, 130);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("Checklist Oficial - Câmara Frigorífica", 195, 20, null, null, "right");
 
             let startY = 30;
 
@@ -1378,6 +1377,80 @@
             // ------------------------------------------
             // TABELA 2: ESTRUTURA FÍSICA E PAINÉIS
             // ------------------------------------------
+            // CAPTURA O 3D
+            let img3D = null;
+            let imgRatio = 1;
+            try {
+                if(typeof renderer !== 'undefined' && renderer && scene && camera) {
+                    renderer.render(scene, camera); 
+                    const canvas2d = document.createElement('canvas');
+                    canvas2d.width = renderer.domElement.width;
+                    canvas2d.height = renderer.domElement.height;
+                    const ctx = canvas2d.getContext('2d');
+                    
+                    // Fundo BRANCO para não parecer uma "foto colada" no PDF
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillRect(0, 0, canvas2d.width, canvas2d.height);
+                    ctx.drawImage(renderer.domElement, 0, 0);
+
+                    const scale = canvas2d.width / document.getElementById('canvas-container').clientWidth;
+
+                    const labels = ['lbl-comp', 'lbl-larg', 'lbl-alt'];
+                    labels.forEach(id => {
+                        const lbl = document.getElementById(id);
+                        if(lbl && lbl.innerText) {
+                            const lx = parseFloat(lbl.style.left) * scale;
+                            const ly = parseFloat(lbl.style.top) * scale;
+                            
+                            if(!isNaN(lx) && !isNaN(ly)) {
+                                const fontSize = Math.round(24 * scale);
+                                ctx.font = "bold " + fontSize + "px sans-serif";
+                                const textW = ctx.measureText(lbl.innerText).width;
+                                
+                                const padX = 14 * scale;
+                                const padY = 8 * scale;
+                                const w = textW + padX * 2;
+                                const h = fontSize + padY * 2;
+                                
+                                const px = lx - w/2;
+                                const py = ly - h/2;
+                                const r = 6 * scale; // Cantos arredondados (sleek)
+                                
+                                ctx.fillStyle = "#ffffff";
+                                ctx.lineWidth = 1.5 * scale;
+                                ctx.strokeStyle = "#102E82";
+                                
+                                ctx.beginPath();
+                                ctx.moveTo(px + r, py);
+                                ctx.lineTo(px + w - r, py);
+                                ctx.quadraticCurveTo(px + w, py, px + w, py + r);
+                                ctx.lineTo(px + w, py + h - r);
+                                ctx.quadraticCurveTo(px + w, py + h, px + w - r, py + h);
+                                ctx.lineTo(px + r, py + h);
+                                ctx.quadraticCurveTo(px, py + h, px, py + h - r);
+                                ctx.lineTo(px, py + r);
+                                ctx.quadraticCurveTo(px, py, px + r, py);
+                                ctx.closePath();
+                                
+                                ctx.fill();
+                                ctx.stroke();
+                                
+                                ctx.fillStyle = "#102E82";
+                                ctx.textAlign = "center";
+                                ctx.textBaseline = "middle";
+                                ctx.fillText(lbl.innerText, lx, ly + (2 * scale));
+                            }
+                        }
+                    });
+
+                    img3D = canvas2d.toDataURL('image/png');
+                    imgRatio = canvas2d.height / canvas2d.width;
+                }
+            } catch(e) {
+                console.warn('Erro ao capturar 3D:', e);
+            }
+
+            let startYTemp = startY;
             doc.autoTable({
                 startY: startY,
                 theme: 'grid',
@@ -1390,9 +1463,19 @@
                     ['Espessura / Temp. Referência:', espessuraPainel],
                     ['Isolamento do Piso:', piso]
                 ],
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
+                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } },
+                margin: { right: 90 } // Aumenta espaço p/ a imagem
             });
-            startY = doc.lastAutoTable.finalY + 8;
+            
+            let finalImgH = 45;
+            if (img3D) {
+                const imgW = 80;
+                finalImgH = imgW * imgRatio;
+                // Posiciona a imagem alinhada e perfeitamente retangular
+                doc.addImage(img3D, 'PNG', 115, startYTemp - 2, imgW, finalImgH); 
+            }
+            
+            startY = Math.max(doc.lastAutoTable.finalY, startYTemp + finalImgH + 5) + 8;
 
             // ------------------------------------------
             // TABELA 3: PORTAS
@@ -1493,7 +1576,7 @@
             camera.position.set(20, 20, 20); 
             camera.lookAt(scene.position);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
             renderer.setSize(width, height);
             container.appendChild(renderer.domElement);
 
@@ -1535,16 +1618,16 @@
             edges.position.y = h/2;
 
             const maiorMedida = Math.max(w, h, d_depth);
-            const folga = maiorMedida * 0.8; 
-            const novoD = Math.max(5, folga); 
+            // ZOOM AGRESSIVO: Deixa o cubo muito mais perto, preenchendo o canvas e removendo espaços vazios "sobrando"
+            const novoD = Math.max(maiorMedida * 0.85, 1.5); 
 
             const container = document.getElementById('canvas-container');
             if(container) {
                 const aspect = container.clientWidth / container.clientHeight;
                 camera.left = -novoD * aspect;
                 camera.right = novoD * aspect;
-                camera.top = novoD;
-                camera.bottom = -novoD;
+                camera.top = novoD * 0.9;     // Recorta levemente o teto vazio virtual
+                camera.bottom = -novoD * 0.9; // Recorta levemente o piso vazio virtual
                 camera.updateProjectionMatrix();
             }
 
@@ -1616,6 +1699,92 @@
             document.getElementById('input_alt').value = 2.4;
             redesenharCubo();
         }
+
+        // ===============================================
+        // Auto-Avanço e Reset Dinâmico das Etapas
+        // ===============================================
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') {
+                if(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+                
+                // Exceções e Atalhos da Etapa 9 (Portas)
+                if(e.target.id === 'qtd_portas') {
+                    e.preventDefault();
+                    e.target.blur();
+                    document.querySelector('#setup_qtd_portas button').click();
+                    return;
+                }
+                if(e.target.id && e.target.id.startsWith('medida_especial_porta_')) {
+                    e.preventDefault();
+                    e.target.blur();
+                    const idx = e.target.id.split('_').pop();
+                    document.getElementById(`btn_confirma_porta_${idx}`).click();
+                    return;
+                }
+
+                const container = e.target.closest('.pergunta-container');
+                if(!container) return;
+                
+                e.preventDefault();
+                e.target.blur(); // Perde o foco para disparar o evento 'change' instantaneamente (reseta o que vier abaixo) ANTES de clicar
+                
+                setTimeout(() => { // Aguarda curtíssimo período pra garantir que o DOM processou as remoções de classes
+                    const btnAvancar = container.querySelector('.btn-prox-etapa');
+                    if(btnAvancar && !btnAvancar.classList.contains('oculta')) {
+                        btnAvancar.click();
+                    } else if(e.target.type === 'radio') {
+                         setTimeout(() => {
+                            const btn = container.querySelector('.btn-prox-etapa');
+                            if(btn && !btn.classList.contains('oculta')) btn.click();
+                         }, 100);
+                    }
+                }, 10);
+            }
+        });
+
+        document.addEventListener('change', (e) => {
+            const container = e.target.closest('.pergunta-container');
+            if(!container) return;
+            
+            const match = container.id.match(/etapa-(\d+)/);
+            if(!match) return;
+            const currentStep = parseInt(match[1]);
+
+            const btnAvancar = container.querySelector('.btn-prox-etapa');
+            
+            // CORREÇÃO: Não reacende o botão cegamente se for a Etapa 9!
+            if (currentStep === 9) {
+                if(e.target.id === 'qtd_portas') {
+                    if (btnAvancar) btnAvancar.classList.add('oculta');
+                    document.getElementById('container_grade_portas').innerHTML = ''; // Limpa as linhas anteriores
+                    window.portasConfirmadas = 0; // Exige gerar e confirmar novamente
+                }
+            } else if(btnAvancar && currentStep !== 19) {
+                btnAvancar.classList.remove('oculta');
+            }
+
+            const todasEtapas = document.querySelectorAll('.pergunta-container');
+            todasEtapas.forEach(outraEtapa => {
+                const outroMatch = outraEtapa.id.match(/etapa-(\d+)/);
+                if(outroMatch) {
+                    const outroStep = parseInt(outroMatch[1]);
+                    if(outroStep > currentStep) {
+                        outraEtapa.classList.add('oculta');
+                        const outroBtn = outraEtapa.querySelector('.btn-prox-etapa');
+                        // Se for a etapa 9, reseta totalmente o botão e as portas construídas
+                        if (outroBtn) {
+                            if(outroStep === 9) {
+                                outroBtn.classList.add('oculta');
+                                document.getElementById('container_grade_portas').innerHTML = '';
+                                window.portasConfirmadas = 0;
+                            } else {
+                                outroBtn.classList.remove('oculta');
+                            }
+                        }
+                    }
+                }
+            });
+        });
 
         window.addEventListener('resize', () => {
             if(!camera || !renderer) return;
