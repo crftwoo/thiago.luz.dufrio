@@ -1312,72 +1312,11 @@
             const tensao = tensaoEl ? tensaoEl.value : 'Não informado';
             const obsFinais = document.getElementById('observacoes_finais').value.trim();
 
-            // 2. Criação do Documento PDF
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            const corPrimaria = [16, 46, 130]; // #102E82
-            const corFundoCelulas = [239, 246, 255]; // #EFF6FF
+            // O Motor de Geração foi encapsulado no Auto-Zoom Dinâmico abaixo.
 
-            // INSERINDO A LOGO (Processo Seguro)
-            let imgData = null;
-            try {
-                const imgLogo = document.getElementById('logo-dufrio');
-                if(imgLogo.complete && imgLogo.naturalWidth > 0) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = imgLogo.naturalWidth;
-                    canvas.height = imgLogo.naturalHeight;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(imgLogo, 0, 0);
-                    // Exportamos para PNG na memória do navegador para o PDF aceitar
-                    imgData = canvas.toDataURL('image/png');
-                }
-            } catch(e) {
-                console.warn('Não foi possível carregar a imagem da logo para o PDF.', e);
-            }
-
-            if (imgData) {
-                // Desenha a logo no PDF (Largura 45, Altura 15)
-                doc.addImage(imgData, 'PNG', 14, 12, 45, 15);
-            } else {
-                // Fallback de segurança se a imagem não existir na pasta
-                doc.setTextColor(16, 46, 130);
-                doc.setFontSize(24);
-                doc.setFont("helvetica", "bold");
-                doc.text("DUFRIO", 14, 25); 
-            }
-            
-            doc.setTextColor(16, 46, 130);
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            doc.text("Checklist Oficial - Câmara Frigorífica", 195, 20, null, null, "right");
-
-            let startY = 30;
-
-            // ------------------------------------------
-            // TABELA 1: DADOS DO CLIENTE E VENDA
-            // ------------------------------------------
-            doc.autoTable({
-                startY: startY,
-                theme: 'grid',
-                headStyles: { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', halign: 'left' },
-                bodyStyles: { textColor: 40 },
-                head: [['DADOS DO CLIENTE/VENDA', '']],
-                body: [
-                    ['Cliente:', nomeCliente],
-                    ['Código Cliente:', codCliente],
-                    ['Contato:', contatoCliente],
-                    ['Vendedor:', vendedor],
-                    ['Condição de Pagto:', formaPgto],
-                ],
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
-            });
-            startY = doc.lastAutoTable.finalY + 8;
-
-            // ------------------------------------------
-            // TABELA 2: ESTRUTURA FÍSICA E PAINÉIS
-            // ------------------------------------------
-            // CAPTURA O 3D
+            // ==========================================
+            // LÓGICA DE CAPTURA DO 3D (Roda apenas 1 vez)
+            // ==========================================
             let img3D = null;
             let imgRatio = 1;
             try {
@@ -1388,7 +1327,6 @@
                     canvas2d.height = renderer.domElement.height;
                     const ctx = canvas2d.getContext('2d');
                     
-                    // Fundo BRANCO para não parecer uma "foto colada" no PDF
                     ctx.fillStyle = "#ffffff";
                     ctx.fillRect(0, 0, canvas2d.width, canvas2d.height);
                     ctx.drawImage(renderer.domElement, 0, 0);
@@ -1414,7 +1352,7 @@
                                 
                                 const px = lx - w/2;
                                 const py = ly - h/2;
-                                const r = 6 * scale; // Cantos arredondados (sleek)
+                                const r = 6 * scale; 
                                 
                                 ctx.fillStyle = "#ffffff";
                                 ctx.lineWidth = 1.5 * scale;
@@ -1443,118 +1381,270 @@
                         }
                     });
 
-                    img3D = canvas2d.toDataURL('image/png');
-                    imgRatio = canvas2d.height / canvas2d.width;
+                    // RECORTAMOS as "sobras" inúteis do topo e chão (Céu e chão do 3D puro) para um aspecto retangular (wide)
+                    const hCorteTop = Math.floor(canvas2d.height * 0.15); 
+                    const hCorteBot = Math.floor(canvas2d.height * 0.15);
+                    const finalCanvasH = canvas2d.height - hCorteTop - hCorteBot;
+
+                    const canvasCortado = document.createElement('canvas');
+                    canvasCortado.width = canvas2d.width;
+                    canvasCortado.height = finalCanvasH;
+                    const ctxCortado = canvasCortado.getContext('2d');
+                    ctxCortado.fillStyle = "#ffffff";
+                    ctxCortado.fillRect(0, 0, canvasCortado.width, canvasCortado.height);
+                    
+                    ctxCortado.drawImage(canvas2d, 0, hCorteTop, canvas2d.width, finalCanvasH, 0, 0, canvasCortado.width, finalCanvasH);
+
+                    window.img3DBase = canvasCortado.toDataURL('image/png');
+                    window.img3DRatio = finalCanvasH / canvasCortado.width;
                 }
             } catch(e) {
                 console.warn('Erro ao capturar 3D:', e);
             }
 
-            let startYTemp = startY;
-            doc.autoTable({
-                startY: startY,
-                theme: 'grid',
-                headStyles: { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', halign: 'left' },
-                bodyStyles: { textColor: 40 },
-                head: [['ESTRUTURA FÍSICA E ISOLAMENTO', '']],
-                body: [
-                    ['Medidas Externas (C x L x A):', `${comp} x ${larg} x ${alt}`],
-                    ['Tipo de Painel:', tipoPainel],
-                    ['Espessura / Temp. Referência:', espessuraPainel],
-                    ['Isolamento do Piso:', piso]
-                ],
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } },
-                margin: { right: 90 } // Aumenta espaço p/ a imagem
-            });
+            // ==========================================
+            // MOTOR DE GERAÇÃO COM REDUÇÃO AUTOMÁTICA DE ZOOM E TEMATIZAÇÃO PREMIUM
+            // ==========================================
+            const { jsPDF } = window.jspdf;
             
-            let finalImgH = 45;
-            if (img3D) {
-                const imgW = 80;
-                finalImgH = imgW * imgRatio;
-                // Posiciona a imagem alinhada e perfeitamente retangular
-                doc.addImage(img3D, 'PNG', 115, startYTemp - 2, imgW, finalImgH); 
+            const corPrimaria = [16, 46, 130]; 
+            const corFundoCelulas = [248, 250, 252]; // Slate-50 muito sutil e moderno
+            const corBordas = [203, 213, 225]; // Slate-300 para linhas incrivelmente finas e elegantes
+            const corTextoDark = [51, 65, 85]; // Slate-700
+
+            // INSERINDO A LOGO (Processo Seguro) - CAPTURA APENAS 1 VEZ
+            let imgData = null;
+            try {
+                const imgLogo = document.getElementById('logo-dufrio');
+                if(imgLogo.complete && imgLogo.naturalWidth > 0) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = imgLogo.naturalWidth;
+                    canvas.height = imgLogo.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(imgLogo, 0, 0);
+                    imgData = canvas.toDataURL('image/png');
+                }
+            } catch(e) {
+                console.warn('Não foi possível carregar a imagem da logo para o PDF.', e);
             }
+
+            let docFinal = null;
             
-            startY = Math.max(doc.lastAutoTable.finalY, startYTemp + finalImgH + 5) + 8;
+            // Loop para auto-encaixar páginas grandes (Smart Fit)
+            for (let zoom = 1.0; zoom >= 0.5; zoom -= 0.05) {
+                const doc = new jsPDF();
+                
+                const fSizeH1 = 15 * zoom;
+                const fSizeLogoFallback = 24 * zoom;
+                const tPadX = Math.max(2, 4 * zoom); 
+                const tPadY = Math.max(2, 3 * zoom); 
+                const tHeaderSize = 9.5 * zoom;
+                const tBodySize = 9.5 * zoom;
 
-            // ------------------------------------------
-            // TABELA 3: PORTAS
-            // ------------------------------------------
-            doc.autoTable({
-                startY: startY,
-                theme: 'grid',
-                headStyles: { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', halign: 'center' },
-                bodyStyles: { textColor: 40, halign: 'center' },
-                // ADICIONADO O CABEÇALHO 'PORTAS'
-                head: [
-                    [{ content: 'PORTAS', colSpan: 5, styles: { halign: 'left', fillColor: corPrimaria } }],
-                    ['Identificação', 'Tipo', 'Batentes', 'Tamanho', 'Lado de Abert.']
-                ],
-                body: portasArray
-            });
-            startY = doc.lastAutoTable.finalY + 8;
+                if (imgData) {
+                    doc.addImage(imgData, 'PNG', 14, 12, 45 * zoom, 15 * zoom);
+                } else {
+                    doc.setTextColor(...corPrimaria);
+                    doc.setFontSize(fSizeLogoFallback);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("DUFRIO", 14, 25); 
+                }
+                
+                doc.setTextColor(...corPrimaria);
+                doc.setFontSize(fSizeH1);
+                doc.setFont("helvetica", "bold");
+                doc.text("Checklist Oficial - Câmara Frigorífica", 195, 20, null, null, "right");
 
-            // ------------------------------------------
-            // TABELA 4: CONDIÇÕES DE OPERAÇÃO
-            // ------------------------------------------
-            let condicoesBody = [
-                ['Produto Armazenado:', produto],
-                ['Temperatura de Entrada:', tempEnt],
-                ['Temperatura Interna Final:', tempFin],
-                ['Tempo de Processo:', tempoProc],
-                ['Capacidade Armazenada:', capArmazenada],
-                ['Movimentação no Período:', movim],
-                ['Frequência de Abertura:', freqAbertura]
-            ];
+                let startY = 28 + (5 * zoom); 
 
-            // Condição para não mostrar Obs vazia ou "Nenhuma"
-            if (obsAbertura && obsAbertura.trim() !== '' && obsAbertura.toLowerCase() !== 'nenhuma' && obsAbertura.toLowerCase() !== 'não informado') {
-                condicoesBody.push(['Obs. da Abertura:', obsAbertura]);
+                // ESTILOS PREMIUM
+                const headStylesGeral = { 
+                    fillColor: corPrimaria, 
+                    textColor: 255, 
+                    fontStyle: 'bold', 
+                    halign: 'left', 
+                    fontSize: tHeaderSize, 
+                    cellPadding: { top: tPadY, bottom: tPadY, left: tPadX, right: tPadX },
+                    lineColor: corPrimaria,
+                    lineWidth: 0.1
+                };
+                const bodyStylesGeral = { 
+                    textColor: corTextoDark, 
+                    fontSize: tBodySize, 
+                    cellPadding: { top: tPadY, bottom: tPadY, left: tPadX, right: tPadX },
+                    lineColor: corBordas,
+                    lineWidth: 0.1
+                };
+
+                // ------------------------------------------
+                // TABELA 1: DADOS DO CLIENTE E VENDA
+                // ------------------------------------------
+                doc.autoTable({
+                    startY: startY,
+                    theme: 'grid',
+                    headStyles: headStylesGeral,
+                    bodyStyles: bodyStylesGeral,
+                    head: [['DADOS DO CLIENTE/VENDA', '']],
+                    body: [
+                        ['Cliente:', nomeCliente],
+                        ['Código Cliente:', codCliente],
+                        ['Contato:', contatoCliente],
+                        ['Vendedor:', vendedor],
+                        ['Condição de Pagto:', formaPgto],
+                    ],
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
+                });
+                startY = doc.lastAutoTable.finalY + (7 * zoom);
+
+                // ------------------------------------------
+                // TABELA 2: ESTRUTURA FÍSICA E PAINÉIS
+                // ------------------------------------------
+                let finalImgH = 0;
+                let minRowHeight = 11 * zoom;
+                let targetImgWTemporaria = 77 * zoom; // Previsão da largura do cellWidth "auto"
+                
+                if (window.img3DBase) {
+                    finalImgH = targetImgWTemporaria * window.img3DRatio;
+                    // Forçamos a tabela a se esticar pra CIMA e pra BAIXO perfeitamente baseada na proporção matemática pura da imagem
+                    minRowHeight = Math.max(9 * zoom, finalImgH / 4); 
+                }
+
+                let coordImgX = 0;
+                let coordImgY = 0;
+                let coordCellW = 0;
+                let coordCellH = 0;
+
+                doc.autoTable({
+                    startY: startY,
+                    theme: 'grid',
+                    headStyles: headStylesGeral,
+                    bodyStyles: { ...bodyStylesGeral, minCellHeight: minRowHeight, valign: 'middle' },
+                    head: [[ { content: 'ESTRUTURA FÍSICA E ISOLAMENTO', colSpan: 3, styles: { halign: 'left' } } ]],
+                    body: [
+                        ['Medidas Externas (C x L x A):', `${comp} x ${larg} x ${alt}`, { content: '', rowSpan: 4 }],
+                        ['Tipo de Painel:', tipoPainel],
+                        ['Espessura / Temp. Referência:', espessuraPainel],
+                        ['Isolamento do Piso:', piso]
+                    ],
+                    columnStyles: { 
+                        0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas },
+                        1: { cellWidth: 50 },
+                        2: { cellWidth: 'auto' } 
+                    },
+                    didDrawCell: function(data) {
+                        if (data.section === 'body' && data.row.index === 0 && data.column.index === 2) {
+                            coordImgX = data.cell.x;
+                            coordImgY = data.cell.y;
+                            coordCellW = data.cell.width;
+                            coordCellH = data.cell.height;
+                        }
+                    }
+                });
+                
+                if (window.img3DBase && coordImgX > 0) {
+                    // Mantemos o recuo mínimo para não riscar a borda slate-300
+                    const m = 0.5 * zoom; 
+                    
+                    let imgW_Absoluta = coordCellW - (m*2);
+                    let imgH_Absoluta = imgW_Absoluta * window.img3DRatio;
+
+                    // Caixa limitadora de segurança severa: garante que a imagem inteira apareça (NUNCA CORTADA)
+                    if (imgH_Absoluta > coordCellH - (m*2)) {
+                        imgH_Absoluta = coordCellH - (m*2);
+                        imgW_Absoluta = imgH_Absoluta / window.img3DRatio;
+                    }
+
+                    const offsetX = (coordCellW - imgW_Absoluta) / 2;
+                    const offsetY = (coordCellH - imgH_Absoluta) / 2;
+                    
+                    doc.addImage(window.img3DBase, 'PNG', coordImgX + offsetX, coordImgY + offsetY, imgW_Absoluta, imgH_Absoluta); 
+                }
+                
+                startY = doc.lastAutoTable.finalY + (7 * zoom);
+
+                // ------------------------------------------
+                // TABELA 3: PORTAS
+                // ------------------------------------------
+                let headStylesPortas = Object.assign({}, headStylesGeral);
+                headStylesPortas.halign = 'center';
+
+                doc.autoTable({
+                    startY: startY,
+                    theme: 'grid',
+                    headStyles: headStylesPortas,
+                    bodyStyles: { ...bodyStylesGeral, halign: 'center' },
+                    head: [
+                        [{ content: 'PORTAS', colSpan: 5, styles: { halign: 'left', fillColor: corPrimaria } }],
+                        ['Identificação', 'Tipo', 'Batentes', 'Tamanho', 'Lado de Abert.']
+                    ],
+                    body: portasArray
+                });
+                startY = doc.lastAutoTable.finalY + (8 * zoom);
+
+                // ------------------------------------------
+                // TABELA 4: CONDIÇÕES DE OPERAÇÃO
+                // ------------------------------------------
+                let condicoesBody = [
+                    ['Produto Armazenado:', produto],
+                    ['Temperatura de Entrada:', tempEnt],
+                    ['Temperatura Interna Final:', tempFin],
+                    ['Tempo de Processo:', tempoProc],
+                    ['Capacidade Armazenada:', capArmazenada],
+                    ['Movimentação no Período:', movim],
+                    ['Frequência de Abertura:', freqAbertura]
+                ];
+
+                if (obsAbertura && obsAbertura.trim() !== '' && obsAbertura.toLowerCase() !== 'nenhuma' && obsAbertura.toLowerCase() !== 'não informado') {
+                    condicoesBody.push(['Obs. da Abertura:', obsAbertura]);
+                }
+
+                doc.autoTable({
+                    startY: startY,
+                    theme: 'grid',
+                    headStyles: headStylesGeral,
+                    bodyStyles: bodyStylesGeral,
+                    head: [['CONDIÇÕES DE OPERAÇÃO', '']],
+                    body: condicoesBody,
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
+                });
+                startY = doc.lastAutoTable.finalY + (8 * zoom);
+
+                // ------------------------------------------
+                // TABELA 5: DADOS TÉCNICOS E OBSERVAÇÕES
+                // ------------------------------------------
+                let dadosTecnicosBody = [
+                    ['Distância UC x EVAP:', distUC],
+                    ['Tensão Elétrica:', tensao]
+                ];
+
+                if (obsFinais && obsFinais.trim() !== '' && obsFinais.toLowerCase() !== 'nenhuma' && obsFinais.toLowerCase() !== 'não informado') {
+                    dadosTecnicosBody.push(['Observações Gerais:', obsFinais]);
+                }
+
+                doc.autoTable({
+                    startY: startY,
+                    theme: 'grid',
+                    headStyles: headStylesGeral,
+                    bodyStyles: bodyStylesGeral,
+                    head: [['DADOS TÉCNICOS E OBSERVAÇÕES FINAIS', '']],
+                    body: dadosTecnicosBody,
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
+                });
+
+                // VERIFICA SE TUDO COUBE EM APENAS 1 PÁGINA
+                if (doc.internal.getNumberOfPages() === 1) {
+                    docFinal = doc;
+                    break; // Sucesso! Esse nível de Zoom foi perfeito. Quebra o loop.
+                }
             }
-
-            doc.autoTable({
-                startY: startY,
-                theme: 'grid',
-                headStyles: { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', halign: 'left' },
-                bodyStyles: { textColor: 40 },
-                head: [['CONDIÇÕES DE OPERAÇÃO', '']],
-                body: condicoesBody,
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
-            });
-            startY = doc.lastAutoTable.finalY + 8;
-
-            // Checa se a próxima tabela cabe na página, se não, pula folha.
-            if(startY > 250) {
-                doc.addPage();
-                startY = 20;
-            }
-
-            // ------------------------------------------
-            // TABELA 5: DADOS TÉCNICOS E OBSERVAÇÕES
-            // ------------------------------------------
-            let dadosTecnicosBody = [
-                ['Distância UC x EVAP:', distUC],
-                ['Tensão Elétrica:', tensao]
-            ];
-
-            // Condição para não mostrar Obs Final vazia ou "Nenhuma"
-            if (obsFinais && obsFinais.trim() !== '' && obsFinais.toLowerCase() !== 'nenhuma' && obsFinais.toLowerCase() !== 'não informado') {
-                dadosTecnicosBody.push(['Observações Gerais:', obsFinais]);
-            }
-
-            doc.autoTable({
-                startY: startY,
-                theme: 'grid',
-                headStyles: { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', halign: 'left' },
-                bodyStyles: { textColor: 40 },
-                head: [['DADOS TÉCNICOS E OBSERVAÇÕES FINAIS', '']],
-                body: dadosTecnicosBody,
-                columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
-            });
 
             // 3. Download do Arquivo PDF
             const nomeArquivo = `Orcamento_${nomeCliente.replace(/\s+/g, '_')}.pdf`;
-            doc.save(nomeArquivo);
+            if (docFinal) {
+                docFinal.save(nomeArquivo);
+            } else {
+                console.warn('O conteúdo é tão massivo que nem minimizado pra 50% coube em 1 página.');
+            }
         }
 
         // ===============================================
@@ -1581,13 +1671,16 @@
             container.appendChild(renderer.domElement);
 
             const geometry = new THREE.BoxGeometry(1, 1, 1);
-            const material = new THREE.MeshBasicMaterial({ color: 0x2BAAE2, transparent: true, opacity: 0.15 });
+            // depthWrite: false impede que a "cara" frontal da gelatina oculte os traços traseiros no motor de renderização
+            const material = new THREE.MeshBasicMaterial({ color: 0x2BAAE2, transparent: true, opacity: 0.15, depthWrite: false });
             cubo = new THREE.Mesh(geometry, material);
             scene.add(cubo);
 
             const edgesGeometry = new THREE.EdgesGeometry(geometry);
-            const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x102E82, linewidth: 2 });
+            // depthTest: false e renderOrder forçam os traços a serem impressos por cima do sólido, garantindo 100% de nitidez das 12 arestas
+            const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x102E82, linewidth: 2, depthTest: false });
             edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+            edges.renderOrder = 1; 
             scene.add(edges);
 
             animate();
@@ -1618,16 +1711,21 @@
             edges.position.y = h/2;
 
             const maiorMedida = Math.max(w, h, d_depth);
-            // ZOOM AGRESSIVO: Deixa o cubo muito mais perto, preenchendo o canvas e removendo espaços vazios "sobrando"
-            const novoD = Math.max(maiorMedida * 0.85, 1.5); 
+            // ZOOM IDEAL: Garante que os bicos diagonais do cubo caibam sem serem degolados pela câmera
+            const novoD = Math.max(maiorMedida * 1.35, 2.0); 
 
             const container = document.getElementById('canvas-container');
             if(container) {
                 const aspect = container.clientWidth / container.clientHeight;
                 camera.left = -novoD * aspect;
                 camera.right = novoD * aspect;
-                camera.top = novoD * 0.9;     // Recorta levemente o teto vazio virtual
-                camera.bottom = -novoD * 0.9; // Recorta levemente o piso vazio virtual
+                camera.top = novoD;     // Sem corte virtual para não engolir o bico superior
+                camera.bottom = -novoD; // Sem corte virtual para não engolir o bico inferior
+                
+                // Foca o "olho" da câmera milimetricamente no centro de elevação (h/2) da caixa. Simetria total.
+                camera.position.set(20, 20 + h/2, 20);
+                camera.lookAt(new THREE.Vector3(0, h/2, 0));
+
                 camera.updateProjectionMatrix();
             }
 
