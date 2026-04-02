@@ -664,7 +664,7 @@
             <h3 style="margin-top: 0; color: #e0e0e0;">12. Temperatura de Entrada</h3>
             
             <label id="lbl_pergunta_12" for="temp_entrada">Qual a temperatura do produto (<span id="display_produto_armazenado">...</span>) ao entrar na câmara?</label><br>
-            <input type="text" inputmode="numeric" id="temp_entrada" name="temp_entrada" placeholder="Ex: 10 ou -15" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
+            <input type="text" id="temp_entrada" name="temp_entrada" placeholder="Ex: 10 ou -15" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
                 <p style="margin-top: 0; color: #ea580c; font-weight: bold; margin-bottom: 5px;">Tabela de Referência Padrão:</p>
@@ -703,7 +703,7 @@
             <h3 style="margin-top: 0; color: #e0e0e0;">13. Temperatura Interna Final</h3>
             
             <label id="lbl_pergunta_13" for="temp_final">Qual deve ser a temperatura interna final para o produto (<span id="display_produto_13">...</span>)?<span id="display_temp_entrada_13" style="display:none;"></span></label><br>
-            <input type="text" inputmode="numeric" id="temp_final" name="temp_final" placeholder="Ex: -18" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
+            <input type="text" id="temp_final" name="temp_final" placeholder="Ex: -18" oninput="formatarTemperaturaInput(this)" onblur="formatarTemperaturaBlur(this)">
             
             <div class="info-box" style="margin-top: 25px;">
                 <p style="margin-top: 0; color: #ea580c; font-weight: bold; margin-bottom: 10px;">Tabela de Referência Padrão (Temp. Interna Final):</p>
