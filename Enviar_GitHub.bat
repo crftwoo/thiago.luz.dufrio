@@ -11,7 +11,7 @@ echo.
 echo 2. Salvando as versoes...
 git config user.name "Thiago Luz"
 git config user.email "thiago.luz@dufrio.com.br"
-git commit -m "feat: Adicionada nova ferramenta e ajustes"
+git commit -m "index.html - reordenadas ferramentas do menu (Checklist subiu para 2o lugar, Precificacao foi para 5o)"
 echo.
 
 echo 3. Enviando para a nuvem...
