@@ -256,7 +256,10 @@
 
     <aside id="sidebar">
         <div class="header">
-            <h1>Gabinete 3D</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>Gabinete 3D</h1>
+                <a href="index.html" style="text-decoration: none; font-size: 10px; color: var(--primary); font-weight: 800; text-transform: uppercase; border: 1px solid var(--primary); padding: 4px 8px; border-radius: 6px;">Portal</a>
+            </div>
             <p>Simulador Premium - Thiago Luz</p>
         </div>
 
@@ -378,13 +381,15 @@
 
         // Lógica de Inputs
         function verificarMedidas() {
-            const c = document.getElementById('comp').value;
-            const l = document.getElementById('larg').value;
-            const h = document.getElementById('alt').value;
+            const getVal = (id) => parseFloat(document.getElementById(id).value.replace(',', '.') || 0);
+            const c = getVal('comp');
+            const l = getVal('larg');
+            const h = getVal('alt');
+            
             const cardIso = document.getElementById('card-isolamento');
             const btnCalc = document.getElementById('btn-calcular');
 
-            if (c && l && h && c > 0 && l > 0 && h > 0) {
+            if (c > 0 && l > 0 && h > 0) {
                 cardIso.classList.remove('hidden');
                 btnCalc.classList.remove('hidden');
                 gerarProjeto(false); // Gera o 3D automaticamente
@@ -436,9 +441,11 @@
         }
 
         function gerarProjeto(exibirRelatorio = false) {
-            const C = parseFloat(document.getElementById('comp').value || 0);
-            const L = parseFloat(document.getElementById('larg').value || 0);
-            const H = parseFloat(document.getElementById('alt').value || 0);
+            const getVal = (id) => parseFloat(document.getElementById(id).value.replace(',', '.') || 0);
+            
+            const C = getVal('comp');
+            const L = getVal('larg');
+            const H = getVal('alt');
             
             if (C <= 0 || L <= 0 || H <= 0) return;
 
