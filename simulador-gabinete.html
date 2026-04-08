@@ -192,6 +192,29 @@
 
         .relatorio-resumo strong { color: var(--text-main); }
 
+        .formato-corte {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            white-space: pre-wrap;
+            user-select: all;
+            cursor: pointer;
+        }
+        .formato-corte::before {
+            content: 'FORMATO PARA PLANO DE CORTE (CLIQUE PARA COPIAR)';
+            display: block;
+            font-family: 'Inter', sans-serif;
+            font-size: 9px;
+            color: #64748b;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
         /* 3D Container */
         #canvas-container {
             flex-grow: 1;
@@ -534,8 +557,17 @@
             const totalParedes = (numC * 2) + (numL * 2);
             const compPainelTeto = L <= C ? L : C;
             
+            const tipoIso = document.getElementById('tipo').value;
             const marcaNome = document.getElementById('marca').options[document.getElementById('marca').selectedIndex].text;
             const espDisplay = (parseFloat(document.getElementById('espessura').value) * 1000).toFixed(0);
+
+            // Formatação para o Plano de Corte (usando vírgula como no pedido)
+            const fmt = (v) => v.toFixed(2).replace('.', ',');
+            const qty = (n) => n.toString().padStart(2, '0');
+            
+            let textoCorte = `${qty(numT)} PAINEL | ${fmt(compPainelTeto)} | ${tipoIso} | ${espDisplay}mm\n`;
+            if (temPiso) textoCorte += `${qty(numT)} PAINEL | ${fmt(compPainelTeto)} | ${tipoIso} | ${espDisplay}mm\n`;
+            textoCorte += `${qty(totalParedes)} PAINEL | ${fmt(altP)} | ${tipoIso} | ${espDisplay}mm`;
 
             container.innerHTML = `
                 <div class="peca-item">
@@ -558,9 +590,13 @@
                 
                 <div class="relatorio-resumo">
                     <strong>RESUMO DA DEMANDA:</strong><br>
-                    Para este gabinete de <strong>${C.toFixed(2)}m x ${L.toFixed(2)}m</strong>, será necessária a aquisição de <strong>${(numT * (temPiso ? 2 : 1)) + totalParedes} painéis</strong> isolantes (<strong>${marcaNome.split('(')[0].trim()}</strong>) com espessura de <strong>${espDisplay}mm</strong>.<br><br>
+                    Para este gabinete de <strong>${C.toFixed(2)}m x ${L.toFixed(2)}m x ${document.getElementById('alt').value}m</strong>, será necessária a aquisição de <strong>${(numT * (temPiso ? 2 : 1)) + totalParedes} painéis</strong> isolantes <strong>${tipoIso}</strong> (<strong>${marcaNome.split('(')[0].trim()}</strong>) com espessura de <strong>${espDisplay}mm</strong>.<br><br>
                     • <strong>${numT} peças</strong> de ${compPainelTeto.toFixed(2)}m (Teto)${temPiso ? `<br>• <strong>${numT} peças</strong> de ${compPainelTeto.toFixed(2)}m (Piso)` : ''}<br>
                     • <strong>${totalParedes} peças</strong> de ${altP.toFixed(2)}m (Paredes)
+                </div>
+
+                <div class="formato-corte" onclick="navigator.clipboard.writeText(this.innerText); alert('Copiado para o Plano de Corte!')">
+${textoCorte}
                 </div>
             `;
         }
