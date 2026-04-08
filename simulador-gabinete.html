@@ -160,7 +160,7 @@
         button:active { transform: translateY(0); }
 
         /* Report Area */
-        #resultado { margin-top: 10px; display: none; }
+        #resultado { margin-top: 10px; }
         .resumo-title { font-size: 13px; font-weight: 900; color: var(--primary); text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .resumo-title::before { content: ''; width: 20px; height: 2px; background: var(--primary); border-radius: 2px; }
 
@@ -176,8 +176,8 @@
             transition: 0.2s;
         }
         .peca-item:hover { background: rgba(255, 255, 255, 0.05); border-color: var(--glass-border); }
-        .peca-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
-        .peca-value { font-size: 14px; color: white; font-weight: 800; }
+        .peca-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+        .peca-value { font-size: 13px; color: white; font-weight: 800; }
 
         /* 3D Container */
         #canvas-container {
@@ -272,16 +272,16 @@
             <div class="row">
                 <div class="input-group">
                     <label>Comprimento (C)</label>
-                    <input type="number" id="comp" value="" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
+                    <input type="number" id="comp" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
                 </div>
                 <div class="input-group">
                     <label>Largura (L)</label>
-                    <input type="number" id="larg" value="" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
+                    <input type="number" id="larg" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
                 </div>
             </div>
             <div class="input-group">
                 <label>Altura Externa (H)</label>
-                <input type="number" id="alt" value="" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
+                <input type="number" id="alt" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
             </div>
         </div>
 
@@ -381,7 +381,7 @@
 
         // Lógica de Inputs
         function verificarMedidas() {
-            const getVal = (id) => parseFloat(document.getElementById(id).value.replace(',', '.') || 0);
+            const getVal = (id) => parseFloat(document.getElementById(id).value.toString().replace(',', '.') || 0);
             const c = getVal('comp');
             const l = getVal('larg');
             const h = getVal('alt');
@@ -392,7 +392,7 @@
             if (c > 0 && l > 0 && h > 0) {
                 cardIso.classList.remove('hidden');
                 btnCalc.classList.remove('hidden');
-                gerarProjeto(false); // Gera o 3D automaticamente
+                gerarProjeto(false);
             } else {
                 cardIso.classList.add('hidden');
                 btnCalc.classList.add('hidden');
@@ -432,7 +432,6 @@
             mesh.position.set(x, y, z);
             mesh.rotation.y = rotationY;
 
-            // Wireframe contrastante
             const edges = new THREE.EdgesGeometry(geometry);
             const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x1e293b, transparent: true, opacity: 0.5 }));
             mesh.add(line);
@@ -441,47 +440,41 @@
         }
 
         function gerarProjeto(exibirRelatorio = false) {
-            const getVal = (id) => parseFloat(document.getElementById(id).value.replace(',', '.') || 0);
-            
+            const getVal = (id) => parseFloat(document.getElementById(id).value.toString().replace(',', '.') || 0);
             const C = getVal('comp');
             const L = getVal('larg');
             const H = getVal('alt');
             
             if (C <= 0 || L <= 0 || H <= 0) return;
 
-            // Limpa cena (exceto luzes)
             while(scene.children.length > 3) scene.remove(scene.children[scene.children.length-1]);
 
             const E = parseFloat(document.getElementById('espessura').value || 0.1);
             const LU = parseFloat(document.getElementById('marca').value || 1.15);
             const temPiso = document.getElementById('temPiso').value === "sim";
 
-            // Regra: Teto na menor medida
             const minDim = Math.min(C, L);
             const maxDim = Math.max(C, L);
             const isWidthSmallest = L <= C;
 
-            // Cálculos de Modulação
             let numTeto = Math.ceil(maxDim / LU);
             let altParede = H - E; 
             if(temPiso) altParede -= E;
             const yParede = temPiso ? (altParede / 2) + E : (altParede / 2);
 
             let numC = Math.ceil(C / LU);
-            let L_efetivo = L - (2 * E);
-            let numL = Math.ceil(L_efetivo / LU);
+            let Lef = L - (2 * E);
+            let numL = Math.ceil(Lef / LU);
 
-            // Renderização (Somente via Helpers agora)
             renderTeto(C, L, H, E, LU, isWidthSmallest, maxDim);
             if(temPiso) renderPiso(C, L, E, LU, isWidthSmallest, maxDim);
             renderParedes(C, L, E, LU, altParede, yParede);
 
             if (exibirRelatorio) {
-                atualizarRelatorio(numTeto, numC, numL, L, C, altParede, temPiso, L_efetivo);
+                atualizarRelatorio(numTeto, numC, numL, L, C, altParede, temPiso, Lef);
             }
         }
 
-        // Helpers de Renderização para evitar erros de redundância
         function renderTeto(C, L, H, E, LU, isWidthSmallest, maxDim) {
             let num = Math.ceil(maxDim / LU);
             for(let i=0; i<num; i++) {
@@ -491,6 +484,7 @@
                 else criarPainel3D(C, E, w, roofMat, 0, H-(E/2), offset);
             }
         }
+
         function renderPiso(C, L, E, LU, isWidthSmallest, maxDim) {
             let num = Math.ceil(maxDim / LU);
             for(let i=0; i<num; i++) {
@@ -500,8 +494,8 @@
                 else criarPainel3D(C, E, w, floorMat, 0, E/2, offset);
             }
         }
+
         function renderParedes(C, L, E, LU, altP, yP) {
-            // Longas
             let numC = Math.ceil(C / LU);
             for(let i=0; i<numC; i++){
                 let w = (i === numC-1) ? (C % LU || LU) : LU;
@@ -509,7 +503,6 @@
                 criarPainel3D(w, altP, E, wallMat, px, yP, -(L/2) + E/2);
                 criarPainel3D(w, altP, E, wallMat, px, yP, (L/2) - E/2);
             }
-            // Curtas (Dentro)
             let Lef = L - (2*E);
             let numL = Math.ceil(Lef / LU);
             for(let i=0; i<numL; i++){
@@ -525,7 +518,7 @@
             const res = document.getElementById('resultado');
             res.classList.remove('hidden');
             
-            const totalParedes = (Math.ceil(C / 1.1) * 0) + (numC * 2) + (numL * 2); // Ajuste lógico se necessário
+            const totalParedes = (numC * 2) + (numL * 2);
             const compPainelTeto = L <= C ? L : C;
 
             container.innerHTML = `
@@ -561,10 +554,8 @@
             renderer.setSize(container.clientWidth, container.clientHeight);
         });
 
-        // Inicialização
         aoMudarTipo();
         animate();
-        // gerarProjeto(); // Removido para não carregar auto
 
     </script>
 </body>
