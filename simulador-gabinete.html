@@ -507,21 +507,19 @@
             if(temPiso) altParede -= E;
             const yParede = temPiso ? (altParede / 2) + E : (altParede / 2);
 
-            // LÓGICA OTIMIZADA (ESTILO CADERNO): Arredondamento por pares de paredes para aproveitar retalhos
-            // Comprimento (Frente + Fundo)
-            let numC = Math.ceil((C * 2) / LU);
-            
-            // Largura Efetiva (Laterais - encaixe interno)
-            let Lef_total = (L - (2 * E)) * 2;
-            let numL = Math.ceil(Lef_total / LU);
+            // LÓGICA DE PERÍMETRO TOTAL (ESTILO OBRA): 
+            // Soma-se todo o contorno e divide pela largura útil, permitindo aproveitamento total de retalhos.
+            let Lef = L - (2 * E);
+            let perimetroTotal = (C * 2) + (Lef * 2);
+            let totalParedes = Math.ceil(perimetroTotal / LU);
 
             renderTeto(C, L, H, E, LU, isWidthSmallest, maxDim);
             if(temPiso) renderPiso(C, L, E, LU, isWidthSmallest, maxDim);
             renderParedes(C, L, E, LU, altParede, yParede);
 
             if (exibirRelatorio) {
-                // Passamos numC e numL que já são os totais dos pares
-                atualizarRelatorio(numTeto, numC, numL, L, C, altParede, temPiso, (L - 2*E));
+                // Passamos o total único de paredes calculado pelo perímetro
+                atualizarRelatorio(numTeto, totalParedes, L, C, altParede, temPiso, Lef);
             }
         }
 
@@ -563,14 +561,12 @@
             }
         }
 
-        function atualizarRelatorio(numT, numC_total, numL_total, L, C, altP, temPiso, Lef) {
+        function atualizarRelatorio(numT, totalParedes, L, C, altP, temPiso, Lef) {
             const container = document.getElementById('lista-pecas');
             const res = document.getElementById('resultado');
             res.classList.remove('hidden');
             
-            const totalParedes = numC_total + numL_total;
             const compPainelTeto = L <= C ? L : C;
-            
             const tipoIso = document.getElementById('tipo').value;
             const marcaNome = document.getElementById('marca').options[document.getElementById('marca').selectedIndex].text;
             const espDisplay = (parseFloat(document.getElementById('espessura').value) * 1000).toFixed(0);
@@ -579,34 +575,32 @@
             const fmt = (v) => v.toFixed(2).replace('.', ',');
             const qty = (n) => n.toString().padStart(2, '0');
             
-            // Texto para o Plano de Corte (Agrupado por medida de corte)
-            let textoCorte = `${qty(numT)} PAINEL | ${fmt(compPainelTeto)} | ${tipoIso} | ${espDisplay}mm\n`;
-            if (temPiso) textoCorte += `${qty(numT)} PAINEL | ${fmt(compPainelTeto)} | ${tipoIso} | ${espDisplay}mm\n`;
-            textoCorte += `${qty(totalParedes)} PAINEL | ${fmt(altP)} | ${tipoIso} | ${espDisplay}mm`;
+            // Lógica de unificação (Teto e Piso)
+            const numTetoPiso = temPiso ? (numT * 2) : numT;
+            const labelTetoPiso = temPiso ? "(Teto e Piso)" : "(Teto)";
+            const suffixTetoPiso = temPiso ? " (Teto e Piso)" : "";
+
+            let textoCorte = `${qty(numTetoPiso)} PAINEL | ${fmt(compPainelTeto)} | ${tipoIso} | ${espDisplay}mm${suffixTetoPiso}\n`;
+            textoCorte += `${qty(totalParedes)} PAINEL | ${fmt(altP)} | ${tipoIso} | ${espDisplay}mm (Paredes)`;
 
             container.innerHTML = `
                 <div class="peca-item">
-                    <span class="peca-label">Painéis de Teto (Comp: ${compPainelTeto.toFixed(2)}m)</span>
-                    <span class="peca-value">${numT} pçs</span>
+                    <span class="peca-label">Painéis de Cobertura ${labelTetoPiso} (Comp: ${compPainelTeto.toFixed(2)}m)</span>
+                    <span class="peca-value">${numTetoPiso} pçs</span>
                 </div>
-                ${temPiso ? `
-                <div class="peca-item">
-                    <span class="peca-label">Painéis de Piso (Comp: ${compPainelTeto.toFixed(2)}m)</span>
-                    <span class="peca-value">${numT} pçs</span>
-                </div>` : ''}
                 <div class="peca-item">
                     <span class="peca-label">Painéis de Parede (Alt: ${altP.toFixed(2)}m)</span>
                     <span class="peca-value">${totalParedes} pçs</span>
                 </div>
                 <div class="peca-item" style="margin-top: 15px; border-top: 1px solid var(--primary); padding-top: 15px;">
                     <span class="peca-label" style="color: var(--primary)">Total de Painéis</span>
-                    <span class="peca-value" style="color: var(--primary)">${(numT * (temPiso ? 2 : 1)) + totalParedes} pçs</span>
+                    <span class="peca-value" style="color: var(--primary)">${numTetoPiso + totalParedes} pçs</span>
                 </div>
                 
                 <div class="relatorio-resumo">
-                    <strong>RESUMO DA DEMANDA:</strong><br>
-                    Para este gabinete de <strong>${C.toFixed(2)}m x ${L.toFixed(2)}m x ${document.getElementById('alt').value.replace(',', '.')}m</strong>, será necessária a aquisição de <strong>${(numT * (temPiso ? 2 : 1)) + totalParedes} painéis</strong> isolantes <strong>${tipoIso}</strong> (<strong>${marcaNome.split('(')[0].trim()}</strong>) com espessura de <strong>${espDisplay}mm</strong>.<br><br>
-                    • <strong>${numT} peças</strong> de ${compPainelTeto.toFixed(2)}m (Teto)${temPiso ? `<br>• <strong>${numT} peças</strong> de ${compPainelTeto.toFixed(2)}m (Piso)` : ''}<br>
+                    <strong>RESUMO DA DEMANDA (OTIMIZADO):</strong><br>
+                    Para este gabinete de <strong>${C.toFixed(2)}m x ${L.toFixed(2)}m x ${document.getElementById('alt').value.replace(',', '.')}m</strong>, será necessária a aquisição de <strong>${numTetoPiso + totalParedes} painéis</strong> isolantes <strong>${tipoIso}</strong> (<strong>${marcaNome.split('(')[0].trim()}</strong>) com espessura de <strong>${espDisplay}mm</strong>.<br><br>
+                    • <strong>${numTetoPiso} peças</strong> de ${compPainelTeto.toFixed(2)}m ${labelTetoPiso}<br>
                     • <strong>${totalParedes} peças</strong> de ${altP.toFixed(2)}m (Paredes)
                 </div>
 
