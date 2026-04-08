@@ -522,16 +522,42 @@
         let paineis = otimizar(grupos[chave], tamanhoPainel);
         let ultimo = paineis.pop();
         
-        // Passa a somar todas as peças do último painel
         let somaUltimo = ultimo.reduce((s, v) => s + v, 0);
-        let sobra = tamanhoPainel - somaUltimo;
+        let sobraPadrao = tamanhoPainel - somaUltimo;
         planos[chave] = { base: paineis, ultimo: ultimo };
         
-        // Verifica se a SOMA (e não a peça isolada) cabe nas opções de 2.4, 3, 4 ou 6
-        let altExiste = PAINEIS_ALT.find(p => p >= somaUltimo);
-        let temAlternativa = (chave !== "EPS 50mm") && (altExiste !== undefined);
+        let temAlternativa = false;
+        let tipoDecisao = ""; 
+        let decisaoAlt = null;
+
+        if (chave !== "EPS 50mm") {
+            let altParaAgrupar = PAINEIS_ALT.find(p => p >= somaUltimo);
+            if (altParaAgrupar) {
+                // Opção A: Cabem todos juntos num painel menor (Ex: uma peça de 3.6 cabe na de 4.0)
+                temAlternativa = true;
+                tipoDecisao = "AGRUPAR";
+                decisaoAlt = altParaAgrupar;
+            } else {
+                // Opção B: Não cabem juntos, mas podemos separar (Ex: 3.6 + 3.6)
+                let maiorPeca = Math.max(...ultimo);
+                let altParaSeparar = PAINEIS_ALT.find(p => p >= maiorPeca);
+                
+                if (altParaSeparar) {
+                    let materialTotalSeparado = ultimo.length * altParaSeparar;
+                    // Regra: Sugere a opção sempre que gastar menos material que usar a de 12.05m
+                    if (materialTotalSeparado < tamanhoPainel) {
+                        temAlternativa = true;
+                        tipoDecisao = "SEPARAR";
+                        decisaoAlt = altParaSeparar;
+                    }
+                }
+            }
+        }
         
-        if (sobra > LIMITE_SOBRA && temAlternativa) ordem.push(chave);
+        planos[chave].tipoDecisao = tipoDecisao;
+        planos[chave].decisaoAlt = decisaoAlt;
+
+        if (sobraPadrao > LIMITE_SOBRA && temAlternativa) ordem.push(chave);
         else { decisoes[chave] = "PADRAO"; }
       });
 
@@ -542,16 +568,27 @@
     function mostrarPergunta() {
       let chave = ordem[idx];
       let tamanhoPadrao = getTamanhoPainelPadrao(chave);
-      let ultimo = planos[chave].ultimo;
-      
+      let p = planos[chave];
+      let ultimo = p.ultimo;
       let somaUltimo = ultimo.reduce((s, v) => s + v, 0);
-      let alt = PAINEIS_ALT.find(p => p >= somaUltimo);
-      let sobra = tamanhoPadrao - somaUltimo;
+      let sobraPadrao = tamanhoPadrao - somaUltimo;
+
+      let alt = p.decisaoAlt;
+      let txtAlt = "";
+
+      // O botão agora avisa claramente se vai separar em múltiplos painéis
+      if (p.tipoDecisao === "SEPARAR") {
+          let sobraTotalAlt = (ultimo.length * alt) - somaUltimo;
+          txtAlt = `${ultimo.length} Painéis de ${alt.toFixed(2)} m (sobra total ${sobraTotalAlt.toFixed(2)} m)`;
+      } else {
+          let sobraAlt = alt - somaUltimo;
+          txtAlt = `1 Painel de ${alt.toFixed(2)} m (sobra ${sobraAlt.toFixed(2)} m)`;
+      }
 
       decisao.innerHTML = `<div class="decision">
     <h3>Decisão – ${chave}</h3>
-    <button onclick="decidir('PADRAO')">Painel ${tamanhoPadrao.toFixed(2)} m (sobra ${sobra.toFixed(2)} m)</button><br><br>
-    <button onclick="decidir(${alt})">Painel ${alt.toFixed(2)} m (sobra ${(alt - somaUltimo).toFixed(2)} m)</button>
+    <button onclick="decidir('PADRAO')">Painel ${tamanhoPadrao.toFixed(2)} m (sobra ${sobraPadrao.toFixed(2)} m)</button><br><br>
+    <button onclick="decidir(${alt})">${txtAlt}</button>
   </div>`;
     }
 
@@ -565,11 +602,19 @@
     function aplicarDecisoes() {
       Object.keys(planos).forEach(chave => {
         let p = planos[chave];
-        if (decisoes[chave] === "PADRAO") p.base.push(p.ultimo);
-        else {
-          // Removido o forEach problemático. Agora mantém as peças agrupadas!
-          p.ultimo.tamAlt = decisoes[chave]; 
-          p.base.push(p.ultimo);
+        if (decisoes[chave] === "PADRAO") {
+            p.base.push(p.ultimo);
+        } else {
+            if (p.tipoDecisao === "SEPARAR") {
+                p.ultimo.forEach(c => {
+                    let a = [c]; 
+                    a.tamAlt = decisoes[chave]; 
+                    p.base.push(a);
+                });
+            } else {
+                p.ultimo.tamAlt = decisoes[chave]; 
+                p.base.push(p.ultimo);
+            }
         }
       });
     }
