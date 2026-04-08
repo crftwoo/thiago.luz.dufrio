@@ -360,7 +360,7 @@
           if (ESPESSURAS.EPS.includes(ctxEsp) && !ESPESSURAS.PIR.includes(ctxEsp)) ctxTipo = "EPS";
         }
 
-        let qtdMatch = ll.match(/^(\d+)/);
+        let qtdMatch = ll.match(/^(\d+)/) || ll.match(/(\d+)\s*(?:placa|painel|peça|pç)/i);
         let qtd = qtdMatch ? fmtQtd(qtdMatch[1]) : "";
 
         // Pega número com vírgula/ponto OU número inteiro seguido de 'm' e formata com vírgula
