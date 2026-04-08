@@ -206,13 +206,18 @@
             cursor: pointer;
         }
         .formato-corte::before {
-            content: 'FORMATO PARA PLANO DE CORTE (CLIQUE PARA COPIAR)';
+            content: attr(data-label);
             display: block;
             font-family: 'Inter', sans-serif;
             font-size: 9px;
             color: #64748b;
             margin-bottom: 8px;
             font-weight: 800;
+            transition: all 0.3s;
+        }
+        .formato-corte.copiado::before {
+            content: 'COPIADO COM SUCESSO!';
+            color: #10b981;
         }
 
         /* 3D Container */
@@ -595,10 +600,18 @@
                     • <strong>${totalParedes} peças</strong> de ${altP.toFixed(2)}m (Paredes)
                 </div>
 
-                <div class="formato-corte" onclick="navigator.clipboard.writeText(this.innerText); alert('Copiado para o Plano de Corte!')">
+                <div class="formato-corte" data-label="FORMATO PARA PLANO DE CORTE (CLIQUE PARA COPIAR)" onclick="copiarRelatorio(this)">
 ${textoCorte}
                 </div>
             `;
+        }
+
+        function copiarRelatorio(el) {
+            const texto = el.innerText.split('\n').filter(l => l.trim().length > 0).join('\n');
+            navigator.clipboard.writeText(texto).then(() => {
+                el.classList.add('copiado');
+                setTimeout(() => el.classList.remove('copiado'), 2000);
+            });
         }
 
         function animate() {
