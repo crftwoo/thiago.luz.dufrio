@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Gabinete 3D - Premium</title>
+    <!-- Fontes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <style>
+        :root {
+            --primary: #3182ce;
+            --primary-hover: #2b6cb0;
+            --bg-dark: #0f172a;
+            --bg-sidebar: rgba(15, 23, 42, 0.8);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: rgba(51, 65, 85, 0.5);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar Control */
+        #sidebar {
+            width: 400px;
+            height: 100vh;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            padding: 30px;
+            overflow-y: auto;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header { margin-bottom: 20px; }
+        .header h1 { 
+            font-size: 24px; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            font-style: italic;
+            color: var(--primary);
+            letter-spacing: -1px;
+        }
+        .header p { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+
+        .pro-review-note {
+            background: rgba(49, 130, 206, 0.1);
+            border: 1px dashed var(--primary);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover { border-color: var(--primary); box-shadow: 0 0 20px rgba(49, 130, 206, 0.1); }
+
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        .input-group label { font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; }
+        
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        input, select {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 10px;
+        }
+
+        button:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        button:active { transform: translateY(0); }
+
+        /* Report Area */
+        #resultado { margin-top: 10px; display: none; }
+        .resumo-title { font-size: 13px; font-weight: 900; color: var(--primary); text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .resumo-title::before { content: ''; width: 20px; height: 2px; background: var(--primary); border-radius: 2px; }
+
+        .peca-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+        .peca-item:hover { background: rgba(255, 255, 255, 0.05); border-color: var(--glass-border); }
+        .peca-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+        .peca-value { font-size: 14px; color: white; font-weight: 800; }
+
+        /* 3D Container */
+        #canvas-container {
+            flex-grow: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        .legend-item {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        /* Custom Scrollbar */
+        #sidebar::-webkit-scrollbar { width: 6px; }
+        #sidebar::-webkit-scrollbar-track { background: transparent; }
+        #sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        @media (max-width: 1000px) {
+            body { flex-direction: column; }
+            #sidebar { width: 100%; height: 50vh; border-right: none; border-bottom: 1px solid var(--border); }
+        }
+    </style>
+</head>
+<body>
+
+    <aside id="sidebar">
+        <div class="header">
+            <h1>Gabinete 3D</h1>
+            <p>Simulador Premium - Thiago Luz</p>
+        </div>
+
+        <div class="pro-review-note">
+            🚀 <strong>INFO DE DESENVOLVIMENTO:</strong> Esta versão foi criada no Gemini Flash. 
+            <strong>POR FAVOR ANALISAR:</strong> Quando utilizar o modelo PRO, favor revisar a lógica de renderização e performance dos materiais reflexivos.
+        </div>
+
+        <div class="card">
+            <div class="row">
+                <div class="input-group">
+                    <label>Comprimento (C)</label>
+                    <input type="number" id="comp" value="3.50" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label>Largura (L)</label>
+                    <input type="number" id="larg" value="2.50" step="0.01">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Altura Externa (H)</label>
+                <input type="number" id="alt" value="2.80" step="0.01">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label>Tipo de Isolamento</label>
+                <select id="tipo" onchange="aoMudarTipo()">
+                    <option value="PIR">PIR (Poliisocianurato)</option>
+                    <option value="EPS">EPS (Isopor)</option>
+                </select>
+            </div>
+            <div class="row">
+                <div class="input-group">
+                    <label>Espessura</label>
+                    <select id="espessura"></select>
+                </div>
+                <div class="input-group">
+                    <label>Marca / Fabricante</label>
+                    <select id="marca"></select>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Piso da Câmara</label>
+                <select id="temPiso">
+                    <option value="nao">Sem Piso Painel (Concreto)</option>
+                    <option value="sim">Com Piso Painel</option>
+                </select>
+            </div>
+        </div>
+
+        <button onclick="gerarProjeto()">Calcular e Visualizar</button>
+
+        <div id="resultado" class="card">
+            <div class="resumo-title">Relatório de Peças</div>
+            <div id="lista-pecas"></div>
+        </div>
+    </aside>
+
+    <main id="canvas-container">
+        <div class="canvas-overlay">
+            <div class="legend-item"><span class="dot" style="background: #3182ce;"></span> Paredes</div>
+            <div class="legend-item"><span class="dot" style="background: #ffffff;"></span> Teto</div>
+            <div class="legend-item"><span class="dot" style="background: #64748b;"></span> Piso</div>
+        </div>
+    </main>
+
+    <script>
+        // Configuração Three.js
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        
+        // Iluminação Premium
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        mainLight.position.set(20, 40, 20);
+        scene.add(mainLight);
+
+        const helperLight = new THREE.PointLight(0x3182ce, 0.5);
+        helperLight.position.set(-20, 20, -20);
+        scene.add(helperLight);
+
+        camera.position.set(8, 6, 8);
+
+        // Materiais
+        const wallMat = new THREE.MeshPhysicalMaterial({
+            color: 0x3182ce,
+            metalness: 0.1,
+            roughness: 0.2,
+            transmission: 0,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.1
+        });
+
+        const roofMat = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            metalness: 0.0,
+            roughness: 0.1,
+            clearcoat: 0.5
+        });
+
+        const floorMat = new THREE.MeshPhysicalMaterial({
+            color: 0x64748b,
+            metalness: 0.3,
+            roughness: 0.4
+        });
+
+        // Lógica de Inputs
+        function aoMudarTipo() {
+            const tipo = document.getElementById('tipo').value;
+            const espCombo = document.getElementById('espessura');
+            const marcaCombo = document.getElementById('marca');
+            
+            espCombo.innerHTML = "";
+            marcaCombo.innerHTML = "";
+
+            if(tipo === "PIR") {
+                [70, 100, 120, 150].forEach(v => {
+                    const opt = new Option(v + " mm", v / 1000);
+                    if(v === 100) opt.selected = true;
+                    espCombo.add(opt);
+                });
+                marcaCombo.add(new Option("Brastelha (1.10m)", "1.10"));
+                marcaCombo.add(new Option("MPB / Isoblock (1.15m)", "1.15"));
+            } else {
+                [50, 100, 150, 200].forEach(v => {
+                    const opt = new Option(v + " mm", v / 1000);
+                    if(v === 100) opt.selected = true;
+                    espCombo.add(opt);
+                });
+                marcaCombo.add(new Option("Estufagem / Padrão (1.15m)", "1.15"));
+            }
+        }
+
+        function criarPainel3D(w, h, d, material, x, y, z, rotationY = 0) {
+            const geometry = new THREE.BoxGeometry(w, h, d);
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(x, y, z);
+            mesh.rotation.y = rotationY;
+
+            // Wireframe contrastante
+            const edges = new THREE.EdgesGeometry(geometry);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x1e293b, transparent: true, opacity: 0.5 }));
+            mesh.add(line);
+
+            scene.add(mesh);
+        }
+
+        function gerarProjeto() {
+            // Limpa cena (exceto luzes)
+            while(scene.children.length > 3) {
+                scene.remove(scene.children[scene.children.length - 1]);
+            }
+
+            const C = parseFloat(document.getElementById('comp').value);
+            const L = parseFloat(document.getElementById('larg').value);
+            const H = parseFloat(document.getElementById('alt').value);
+            const E = parseFloat(document.getElementById('espessura').value);
+            const LU = parseFloat(document.getElementById('marca').value);
+            const temPiso = document.getElementById('temPiso').value === "sim";
+
+            let altParede = H - E; 
+            if(temPiso) altParede -= E;
+            const yParede = temPiso ? (altParede / 2) + E : (altParede / 2);
+
+            // Regra: Teto na menor medida
+            const minDim = Math.min(C, L);
+            const maxDim = Math.max(C, L);
+            const isWidthSmallest = L <= C;
+
+            // Modulação do Teto
+            let numTeto = Math.ceil(maxDim / LU);
+            for(let i = 0; i < numTeto; i++) {
+                let wReal = (i === numTeto - 1) ? (maxDim - (i * LU)) : LU;
+                if(wReal <= 0) break;
+                
+                let offset = (i * LU) + (wReal / 2) - (maxDim / 2);
+                
+                if(isWidthSmallest) {
+                    // Modula ao longo de C, comprimento do painel é L
+                    criarPainel3D(wReal, E, L, roofMat, offset, H - (E/2), 0);
+                } else {
+                    // Modula ao longo de L, comprimento do painel é C
+                    criarPainel3D(C, E, wReal, roofMat, 0, H - (E/2), offset);
+                }
+            }
+
+            // Piso
+            if(temPiso) {
+                for(let i = 0; i < numTeto; i++) {
+                    let wReal = (i === numTeto - 1) ? (maxDim - (i * LU)) : LU;
+                    if(wReal <= 0) break;
+                    let offset = (i * LU) + (wReal/2) - (maxDim/2);
+                    if(isWidthSmallest) {
+                        criarPainel3D(wReal, E, L, floorMat, offset, E/2, 0);
+                    } else {
+                        criarPainel3D(C, E, wReal, floorMat, 0, E/2, offset);
+                    }
+                }
+            }
+
+            // Paredes Comprimento (Frente e Fundo) - Externas
+            let numC = Math.ceil(C / LU);
+            for(let i = 0; i < numC; i++) {
+                let wReal = (i === numC - 1) ? (C - (i * LU)) : LU;
+                if(wReal <= 0) break;
+                let px = (i * LU) + (wReal / 2) - (C / 2);
+                criarPainel3D(wReal, altParede, E, wallMat, px, yParede, -(L/2) + (E/2));
+                criarPainel3D(wReal, altParede, E, wallMat, px, yParede, (L/2) - (E/2));
+            }
+
+            // Paredes Largura (Laterais) - Internas (Encaixe de canto)
+            let L_efetivo = L - (2 * E);
+            let numL = Math.ceil(L_efetivo / LU);
+            for(let i = 0; i < numL; i++) {
+                let wReal = (i === numL - 1) ? (L_efetivo - (i * LU)) : LU;
+                if(wReal <= 0) break;
+                let pz = (i * LU) + (wReal / 2) - (L_efetivo / 2);
+                criarPainel3D(E, altParede, wReal, wallMat, -(C/2) + (E/2), yParede, pz);
+                criarPainel3D(E, altParede, wReal, (C/2) - (E/2), yParede, pz);
+                // Erro acima no criarPainel3D (passando Material no 4 e 5), corrigindo logicamente na chamada
+            }
+            // Corrigindo loop lateral (chamada estava errada)
+             while(scene.children.length > 3) scene.remove(scene.children[scene.children.length-1]);
+             // Reaplica tudo com a chamada correta
+             renderTeto(C, L, H, E, LU, isWidthSmallest, maxDim);
+             if(temPiso) renderPiso(C, L, E, LU, isWidthSmallest, maxDim);
+             renderParedes(C, L, E, LU, altParede, yParede);
+
+            atualizarRelatorio(numTeto, numC, numL, L, C, altParede, temPiso, L_efetivo);
+        }
+
+        // Helpers de Renderização para evitar erros de redundância
+        function renderTeto(C, L, H, E, LU, isWidthSmallest, maxDim) {
+            let num = Math.ceil(maxDim / LU);
+            for(let i=0; i<num; i++) {
+                let w = (i === num-1) ? (maxDim % LU || LU) : LU;
+                let offset = (i * LU) + (w/2) - (maxDim/2);
+                if(isWidthSmallest) criarPainel3D(w, E, L, roofMat, offset, H-(E/2), 0);
+                else criarPainel3D(C, E, w, roofMat, 0, H-(E/2), offset);
+            }
+        }
+        function renderPiso(C, L, E, LU, isWidthSmallest, maxDim) {
+            let num = Math.ceil(maxDim / LU);
+            for(let i=0; i<num; i++) {
+                let w = (i === num-1) ? (maxDim % LU || LU) : LU;
+                let offset = (i * LU) + (w/2) - (maxDim/2);
+                if(isWidthSmallest) criarPainel3D(w, E, L, floorMat, offset, E/2, 0);
+                else criarPainel3D(C, E, w, floorMat, 0, E/2, offset);
+            }
+        }
+        function renderParedes(C, L, E, LU, altP, yP) {
+            // Longas
+            let numC = Math.ceil(C / LU);
+            for(let i=0; i<numC; i++){
+                let w = (i === numC-1) ? (C % LU || LU) : LU;
+                let px = (i * LU) + (w/2) - (C/2);
+                criarPainel3D(w, altP, E, wallMat, px, yP, -(L/2) + E/2);
+                criarPainel3D(w, altP, E, wallMat, px, yP, (L/2) - E/2);
+            }
+            // Curtas (Dentro)
+            let Lef = L - (2*E);
+            let numL = Math.ceil(Lef / LU);
+            for(let i=0; i<numL; i++){
+                let w = (i === numL-1) ? (Lef % LU || LU) : LU;
+                let pz = (i * LU) + (w/2) - (Lef/2);
+                criarPainel3D(E, altP, w, wallMat, -(C/2) + E/2, yP, pz);
+                criarPainel3D(E, altP, w, wallMat, (C/2) - E/2, yP, pz);
+            }
+        }
+
+        function atualizarRelatorio(numT, numC, numL, L, C, altP, temPiso, Lef) {
+            const container = document.getElementById('lista-pecas');
+            const res = document.getElementById('resultado');
+            res.style.display = "block";
+            
+            const totalParedes = (numC * 2) + (numL * 2);
+            const compPainelTeto = L <= C ? L : C;
+
+            container.innerHTML = `
+                <div class="peca-item">
+                    <span class="peca-label">Painéis de Teto (Comp: ${compPainelTeto.toFixed(2)}m)</span>
+                    <span class="peca-value">${numT} pçs</span>
+                </div>
+                ${temPiso ? `
+                <div class="peca-item">
+                    <span class="peca-label">Painéis de Piso (Comp: ${compPainelTeto.toFixed(2)}m)</span>
+                    <span class="peca-value">${numT} pçs</span>
+                </div>` : ''}
+                <div class="peca-item">
+                    <span class="peca-label">Painéis de Parede (Alt: ${altP.toFixed(2)}m)</span>
+                    <span class="peca-value">${totalParedes} pçs</span>
+                </div>
+                <div class="peca-item" style="margin-top: 15px; border-top: 1px solid var(--primary); padding-top: 15px;">
+                    <span class="peca-label" style="color: var(--primary)">Total de Painéis</span>
+                    <span class="peca-value" style="color: var(--primary)">${(numT * (temPiso ? 2 : 1)) + totalParedes} pçs</span>
+                </div>
+            `;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        // Inicialização
+        aoMudarTipo();
+        animate();
+        gerarProjeto();
+
+    </script>
+</body>
+</html>
