@@ -36,15 +36,8 @@
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
@@ -98,10 +91,6 @@
       box-shadow: 0 0 0 1px var(--green);
     }
 
-    textarea::placeholder {
-      color: #3f3f46;
-    }
-
     .box {
       background: var(--card-bg);
       padding: 32px;
@@ -144,10 +133,6 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
 
-    .decision h3 {
-      color: #2c2c2c;
-    }
-
     table {
       border-collapse: separate;
       border-spacing: 0;
@@ -158,25 +143,12 @@
       border: 1px solid var(--border);
     }
 
-    th,
-    td {
+    th, td {
       border-bottom: 1px solid var(--border);
       padding: 16px;
       text-align: center;
       font-size: 13px;
       font-weight: 600;
-    }
-
-    td {
-      border-right: 1px solid var(--border);
-    }
-
-    td:last-child {
-      border-right: none;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
     }
 
     th {
@@ -188,13 +160,6 @@
       font-size: 11px;
     }
 
-    .sub {
-      font-size: 10px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-      display: block;
-    }
-
     .copybox {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -203,13 +168,7 @@
       border-radius: 20px;
     }
 
-    .copybox textarea {
-      width: 100%;
-      height: 200px;
-    }
-
-    select,
-    input {
+    select, input {
       background: var(--bg-color);
       color: #2c2c2c;
       border: 1px solid var(--border);
@@ -219,60 +178,17 @@
       font-weight: 600;
       font-size: 13px;
       outline: none;
-      transition: all 0.3s ease;
       width: 100%;
       text-align: center;
     }
 
-    select:focus,
-    input:focus {
-      border-color: rgba(16, 46, 130, 0.2);
-      box-shadow: 0 0 0 1px var(--green);
-    }
-
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
 
     .table-responsive {
       width: 100%;
       overflow-x: auto;
       margin-top: 20px;
       border-radius: 12px;
-    }
-
-    .table-responsive table {
-      margin-top: 0;
-    }
-
-    @media (max-width: 768px) {
-      body {
-        padding: 24px 16px;
-      }
-
-      h1 {
-        font-size: 28px;
-      }
-
-      button {
-        width: 100%;
-        margin-top: 16px;
-        padding: 20px;
-      }
-
-      .box {
-        padding: 20px;
-      }
-
-      .decision {
-        padding: 20px;
-      }
-
-      th,
-      td {
-        padding: 12px;
-        font-size: 12px;
-      }
     }
   </style>
 </head>
@@ -316,18 +232,22 @@
   </div>
 
   <script>
-    /* ===== PRE-DEMANDA / PARSER ===== */
     const ESPESSURAS = {
       PIR: ["70mm", "100mm", "120mm", "150mm"],
       EPS: ["50mm", "100mm", "150mm", "200mm"]
     };
+
+    const PAINEL_PADRAO = 12.05;
+    const PAINEIS_ALT = [2.4, 3, 4, 6];
+    const LIMITE_SOBRA = 1.5;
+
+    let grupos = {}, planos = {}, ordem = [], decisoes = {}, idx = 0;
 
     function interpretar() {
       let linhas = raw.value.split(/\n+/).map(l => l.trim()).filter(l => l);
       let table = document.getElementById("editTable");
       table.innerHTML = "<tr><th>Qtd</th><th>Comprimento (m)</th><th>Tipo</th><th>Espessura</th></tr>";
 
-      // ===== PASSO 1: detectar contexto global =====
       let tiposEncontrados = new Set();
       let espEncontradas = new Set();
 
@@ -342,28 +262,16 @@
       let globalTipo = tiposEncontrados.size === 1 ? [...tiposEncontrados][0] : "";
       let globalEsp = espEncontradas.size === 1 ? [...espEncontradas][0] : "";
 
-      let ctxTipo = globalTipo;
-      let ctxEsp = globalEsp;
-
-      // ===== PASSO 2: leitura sequencial =====
       linhas.forEach(l => {
         let ll = l.toLowerCase();
-
-        // atualizar contexto local se explícito
-        if (ll.includes("pir")) ctxTipo = "PIR";
-        if (ll.includes("eps")) ctxTipo = "EPS";
-
+        let ctxTipo = ll.includes("pir") ? "PIR" : (ll.includes("eps") ? "EPS" : globalTipo);
         let em = ll.match(/(\d+)\s*mm/);
-        if (em) {
-          ctxEsp = em[1] + "mm";
-          if (ESPESSURAS.PIR.includes(ctxEsp) && !ESPESSURAS.EPS.includes(ctxEsp)) ctxTipo = "PIR";
-          if (ESPESSURAS.EPS.includes(ctxEsp) && !ESPESSURAS.PIR.includes(ctxEsp)) ctxTipo = "EPS";
-        }
+        let ctxEsp = em ? em[1] + "mm" : globalEsp;
 
+        // Alteração: Procura QTD no início ou antes de "placa/painel"
         let qtdMatch = ll.match(/^(\d+)/) || ll.match(/(\d+)\s*(?:placa|painel|peça|pç)/i);
         let qtd = qtdMatch ? fmtQtd(qtdMatch[1]) : "";
 
-        // Pega número com vírgula/ponto OU número inteiro seguido de 'm' e formata com vírgula
         let compMatch = ll.match(/(\d+[\.,]\d+)(?:\s*m)?|(\d+)\s*m(?!\w)/i);
         let comp = "";
         if (compMatch) {
@@ -374,29 +282,26 @@
 
         if (!qtd && !comp) return;
 
-        let tipoFinal = ctxTipo || globalTipo || "";
-        let espFinal = ctxEsp || globalEsp || "";
-
         let tr = document.createElement("tr");
         tr.innerHTML = `
-      <td><input value="${qtd}" size="3"></td>
-      <td><input value="${comp}" size="4"></td>
-      <td>
-        <select onchange="ajustarEsp(this)">
-          <option value=""></option>
-          <option ${tipoFinal === "PIR" ? "selected" : ""}>PIR</option>
-          <option ${tipoFinal === "EPS" ? "selected" : ""}>EPS</option>
-        </select>
-      </td>
-      <td>
-        <select>
-          ${(tipoFinal ? ESPESSURAS[tipoFinal] : []).map(e => `<option ${e === espFinal ? "selected" : ""}>${e}</option>`).join("")}
-        </select>
-      </td>`;
+          <td><input value="${qtd}" size="3"></td>
+          <td><input value="${comp}" size="4"></td>
+          <td>
+            <select onchange="ajustarEsp(this)">
+              <option value=""></option>
+              <option ${ctxTipo === "PIR" ? "selected" : ""}>PIR</option>
+              <option ${ctxTipo === "EPS" ? "selected" : ""}>EPS</option>
+            </select>
+          </td>
+          <td>
+            <select>
+              ${(ctxTipo ? ESPESSURAS[ctxTipo] : []).map(e => `<option ${e === ctxEsp ? "selected" : ""}>${e}</option>`).join("")}
+            </select>
+          </td>`;
         table.appendChild(tr);
       });
 
-      editor.classList.remove("hidden"); normalizeAllLengths();
+      editor.classList.remove("hidden");
     }
 
     function ajustarEsp(sel) {
@@ -425,43 +330,19 @@
         }
       });
       input.value = out.trim();
-      editor.classList.add("hidden"); document.getElementById("boxDemanda").classList.remove("hidden");
+      editor.classList.add("hidden"); 
+      document.getElementById("boxDemanda").classList.remove("hidden");
     }
 
-    /* ===== MOTOR ORIGINAL DE CÁLCULO ===== */
-    const PAINEL_PADRAO = 12.05;
-    const PAINEIS_ALT = [2.4, 3, 4, 6];
-    const LIMITE_SOBRA = 1.5;
-
-    let grupos = {}, planos = {}, ordem = [], decisoes = {}, idx = 0;
-
-    function getTamanhoPainelPadrao(chave) {
-      if (chave === "EPS 50mm") return 6.00;
-      return PAINEL_PADRAO;
-    }
-
-    function parseDemanda(txt) {
-      txt.split("\n").forEach(l => {
-        let m = l.match(/(\d+)\s*PAINEL.*?(\d+[\.,]\d+).*?(PIR|EPS).*?(\d+mm)/i);
-        if (m) {
-          let qtd = parseInt(m[1]);
-          let tam = parseFloat(m[2].replace(",", "."));
-          let chave = m[3].toUpperCase() + " " + m[4];
-          if (!grupos[chave]) grupos[chave] = [];
-          for (let i = 0; i < qtd; i++) grupos[chave].push(tam);
-        }
-      });
-    }
-
+    // Alteração: Novo motor Knapsack para melhor aproveitamento
     function otimizar(pecas, tamanhoPadrao) {
       let disponiveis = [...pecas].sort((a, b) => b - a);
       let paineis = [];
-      let cap = Math.round(tamanhoPadrao * 100); 
+      let cap = Math.round(tamanhoPadrao * 100);
 
       while (disponiveis.length > 0) {
         let n = disponiveis.length;
         let pesos = disponiveis.map(p => Math.round(p * 100));
-
         let dp = new Int32Array(cap + 1);
         let track = Array.from({ length: n }, () => new Uint8Array(cap + 1));
 
@@ -475,222 +356,117 @@
           }
         }
 
-        let maxSum = 0;
         let bestW = 0;
-        for (let w = 0; w <= cap; w++) {
-          if (dp[w] > maxSum) {
-            maxSum = dp[w];
-            bestW = w;
-          }
-        }
+        for (let w = 0; w <= cap; w++) if (dp[w] > dp[bestW]) bestW = w;
 
-        let currW = bestW;
-        let indicesParaRemover = [];
+        let currW = bestW, indices = [];
         for (let i = n - 1; i >= 0; i--) {
-          if (track[i][currW]) {
-            indicesParaRemover.push(i);
-            currW -= pesos[i];
-          }
+          if (track[i][currW]) { indices.push(i); currW -= pesos[i]; }
         }
 
         let painelAtual = [];
-        indicesParaRemover.sort((a, b) => b - a);
-        for (let idx of indicesParaRemover) {
+        indices.sort((a, b) => b - a).forEach(idx => {
           painelAtual.push(disponiveis[idx]);
           disponiveis.splice(idx, 1);
-        }
-        
+        });
         paineis.push(painelAtual);
       }
-
-      paineis.sort((a, b) =>
-        (tamanhoPadrao - a.reduce((s, v) => s + v, 0)) -
-        (tamanhoPadrao - b.reduce((s, v) => s + v, 0))
-      );
-
-      return paineis;
+      return paineis.sort((a, b) => (tamanhoPadrao - a.reduce((s, v) => s + v, 0)) - (tamanhoPadrao - b.reduce((s, v) => s + v, 0)));
     }
 
+    // Alteração: Processamento inteligente de sobras e barras alternativas
     function processar() {
       document.getElementById("decisao").classList.remove("hidden"); document.getElementById("resultado").classList.remove("hidden"); document.getElementById("resumo").classList.remove("hidden");
       grupos = {}; planos = {}; ordem = []; decisoes = {}; idx = 0;
       decisao.innerHTML = ""; resultado.innerHTML = ""; resumo.innerHTML = "";
-      parseDemanda(input.value);
-
-      Object.keys(grupos).forEach(chave => {
-        let tamanhoPainel = getTamanhoPainelPadrao(chave);
-        let paineis = otimizar(grupos[chave], tamanhoPainel);
-        let ultimo = paineis.pop();
-        
-        let somaUltimo = ultimo.reduce((s, v) => s + v, 0);
-        let sobraPadrao = tamanhoPainel - somaUltimo;
-        planos[chave] = { base: paineis, ultimo: ultimo };
-        
-        let temAlternativa = false;
-        let tipoDecisao = ""; 
-        let decisaoAlt = null;
-
-        if (chave !== "EPS 50mm") {
-            let altParaAgrupar = PAINEIS_ALT.find(p => p >= somaUltimo);
-            if (altParaAgrupar) {
-                temAlternativa = true;
-                tipoDecisao = "AGRUPAR";
-                decisaoAlt = altParaAgrupar;
-            } else {
-                let materialTotalSeparado = 0;
-                let altPorPeca = [];
-                let todasTemAlt = true;
-
-                ultimo.forEach(peca => {
-                    let altPeca = PAINEIS_ALT.find(p => p >= peca);
-                    if (altPeca) {
-                        materialTotalSeparado += altPeca;
-                        altPorPeca.push(altPeca);
-                    } else {
-                        todasTemAlt = false;
-                    }
-                });
-                
-                if (todasTemAlt && materialTotalSeparado < tamanhoPainel) {
-                    temAlternativa = true;
-                    tipoDecisao = "SEPARAR";
-                    decisaoAlt = altPorPeca;
-                }
-            }
+      
+      input.value.split("\n").forEach(l => {
+        let m = l.match(/(\d+)\s*PAINEL.*?(\d+[\.,]\d+).*?(PIR|EPS).*?(\d+mm)/i);
+        if (m) {
+          let qtd = parseInt(m[1]), tam = parseFloat(m[2].replace(",", ".")), chave = m[3].toUpperCase() + " " + m[4];
+          if (!grupos[chave]) grupos[chave] = [];
+          for (let i = 0; i < qtd; i++) grupos[chave].push(tam);
         }
-        
-        planos[chave].tipoDecisao = tipoDecisao;
-        planos[chave].decisaoAlt = decisaoAlt;
-
-        if (sobraPadrao > LIMITE_SOBRA && temAlternativa) ordem.push(chave);
-        else { decisoes[chave] = "PADRAO"; }
       });
 
-      if (ordem.length) mostrarPergunta();
-      else { aplicarDecisoes(); mostrarTudo(); }
+      Object.keys(grupos).forEach(chave => {
+        let tamanhoPainel = chave === "EPS 50mm" ? 6.00 : 12.05;
+        let paineis = otimizar(grupos[chave], tamanhoPainel);
+        let ultimo = paineis.pop();
+        let somaUltimo = ultimo.reduce((s, v) => s + v, 0);
+        planos[chave] = { base: paineis, ultimo: ultimo };
+        
+        let temAlt = false, tipoDec = "", decAlt = null;
+        if (chave !== "EPS 50mm") {
+            let altAgrupar = PAINEIS_ALT.find(p => p >= somaUltimo);
+            if (altAgrupar) { temAlt = true; tipoDec = "AGRUPAR"; decAlt = altAgrupar; }
+            else {
+                let matSep = 0, altsPeca = [], todasOk = true;
+                ultimo.forEach(peca => {
+                    let aP = PAINEIS_ALT.find(p => p >= peca);
+                    if (aP) { matSep += aP; altsPeca.push(aP); } else todasOk = false;
+                });
+                if (todasOk && matSep < tamanhoPainel) { temAlt = true; tipoDec = "SEPARAR"; decAlt = altsPeca; }
+            }
+        }
+        planos[chave].tipoDecisao = tipoDec; planos[chave].decisaoAlt = decAlt;
+        if ((tamanhoPainel - somaUltimo) > LIMITE_SOBRA && temAlt) ordem.push(chave);
+        else decisoes[chave] = "PADRAO";
+      });
+
+      if (ordem.length) mostrarPergunta(); else { aplicarDecisoes(); mostrarTudo(); }
     }
 
     function mostrarPergunta() {
-      let chave = ordem[idx];
-      let tamanhoPadrao = getTamanhoPainelPadrao(chave);
-      let p = planos[chave];
-      let ultimo = p.ultimo;
-      let somaUltimo = ultimo.reduce((s, v) => s + v, 0);
-      let sobraPadrao = tamanhoPadrao - somaUltimo;
-
-      let txtAlt = "";
-
+      let chave = ordem[idx], p = planos[chave], soma = p.ultimo.reduce((s, v) => s + v, 0), txtAlt = "";
       if (p.tipoDecisao === "SEPARAR") {
-          let materialTotal = p.decisaoAlt.reduce((s, v) => s + v, 0);
-          let sobraTotalAlt = materialTotal - somaUltimo;
-          
-          let cont = {};
-          p.decisaoAlt.forEach(v => cont[v] = (cont[v] || 0) + 1);
-          let desc = Object.keys(cont).map(k => `${cont[k]} painel de ${Number(k).toFixed(2).replace('.',',')} m`).join(" + ");
-          
-          txtAlt = `Separar: [${desc}] (sobra total ${sobraTotalAlt.toFixed(2).replace('.',',')} m)`;
-      } else {
-          let alt = p.decisaoAlt;
-          let sobraAlt = alt - somaUltimo;
-          txtAlt = `1 Painel de ${alt.toFixed(2).replace('.',',')} m (sobra ${sobraAlt.toFixed(2).replace('.',',')} m)`;
-      }
+          let cont = {}; p.decisaoAlt.forEach(v => cont[v] = (cont[v] || 0) + 1);
+          txtAlt = "Separar: [" + Object.keys(cont).map(k => `${cont[k]} de ${Number(k).toFixed(2).replace('.',',')}m`).join(" + ") + "]";
+      } else txtAlt = `1 Painel de ${p.decisaoAlt.toFixed(2).replace('.',',')} m`;
 
-      decisao.innerHTML = `<div class="decision">
-    <h3>Decisão – ${chave}</h3>
-    <button onclick="decidir('PADRAO')">Painel ${tamanhoPadrao.toFixed(2).replace('.',',')} m (sobra ${sobraPadrao.toFixed(2).replace('.',',')} m)</button><br><br>
-    <button onclick="decidir('ALT')">${txtAlt}</button>
-  </div>`;
+      decisao.innerHTML = `<div class="decision"><h3>Decisão – ${chave}</h3>
+        <button onclick="decidir('PADRAO')">Painel 12,05 m (sobra ${(12.05-soma).toFixed(2).replace('.',',')} m)</button><br><br>
+        <button onclick="decidir('ALT')">${txtAlt}</button></div>`;
     }
 
     function decidir(op) {
-      decisoes[ordem[idx]] = op;
-      idx++;
-      if (idx < ordem.length) mostrarPergunta();
-      else { aplicarDecisoes(); decisao.innerHTML = ""; mostrarTudo(); }
+      decisoes[ordem[idx]] = op; idx++;
+      if (idx < ordem.length) mostrarPergunta(); else { aplicarDecisoes(); decisao.innerHTML = ""; mostrarTudo(); }
     }
 
     function aplicarDecisoes() {
       Object.keys(planos).forEach(chave => {
         let p = planos[chave];
-        if (decisoes[chave] === "PADRAO") {
-            p.base.push(p.ultimo);
-        } else {
-            if (p.tipoDecisao === "SEPARAR") {
-                p.ultimo.forEach((c, i) => {
-                    let a = [c]; 
-                    a.tamAlt = p.decisaoAlt[i]; 
-                    p.base.push(a);
-                });
-            } else {
-                p.ultimo.tamAlt = p.decisaoAlt; 
-                p.base.push(p.ultimo);
-            }
-        }
+        if (decisoes[chave] === "PADRAO") p.base.push(p.ultimo);
+        else if (p.tipoDecisao === "SEPARAR") p.ultimo.forEach((c, i) => { let a = [c]; a.tamAlt = p.decisaoAlt[i]; p.base.push(a); });
+        else { p.ultimo.tamAlt = p.decisaoAlt; p.base.push(p.ultimo); }
       });
     }
-      });
-    }
-    function mostrarTudo() {
-      let out = "";
-      let resumoTxt = "Demanda a atender:\n" + input.value.trim() + "\n\nCortes com melhor aproveitamento para atender a demanda:\n";
 
+    function mostrarTudo() {
+      let out = "", resumoTxt = "Demanda a atender:\n" + input.value.trim() + "\n\nCortes com melhor aproveitamento:\n";
       Object.keys(planos).forEach(chave => {
-        let tamanhoPainel = getTamanhoPainelPadrao(chave);
-        out += `<h3 style="text-align: center; margin-top: 32px; font-size: 14px;">Plano de corte – ${chave}</h3>`;
-        let paineis = planos[chave].base;
-        let max = Math.max(...paineis.map(p => p.length));
+        let tamanhoPadrao = chave === "EPS 50mm" ? 6.00 : 12.05;
+        out += `<h3 style="text-align:center;margin-top:32px;">Plano de corte – ${chave}</h3>`;
+        let paineis = planos[chave].base, max = Math.max(...paineis.map(p => p.length)), cont = {};
         out += `<div class="table-responsive"><table><tr><th rowspan="2">Painel</th><th colspan="${max}">Cortes (m)</th><th rowspan="2">Sobra</th></tr><tr>`;
         for (let i = 1; i <= max; i++) out += `<th>Corte ${i}</th>`;
         out += "</tr>";
-
-        let cont = {};
         paineis.forEach((p, i) => {
-          let tam = p.tamAlt || tamanhoPainel;
-          cont[tam] = (cont[tam] || 0) + 1;
+          let tam = p.tamAlt || tamanhoPadrao; cont[tam] = (cont[tam] || 0) + 1;
           let usado = p.reduce((s, v) => s + v, 0);
-          out += `<tr><td>Painel ${i + 1}<br><span class="sub">${tam.toFixed(2).replace('.', ',')} m</span></td>`;
-          for (let c = 0; c < max; c++) out += `<td>${p[c] ? p[c].toFixed(2).replace('.', ',') : ""}</td>`;
-          out += `<td>${(tam - usado).toFixed(2).replace('.', ',')}</td></tr>`;
+          out += `<tr><td>Painel ${i+1}<br><span class="sub">${tam.toFixed(2).replace('.',',')} m</span></td>`;
+          for (let c = 0; c < max; c++) out += `<td>${p[c] ? p[c].toFixed(2).replace('.',',') : ""}</td>`;
+          out += `<td>${(tam - usado).toFixed(2).replace('.',',')}</td></tr>`;
         });
         out += "</table></div>";
-        resultado.innerHTML += out;
-
-        Object.keys(cont).forEach(t => {
-          resumoTxt += `${cont[t]} pçs – Painel ${chave.split(" ")[0]} ${chave.split(" ")[1]} de ${Number(t).toFixed(2).replace('.', ',')} m\n`;
-        });
-        resumoTxt += "\n";
+        Object.keys(cont).forEach(t => resumoTxt += `${cont[t]} pçs – Painel ${chave.split(" ")[0]} ${chave.split(" ")[1]} de ${Number(t).toFixed(2).replace('.',',')} m\n`);
       });
-
       resultado.innerHTML = out;
-      resumo.innerHTML = `<div class="copybox">
-    <h3>Resumo para envio</h3>
-    <textarea id="txtResumo">${resumoTxt.trim()}</textarea><br>
-    <button onclick="navigator.clipboard.writeText(txtResumo.value)">Copiar</button>
-  </div>`;
+      resumo.innerHTML = `<div class="copybox"><h3>Resumo para envio</h3><textarea id="txtResumo">${resumoTxt.trim()}</textarea><br><button onclick="navigator.clipboard.writeText(txtResumo.value)">Copiar</button></div>`;
     }
 
-    function normalizeLen(v) {
-      if (v === null || v === undefined || v === "") return "";
-      let n = parseFloat(String(v).replace(",", "."));
-      if (isNaN(n)) return "";
-      return n.toFixed(2).replace('.', ',');
-    }
-
-    function normalizeAllLengths() {
-      document.querySelectorAll('#editTable tr td:nth-child(2) input').forEach(inp => {
-        if (inp && inp.value && !isNaN(parseFloat(inp.value.replace(',', '.')))) {
-          inp.value = normalizeLen(inp.value);
-        }
-      });
-    }
-
-    function fmtQtd(v) {
-      let n = parseInt(v, 10);
-      if (isNaN(n)) return "";
-      return n < 10 ? "0" + n : String(n);
-    }
+    function fmtQtd(v) { let n = parseInt(v, 10); return isNaN(n) ? "" : (n < 10 ? "0" + n : String(n)); }
   </script>
-
 </body>
-
 </html>
