@@ -521,11 +521,14 @@
         let tamanhoPainel = getTamanhoPainelPadrao(chave);
         let paineis = otimizar(grupos[chave], tamanhoPainel);
         let ultimo = paineis.pop();
-        let sobra = tamanhoPainel - ultimo.reduce((s, v) => s + v, 0);
+        
+        // Passa a somar todas as peças do último painel
+        let somaUltimo = ultimo.reduce((s, v) => s + v, 0);
+        let sobra = tamanhoPainel - somaUltimo;
         planos[chave] = { base: paineis, ultimo: ultimo };
         
-        let maiorPeca = Math.max(...ultimo);
-        let altExiste = PAINEIS_ALT.find(p => p >= maiorPeca);
+        // Verifica se a SOMA (e não a peça isolada) cabe nas opções de 2.4, 3, 4 ou 6
+        let altExiste = PAINEIS_ALT.find(p => p >= somaUltimo);
         let temAlternativa = (chave !== "EPS 50mm") && (altExiste !== undefined);
         
         if (sobra > LIMITE_SOBRA && temAlternativa) ordem.push(chave);
@@ -540,14 +543,15 @@
       let chave = ordem[idx];
       let tamanhoPadrao = getTamanhoPainelPadrao(chave);
       let ultimo = planos[chave].ultimo;
-      let maior = Math.max(...ultimo);
-      let alt = PAINEIS_ALT.find(p => p >= maior);
-      let sobra = tamanhoPadrao - ultimo.reduce((s, v) => s + v, 0);
+      
+      let somaUltimo = ultimo.reduce((s, v) => s + v, 0);
+      let alt = PAINEIS_ALT.find(p => p >= somaUltimo);
+      let sobra = tamanhoPadrao - somaUltimo;
 
       decisao.innerHTML = `<div class="decision">
     <h3>Decisão – ${chave}</h3>
     <button onclick="decidir('PADRAO')">Painel ${tamanhoPadrao.toFixed(2)} m (sobra ${sobra.toFixed(2)} m)</button><br><br>
-    <button onclick="decidir(${alt})">Painel ${alt.toFixed(2)} m (sobra ${(alt - maior).toFixed(2)} m)</button>
+    <button onclick="decidir(${alt})">Painel ${alt.toFixed(2)} m (sobra ${(alt - somaUltimo).toFixed(2)} m)</button>
   </div>`;
     }
 
@@ -562,12 +566,13 @@
       Object.keys(planos).forEach(chave => {
         let p = planos[chave];
         if (decisoes[chave] === "PADRAO") p.base.push(p.ultimo);
-        else p.ultimo.forEach(c => {
-          let a = [c]; a.tamAlt = decisoes[chave]; p.base.push(a);
-        });
+        else {
+          // Removido o forEach problemático. Agora mantém as peças agrupadas!
+          p.ultimo.tamAlt = decisoes[chave]; 
+          p.base.push(p.ultimo);
+        }
       });
     }
-
     function mostrarTudo() {
       let out = "";
       let resumoTxt = "Demanda a atender:\n" + input.value.trim() + "\n\nCortes com melhor aproveitamento para atender a demanda:\n";
