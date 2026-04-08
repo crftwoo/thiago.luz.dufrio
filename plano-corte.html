@@ -533,23 +533,28 @@
         if (chave !== "EPS 50mm") {
             let altParaAgrupar = PAINEIS_ALT.find(p => p >= somaUltimo);
             if (altParaAgrupar) {
-                // Opção A: Cabem todos juntos num painel menor (Ex: uma peça de 3.6 cabe na de 4.0)
                 temAlternativa = true;
                 tipoDecisao = "AGRUPAR";
                 decisaoAlt = altParaAgrupar;
             } else {
-                // Opção B: Não cabem juntos, mas podemos separar (Ex: 3.6 + 3.6)
-                let maiorPeca = Math.max(...ultimo);
-                let altParaSeparar = PAINEIS_ALT.find(p => p >= maiorPeca);
-                
-                if (altParaSeparar) {
-                    let materialTotalSeparado = ultimo.length * altParaSeparar;
-                    // Regra: Sugere a opção sempre que gastar menos material que usar a de 12.05m
-                    if (materialTotalSeparado < tamanhoPainel) {
-                        temAlternativa = true;
-                        tipoDecisao = "SEPARAR";
-                        decisaoAlt = altParaSeparar;
+                let materialTotalSeparado = 0;
+                let altPorPeca = [];
+                let todasTemAlt = true;
+
+                ultimo.forEach(peca => {
+                    let altPeca = PAINEIS_ALT.find(p => p >= peca);
+                    if (altPeca) {
+                        materialTotalSeparado += altPeca;
+                        altPorPeca.push(altPeca);
+                    } else {
+                        todasTemAlt = false;
                     }
+                });
+                
+                if (todasTemAlt && materialTotalSeparado < tamanhoPainel) {
+                    temAlternativa = true;
+                    tipoDecisao = "SEPARAR";
+                    decisaoAlt = altPorPeca;
                 }
             }
         }
@@ -573,22 +578,27 @@
       let somaUltimo = ultimo.reduce((s, v) => s + v, 0);
       let sobraPadrao = tamanhoPadrao - somaUltimo;
 
-      let alt = p.decisaoAlt;
       let txtAlt = "";
 
-      // O botão agora avisa claramente se vai separar em múltiplos painéis
       if (p.tipoDecisao === "SEPARAR") {
-          let sobraTotalAlt = (ultimo.length * alt) - somaUltimo;
-          txtAlt = `${ultimo.length} Painéis de ${alt.toFixed(2)} m (sobra total ${sobraTotalAlt.toFixed(2)} m)`;
+          let materialTotal = p.decisaoAlt.reduce((s, v) => s + v, 0);
+          let sobraTotalAlt = materialTotal - somaUltimo;
+          
+          let cont = {};
+          p.decisaoAlt.forEach(v => cont[v] = (cont[v] || 0) + 1);
+          let desc = Object.keys(cont).map(k => `${cont[k]} painel de ${Number(k).toFixed(2).replace('.',',')} m`).join(" + ");
+          
+          txtAlt = `Separar: [${desc}] (sobra total ${sobraTotalAlt.toFixed(2).replace('.',',')} m)`;
       } else {
+          let alt = p.decisaoAlt;
           let sobraAlt = alt - somaUltimo;
-          txtAlt = `1 Painel de ${alt.toFixed(2)} m (sobra ${sobraAlt.toFixed(2)} m)`;
+          txtAlt = `1 Painel de ${alt.toFixed(2).replace('.',',')} m (sobra ${sobraAlt.toFixed(2).replace('.',',')} m)`;
       }
 
       decisao.innerHTML = `<div class="decision">
     <h3>Decisão – ${chave}</h3>
-    <button onclick="decidir('PADRAO')">Painel ${tamanhoPadrao.toFixed(2)} m (sobra ${sobraPadrao.toFixed(2)} m)</button><br><br>
-    <button onclick="decidir(${alt})">${txtAlt}</button>
+    <button onclick="decidir('PADRAO')">Painel ${tamanhoPadrao.toFixed(2).replace('.',',')} m (sobra ${sobraPadrao.toFixed(2).replace('.',',')} m)</button><br><br>
+    <button onclick="decidir('ALT')">${txtAlt}</button>
   </div>`;
     }
 
@@ -606,16 +616,18 @@
             p.base.push(p.ultimo);
         } else {
             if (p.tipoDecisao === "SEPARAR") {
-                p.ultimo.forEach(c => {
+                p.ultimo.forEach((c, i) => {
                     let a = [c]; 
-                    a.tamAlt = decisoes[chave]; 
+                    a.tamAlt = p.decisaoAlt[i]; 
                     p.base.push(a);
                 });
             } else {
-                p.ultimo.tamAlt = decisoes[chave]; 
+                p.ultimo.tamAlt = p.decisaoAlt; 
                 p.base.push(p.ultimo);
             }
         }
+      });
+    }
       });
     }
     function mostrarTudo() {
