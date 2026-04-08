@@ -190,6 +190,12 @@
       margin-top: 20px;
       border-radius: 12px;
     }
+    
+    .sub {
+      font-size: 10px;
+      color: var(--text-secondary);
+      font-weight: 800;
+    }
   </style>
 </head>
 
@@ -268,8 +274,7 @@
         let em = ll.match(/(\d+)\s*mm/);
         let ctxEsp = em ? em[1] + "mm" : globalEsp;
 
-        // Alteração: Procura QTD no início ou antes de "placa/painel"
-        let qtdMatch = ll.match(/^(\d+)/) || ll.match(/(\d+)\s*(?:placa|painel|peça|pç)/i);
+        let qtdMatch = ll.match(/^(\d+)/) || ll.match(/(\d+)\s*(?:placa|painel|peça|pç|unidades)/i);
         let qtd = qtdMatch ? fmtQtd(qtdMatch[1]) : "";
 
         let compMatch = ll.match(/(\d+[\.,]\d+)(?:\s*m)?|(\d+)\s*m(?!\w)/i);
@@ -334,7 +339,6 @@
       document.getElementById("boxDemanda").classList.remove("hidden");
     }
 
-    // Alteração: Novo motor Knapsack para melhor aproveitamento
     function otimizar(pecas, tamanhoPadrao) {
       let disponiveis = [...pecas].sort((a, b) => b - a);
       let paineis = [];
@@ -371,12 +375,13 @@
         });
         paineis.push(painelAtual);
       }
-      return paineis.sort((a, b) => (tamanhoPadrao - a.reduce((s, v) => s + v, 0)) - (tamanhoPadrao - b.reduce((s, v) => s + v, 0)));
+      return paineis;
     }
 
-    // Alteração: Processamento inteligente de sobras e barras alternativas
     function processar() {
-      document.getElementById("decisao").classList.remove("hidden"); document.getElementById("resultado").classList.remove("hidden"); document.getElementById("resumo").classList.remove("hidden");
+      document.getElementById("decisao").classList.remove("hidden"); 
+      document.getElementById("resultado").classList.remove("hidden"); 
+      document.getElementById("resumo").classList.remove("hidden");
       grupos = {}; planos = {}; ordem = []; decisoes = {}; idx = 0;
       decisao.innerHTML = ""; resultado.innerHTML = ""; resumo.innerHTML = "";
       
@@ -445,13 +450,16 @@
 
     function mostrarTudo() {
       let out = "", resumoTxt = "Demanda a atender:\n" + input.value.trim() + "\n\nCortes com melhor aproveitamento:\n";
+      
       Object.keys(planos).forEach(chave => {
         let tamanhoPadrao = chave === "EPS 50mm" ? 6.00 : 12.05;
         out += `<h3 style="text-align:center;margin-top:32px;">Plano de corte – ${chave}</h3>`;
         let paineis = planos[chave].base, max = Math.max(...paineis.map(p => p.length)), cont = {};
+        
         out += `<div class="table-responsive"><table><tr><th rowspan="2">Painel</th><th colspan="${max}">Cortes (m)</th><th rowspan="2">Sobra</th></tr><tr>`;
         for (let i = 1; i <= max; i++) out += `<th>Corte ${i}</th>`;
         out += "</tr>";
+        
         paineis.forEach((p, i) => {
           let tam = p.tamAlt || tamanhoPadrao; cont[tam] = (cont[tam] || 0) + 1;
           let usado = p.reduce((s, v) => s + v, 0);
@@ -460,10 +468,24 @@
           out += `<td>${(tam - usado).toFixed(2).replace('.',',')}</td></tr>`;
         });
         out += "</table></div>";
-        Object.keys(cont).forEach(t => resumoTxt += `${cont[t]} pçs – Painel ${chave.split(" ")[0]} ${chave.split(" ")[1]} de ${Number(t).toFixed(2).replace('.',',')} m\n`);
+
+        Object.keys(cont)
+          .sort((a, b) => Number(b) - Number(a)) 
+          .forEach(t => {
+            resumoTxt += `${cont[t]} pçs – Painel ${chave.split(" ")[0]} ${chave.split(" ")[1]} de ${Number(t).toFixed(2).replace('.',',')} m\n`;
+          });
       });
+
       resultado.innerHTML = out;
-      resumo.innerHTML = `<div class="copybox"><h3>Resumo para envio</h3><textarea id="txtResumo">${resumoTxt.trim()}</textarea><br><button onclick="navigator.clipboard.writeText(txtResumo.value)">Copiar</button></div>`;
+      
+      let linhasResumo = resumoTxt.split('\n').length;
+      let alturaDinamica = (linhasResumo * 20) + 60; 
+
+      resumo.innerHTML = `<div class="copybox">
+        <h3>Resumo para envio</h3>
+        <textarea id="txtResumo" style="height:${alturaDinamica}px; overflow:hidden; width:100%;">${resumoTxt.trim()}</textarea>
+        <br><button onclick="navigator.clipboard.writeText(txtResumo.value)">Copiar</button>
+      </div>`;
     }
 
     function fmtQtd(v) { let n = parseInt(v, 10); return isNaN(n) ? "" : (n < 10 ? "0" + n : String(n)); }
