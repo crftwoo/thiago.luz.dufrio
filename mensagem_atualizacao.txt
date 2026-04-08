@@ -1,1 +1,1 @@
-Checklist: Refinamento final nos textos dinâmicos das perguntas 13, 14, 15 e 16 para alinhamento exato das informações.
+Adicionada a nova ferramenta: SIMULADOR DE GABINETE 3D Premium em Dark Mode com Three.js e relatório quantitativo. Correção de layout e estética.

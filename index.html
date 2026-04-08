@@ -532,14 +532,14 @@
 
     // Arrays de Ferramentas Premium
     const ferramentas = [
-      { nome: "SIMULADOR DE GABINETE 3D", desc: "Visualização 3D e cálculo de painéis (PIR/EPS) para câmaras.", arquivo: "simulador-gabinete.html", icone: svgBox3D, color: "#3182ce", bg: "#f0f9ff" },
-      { nome: "COMPARADOR DE AR-CONDICIONADO", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#102E82", bg: "#eff6ff" },
-      { nome: "CHECKLIST CÂMARAS FRIAS - GERAR PDF", desc: "Formulário passo-a-passo. Geração de PDF para orçamento de câmara frigorífica.", arquivo: "CheckList.html", icone: svgChecklist, color: "#059669", bg: "#ecfdf5" },
-      { nome: "PLANO DE CORTE - PAINÉIS", desc: "Otimização de cortes de paineis EPS/PIR para melhor aproveitamento das chapas de 12m.", arquivo: "plano-corte.html", icone: svgCorte, color: "#ea580c", bg: "#fff7ed" },
-      { nome: "COTAÇÃO EXPRESS", desc: "Orçamento rápido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#2563eb", bg: "#eff6ff" },
-      { nome: "PRECIFICAÇÃO SKU'S (SITE)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#2BAAE2", bg: "#e0f2fe" },
-      { nome: "EXTRAÇÃO DE CÓDIGOS", desc: "Extração de códigos que constam quantidade em estoque.", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", bg: "#fdf4ff" },
-      { nome: "BAIXAR PROJETO", desc: "Baixar projeto e arquivos da extensão.", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#475569", bg: "#f8fafc", isDownload: true }
+      { nome: "SIMULADOR DE GABINETE 3D", desc: "Visualização 3D e cálculo de painéis (PIR/EPS) para câmaras.", arquivo: "simulador-gabinete.html", icone: svgBox3D, color: "#3182ce", bg: "#f0f9ff", slug: "gabinete" },
+      { nome: "COMPARADOR DE AR-CONDICIONADO", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#102E82", bg: "#eff6ff", slug: "comparador" },
+      { nome: "CHECKLIST CÂMARAS FRIAS - GERAR PDF", desc: "Formulário passo-a-passo. Geração de PDF para orçamento de câmara frigorífica.", arquivo: "CheckList.html", icone: svgChecklist, color: "#059669", bg: "#ecfdf5", slug: "checklist" },
+      { nome: "PLANO DE CORTE - PAINÉIS", desc: "Otimização de cortes de paineis EPS/PIR para melhor aproveitamento das chapas de 12m.", arquivo: "plano-corte.html", icone: svgCorte, color: "#ea580c", bg: "#fff7ed", slug: "corte" },
+      { nome: "COTAÇÃO EXPRESS", desc: "Orçamento rápido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#2563eb", bg: "#eff6ff", slug: "cotacao" },
+      { nome: "PRECIFICAÇÃO SKU'S (SITE)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#2BAAE2", bg: "#e0f2fe", slug: "precificacao" },
+      { nome: "EXTRAÇÃO DE CÓDIGOS", desc: "Extração de códigos que constam quantidade em estoque.", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", bg: "#fdf4ff", slug: "extracao" },
+      { nome: "BAIXAR PROJETO", desc: "Baixar projeto e arquivos da extensão.", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#475569", bg: "#f8fafc", isDownload: true, slug: "download" }
     ];
 
     const menuGrid = document.getElementById("menuGrid");
@@ -633,6 +633,21 @@
     };
 
     renderizarCardsELista();
+
+    // Lógica para abrir ferramenta via URL (ex: ?tool=gabinete)
+    function verificarUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const toolSlug = urlParams.get('tool');
+      
+      if (toolSlug) {
+        const index = ferramentas.findIndex(f => f.slug === toolSlug);
+        if (index !== -1) {
+          abrirFerramenta(index);
+        }
+      }
+    }
+
+    verificarUrl();
 
     // Sincronização Server-side Fake (API GitHub real puxando o update)
     fetch("https://api.github.com/repos/crftwoo/thiago.luz.dufrio/commits/main?v=" + new Date().getTime())
