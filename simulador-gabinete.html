@@ -85,6 +85,14 @@
             flex-direction: column;
             gap: 15px;
             transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .hidden { display: none !important; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .card:hover { border-color: var(--primary); box-shadow: 0 0 20px rgba(49, 130, 206, 0.1); }
@@ -257,27 +265,27 @@
             <strong>POR FAVOR ANALISAR:</strong> Quando utilizar o modelo PRO, favor revisar a lógica de renderização e performance dos materiais reflexivos.
         </div>
 
-        <div class="card">
+        <div class="card" id="card-medidas">
             <div class="row">
                 <div class="input-group">
                     <label>Comprimento (C)</label>
-                    <input type="number" id="comp" value="3.50" step="0.01">
+                    <input type="number" id="comp" value="" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
                 </div>
                 <div class="input-group">
                     <label>Largura (L)</label>
-                    <input type="number" id="larg" value="2.50" step="0.01">
+                    <input type="number" id="larg" value="" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
                 </div>
             </div>
             <div class="input-group">
                 <label>Altura Externa (H)</label>
-                <input type="number" id="alt" value="2.80" step="0.01">
+                <input type="number" id="alt" value="" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
             </div>
         </div>
 
-        <div class="card">
+        <div class="card hidden" id="card-isolamento">
             <div class="input-group">
                 <label>Tipo de Isolamento</label>
-                <select id="tipo" onchange="aoMudarTipo()">
+                <select id="tipo" onchange="aoMudarTipo(); gerarProjeto(false)">
                     <option value="PIR">PIR (Poliisocianurato)</option>
                     <option value="EPS">EPS (Isopor)</option>
                 </select>
@@ -285,25 +293,25 @@
             <div class="row">
                 <div class="input-group">
                     <label>Espessura</label>
-                    <select id="espessura"></select>
+                    <select id="espessura" onchange="gerarProjeto(false)"></select>
                 </div>
                 <div class="input-group">
                     <label>Marca / Fabricante</label>
-                    <select id="marca"></select>
+                    <select id="marca" onchange="gerarProjeto(false)"></select>
                 </div>
             </div>
             <div class="input-group">
                 <label>Piso da Câmara</label>
-                <select id="temPiso">
+                <select id="temPiso" onchange="gerarProjeto(false)">
                     <option value="nao">Sem Piso Painel (Concreto)</option>
                     <option value="sim">Com Piso Painel</option>
                 </select>
             </div>
         </div>
 
-        <button onclick="gerarProjeto()">Calcular e Visualizar</button>
+        <button id="btn-calcular" class="hidden" onclick="gerarProjeto(true)">Gerar Relatório de Peças</button>
 
-        <div id="resultado" class="card">
+        <div id="resultado" class="card hidden">
             <div class="resumo-title">Relatório de Peças</div>
             <div id="lista-pecas"></div>
         </div>
@@ -369,6 +377,24 @@
         });
 
         // Lógica de Inputs
+        function verificarMedidas() {
+            const c = document.getElementById('comp').value;
+            const l = document.getElementById('larg').value;
+            const h = document.getElementById('alt').value;
+            const cardIso = document.getElementById('card-isolamento');
+            const btnCalc = document.getElementById('btn-calcular');
+
+            if (c && l && h && c > 0 && l > 0 && h > 0) {
+                cardIso.classList.remove('hidden');
+                btnCalc.classList.remove('hidden');
+                gerarProjeto(false); // Gera o 3D automaticamente
+            } else {
+                cardIso.classList.add('hidden');
+                btnCalc.classList.add('hidden');
+                document.getElementById('resultado').classList.add('hidden');
+            }
+        }
+
         function aoMudarTipo() {
             const tipo = document.getElementById('tipo').value;
             const espCombo = document.getElementById('espessura');
@@ -409,88 +435,43 @@
             scene.add(mesh);
         }
 
-        function gerarProjeto() {
+        function gerarProjeto(exibirRelatorio = false) {
+            const C = parseFloat(document.getElementById('comp').value || 0);
+            const L = parseFloat(document.getElementById('larg').value || 0);
+            const H = parseFloat(document.getElementById('alt').value || 0);
+            
+            if (C <= 0 || L <= 0 || H <= 0) return;
+
             // Limpa cena (exceto luzes)
-            while(scene.children.length > 3) {
-                scene.remove(scene.children[scene.children.length - 1]);
-            }
+            while(scene.children.length > 3) scene.remove(scene.children[scene.children.length-1]);
 
-            const C = parseFloat(document.getElementById('comp').value);
-            const L = parseFloat(document.getElementById('larg').value);
-            const H = parseFloat(document.getElementById('alt').value);
-            const E = parseFloat(document.getElementById('espessura').value);
-            const LU = parseFloat(document.getElementById('marca').value);
+            const E = parseFloat(document.getElementById('espessura').value || 0.1);
+            const LU = parseFloat(document.getElementById('marca').value || 1.15);
             const temPiso = document.getElementById('temPiso').value === "sim";
-
-            let altParede = H - E; 
-            if(temPiso) altParede -= E;
-            const yParede = temPiso ? (altParede / 2) + E : (altParede / 2);
 
             // Regra: Teto na menor medida
             const minDim = Math.min(C, L);
             const maxDim = Math.max(C, L);
             const isWidthSmallest = L <= C;
 
-            // Modulação do Teto
+            // Cálculos de Modulação
             let numTeto = Math.ceil(maxDim / LU);
-            for(let i = 0; i < numTeto; i++) {
-                let wReal = (i === numTeto - 1) ? (maxDim - (i * LU)) : LU;
-                if(wReal <= 0) break;
-                
-                let offset = (i * LU) + (wReal / 2) - (maxDim / 2);
-                
-                if(isWidthSmallest) {
-                    // Modula ao longo de C, comprimento do painel é L
-                    criarPainel3D(wReal, E, L, roofMat, offset, H - (E/2), 0);
-                } else {
-                    // Modula ao longo de L, comprimento do painel é C
-                    criarPainel3D(C, E, wReal, roofMat, 0, H - (E/2), offset);
-                }
-            }
+            let altParede = H - E; 
+            if(temPiso) altParede -= E;
+            const yParede = temPiso ? (altParede / 2) + E : (altParede / 2);
 
-            // Piso
-            if(temPiso) {
-                for(let i = 0; i < numTeto; i++) {
-                    let wReal = (i === numTeto - 1) ? (maxDim - (i * LU)) : LU;
-                    if(wReal <= 0) break;
-                    let offset = (i * LU) + (wReal/2) - (maxDim/2);
-                    if(isWidthSmallest) {
-                        criarPainel3D(wReal, E, L, floorMat, offset, E/2, 0);
-                    } else {
-                        criarPainel3D(C, E, wReal, floorMat, 0, E/2, offset);
-                    }
-                }
-            }
-
-            // Paredes Comprimento (Frente e Fundo) - Externas
             let numC = Math.ceil(C / LU);
-            for(let i = 0; i < numC; i++) {
-                let wReal = (i === numC - 1) ? (C - (i * LU)) : LU;
-                if(wReal <= 0) break;
-                let px = (i * LU) + (wReal / 2) - (C / 2);
-                criarPainel3D(wReal, altParede, E, wallMat, px, yParede, -(L/2) + (E/2));
-                criarPainel3D(wReal, altParede, E, wallMat, px, yParede, (L/2) - (E/2));
-            }
-
-            // Paredes Largura (Laterais) - Internas (Encaixe de canto)
             let L_efetivo = L - (2 * E);
             let numL = Math.ceil(L_efetivo / LU);
-            for(let i = 0; i < numL; i++) {
-                let wReal = (i === numL - 1) ? (L_efetivo - (i * LU)) : LU;
-                if(wReal <= 0) break;
-                let pz = (i * LU) + (wReal / 2) - (L_efetivo / 2);
-                criarPainel3D(E, altParede, wReal, wallMat, -(C/2) + (E/2), yParede, pz);
-                criarPainel3D(E, altParede, wReal, (C/2) - (E/2), yParede, pz);
-                // Erro acima no criarPainel3D (passando Material no 4 e 5), corrigindo logicamente na chamada
-            }
-            // Corrigindo loop lateral (chamada estava errada)
-             while(scene.children.length > 3) scene.remove(scene.children[scene.children.length-1]);
-             // Reaplica tudo com a chamada correta
-             renderTeto(C, L, H, E, LU, isWidthSmallest, maxDim);
-             if(temPiso) renderPiso(C, L, E, LU, isWidthSmallest, maxDim);
-             renderParedes(C, L, E, LU, altParede, yParede);
 
-            atualizarRelatorio(numTeto, numC, numL, L, C, altParede, temPiso, L_efetivo);
+            // Renderização (Somente via Helpers agora)
+            renderTeto(C, L, H, E, LU, isWidthSmallest, maxDim);
+            if(temPiso) renderPiso(C, L, E, LU, isWidthSmallest, maxDim);
+            renderParedes(C, L, E, LU, altParede, yParede);
+
+            if (exibirRelatorio) {
+                atualizarRelatorio(numTeto, numC, numL, L, C, altParede, temPiso, L_efetivo);
+            }
         }
 
         // Helpers de Renderização para evitar erros de redundância
@@ -535,9 +516,9 @@
         function atualizarRelatorio(numT, numC, numL, L, C, altP, temPiso, Lef) {
             const container = document.getElementById('lista-pecas');
             const res = document.getElementById('resultado');
-            res.style.display = "block";
+            res.classList.remove('hidden');
             
-            const totalParedes = (numC * 2) + (numL * 2);
+            const totalParedes = (Math.ceil(C / 1.1) * 0) + (numC * 2) + (numL * 2); // Ajuste lógico se necessário
             const compPainelTeto = L <= C ? L : C;
 
             container.innerHTML = `
@@ -576,7 +557,7 @@
         // Inicialização
         aoMudarTipo();
         animate();
-        gerarProjeto();
+        // gerarProjeto(); // Removido para não carregar auto
 
     </script>
 </body>
