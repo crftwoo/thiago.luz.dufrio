@@ -305,8 +305,12 @@
         </div>
 
         <div class="pro-review-note">
-            🚀 <strong>INFO DE DESENVOLVIMENTO:</strong> Esta versão foi criada no Gemini Flash. 
-            <strong>POR FAVOR ANALISAR:</strong> Quando utilizar o modelo PRO, favor revisar a lógica de renderização e performance dos materiais reflexivos.
+            🚀 <strong>DIRETRIZES PARA AUDITORIA PRO:</strong> Esta versão utiliza lógica de modulação otimizada por perímetro (Estilo Obra). 
+            <strong>QUANDO ATIVAR O PRO:</strong> 
+            1. Implementar <strong>Materiais PBR</strong> (Metal/Pincelado) com reflexividade real; 
+            2. Validar viabilidade de <strong>Macho-Fêmea</strong> nos cortes de canto; 
+            3. Aplicar <strong>InstancedMesh</strong> para performance em câmaras > 100m; 
+            4. Adicionar lógica de portas e acessórios.
         </div>
 
         <div class="card" id="card-medidas">
@@ -494,7 +498,7 @@
             const LU = parseFloat(document.getElementById('marca').value || 1.15);
             const temPiso = document.getElementById('temPiso').value === "sim";
 
-            const minDim = Math.min(C, L);
+            // Regra: Teto na menor medida para evitar vãos inviáveis
             const maxDim = Math.max(C, L);
             const isWidthSmallest = L <= C;
 
@@ -503,16 +507,21 @@
             if(temPiso) altParede -= E;
             const yParede = temPiso ? (altParede / 2) + E : (altParede / 2);
 
-            let numC = Math.ceil(C / LU);
-            let Lef = L - (2 * E);
-            let numL = Math.ceil(Lef / LU);
+            // LÓGICA OTIMIZADA (ESTILO CADERNO): Arredondamento por pares de paredes para aproveitar retalhos
+            // Comprimento (Frente + Fundo)
+            let numC = Math.ceil((C * 2) / LU);
+            
+            // Largura Efetiva (Laterais - encaixe interno)
+            let Lef_total = (L - (2 * E)) * 2;
+            let numL = Math.ceil(Lef_total / LU);
 
             renderTeto(C, L, H, E, LU, isWidthSmallest, maxDim);
             if(temPiso) renderPiso(C, L, E, LU, isWidthSmallest, maxDim);
             renderParedes(C, L, E, LU, altParede, yParede);
 
             if (exibirRelatorio) {
-                atualizarRelatorio(numTeto, numC, numL, L, C, altParede, temPiso, Lef);
+                // Passamos numC e numL que já são os totais dos pares
+                atualizarRelatorio(numTeto, numC, numL, L, C, altParede, temPiso, (L - 2*E));
             }
         }
 
@@ -554,12 +563,12 @@
             }
         }
 
-        function atualizarRelatorio(numT, numC, numL, L, C, altP, temPiso, Lef) {
+        function atualizarRelatorio(numT, numC_total, numL_total, L, C, altP, temPiso, Lef) {
             const container = document.getElementById('lista-pecas');
             const res = document.getElementById('resultado');
             res.classList.remove('hidden');
             
-            const totalParedes = (numC * 2) + (numL * 2);
+            const totalParedes = numC_total + numL_total;
             const compPainelTeto = L <= C ? L : C;
             
             const tipoIso = document.getElementById('tipo').value;
@@ -570,6 +579,7 @@
             const fmt = (v) => v.toFixed(2).replace('.', ',');
             const qty = (n) => n.toString().padStart(2, '0');
             
+            // Texto para o Plano de Corte (Agrupado por medida de corte)
             let textoCorte = `${qty(numT)} PAINEL | ${fmt(compPainelTeto)} | ${tipoIso} | ${espDisplay}mm\n`;
             if (temPiso) textoCorte += `${qty(numT)} PAINEL | ${fmt(compPainelTeto)} | ${tipoIso} | ${espDisplay}mm\n`;
             textoCorte += `${qty(totalParedes)} PAINEL | ${fmt(altP)} | ${tipoIso} | ${espDisplay}mm`;
@@ -595,7 +605,7 @@
                 
                 <div class="relatorio-resumo">
                     <strong>RESUMO DA DEMANDA:</strong><br>
-                    Para este gabinete de <strong>${C.toFixed(2)}m x ${L.toFixed(2)}m x ${document.getElementById('alt').value}m</strong>, será necessária a aquisição de <strong>${(numT * (temPiso ? 2 : 1)) + totalParedes} painéis</strong> isolantes <strong>${tipoIso}</strong> (<strong>${marcaNome.split('(')[0].trim()}</strong>) com espessura de <strong>${espDisplay}mm</strong>.<br><br>
+                    Para este gabinete de <strong>${C.toFixed(2)}m x ${L.toFixed(2)}m x ${document.getElementById('alt').value.replace(',', '.')}m</strong>, será necessária a aquisição de <strong>${(numT * (temPiso ? 2 : 1)) + totalParedes} painéis</strong> isolantes <strong>${tipoIso}</strong> (<strong>${marcaNome.split('(')[0].trim()}</strong>) com espessura de <strong>${espDisplay}mm</strong>.<br><br>
                     • <strong>${numT} peças</strong> de ${compPainelTeto.toFixed(2)}m (Teto)${temPiso ? `<br>• <strong>${numT} peças</strong> de ${compPainelTeto.toFixed(2)}m (Piso)` : ''}<br>
                     • <strong>${totalParedes} peças</strong> de ${altP.toFixed(2)}m (Paredes)
                 </div>
