@@ -179,6 +179,19 @@
         .peca-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
         .peca-value { font-size: 13px; color: white; font-weight: 800; }
 
+        .relatorio-resumo {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(49, 130, 206, 0.05);
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            font-size: 11px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .relatorio-resumo strong { color: var(--text-main); }
+
         /* 3D Container */
         #canvas-container {
             flex-grow: 1;
@@ -520,6 +533,9 @@
             
             const totalParedes = (numC * 2) + (numL * 2);
             const compPainelTeto = L <= C ? L : C;
+            
+            const marcaNome = document.getElementById('marca').options[document.getElementById('marca').selectedIndex].text;
+            const espDisplay = (parseFloat(document.getElementById('espessura').value) * 1000).toFixed(0);
 
             container.innerHTML = `
                 <div class="peca-item">
@@ -538,6 +554,13 @@
                 <div class="peca-item" style="margin-top: 15px; border-top: 1px solid var(--primary); padding-top: 15px;">
                     <span class="peca-label" style="color: var(--primary)">Total de Painéis</span>
                     <span class="peca-value" style="color: var(--primary)">${(numT * (temPiso ? 2 : 1)) + totalParedes} pçs</span>
+                </div>
+                
+                <div class="relatorio-resumo">
+                    <strong>RESUMO DA DEMANDA:</strong><br>
+                    Para este gabinete de <strong>${C.toFixed(2)}m x ${L.toFixed(2)}m</strong>, será necessária a aquisição de <strong>${(numT * (temPiso ? 2 : 1)) + totalParedes} painéis</strong> isolantes (<strong>${marcaNome.split('(')[0].trim()}</strong>) com espessura de <strong>${espDisplay}mm</strong>.<br><br>
+                    • <strong>${numT} peças</strong> de ${compPainelTeto.toFixed(2)}m (Teto)${temPiso ? `<br>• <strong>${numT} peças</strong> de ${compPainelTeto.toFixed(2)}m (Piso)` : ''}<br>
+                    • <strong>${totalParedes} peças</strong> de ${altP.toFixed(2)}m (Paredes)
                 </div>
             `;
         }
