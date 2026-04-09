@@ -630,10 +630,9 @@
             // Lógica de unificação (Teto e Piso)
             const numTetoPiso = temPiso ? (numT * 2) : numT;
             const labelTetoPiso = temPiso ? "(Teto e Piso)" : "(Teto)";
-            const suffixTetoPiso = temPiso ? " (Teto e Piso)" : "";
 
-            let textoCorte = `${qty(numTetoPiso)} PAINEL | ${fmt(compPainelTeto)} | ${tipoIso} | ${espDisplay}mm${suffixTetoPiso}\n`;
-            textoCorte += `${qty(totalParedes)} PAINEL | ${fmt(altP)} | ${tipoIso} | ${espDisplay}mm (Paredes)`;
+            let textoCorte = `${qty(numTetoPiso)} PAINEL | ${fmt(compPainelTeto)} | ${tipoIso} | ${espDisplay}mm\n`;
+            textoCorte += `${qty(totalParedes)} PAINEL | ${fmt(altP)} | ${tipoIso} | ${espDisplay}mm`;
 
             container.innerHTML = `
                 <div class="peca-item">
