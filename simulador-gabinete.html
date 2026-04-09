@@ -141,6 +141,50 @@
             box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
         }
 
+        /* Toggle Switch Premium */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 5px;
+            border: 1px solid var(--border);
+        }
+        .toggle-label { font-size: 10px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px; width: 16px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .toggle-container.active .label-ext { color: var(--text-secondary); }
+        .toggle-container.active .label-int { color: var(--primary); }
+        .toggle-container:not(.active) .label-ext { color: var(--primary); }
+        .toggle-container:not(.active) .label-int { color: var(--text-secondary); }
+
         button {
             background: var(--primary);
             color: white;
@@ -304,13 +348,13 @@
             <p>Simulador Premium - Thiago Luz</p>
         </div>
 
-        <div class="pro-review-note">
-            🚀 <strong>DIRETRIZES PARA AUDITORIA PRO:</strong> Esta versão utiliza lógica de modulação otimizada por perímetro (Estilo Obra). 
-            <strong>QUANDO ATIVAR O PRO:</strong> 
-            1. Implementar <strong>Materiais PBR</strong> (Metal/Pincelado) com reflexividade real; 
-            2. Validar viabilidade de <strong>Macho-Fêmea</strong> nos cortes de canto; 
-            3. Aplicar <strong>InstancedMesh</strong> para performance em câmaras > 100m; 
-            4. Adicionar lógica de portas e acessórios.
+        <div class="toggle-container" id="toggle-medidas">
+            <span class="toggle-label label-ext">Externas</span>
+            <label class="switch">
+                <input type="checkbox" id="tipo-medida" onchange="document.getElementById('toggle-medidas').classList.toggle('active'); verificarMedidas();">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label label-int">Internas</span>
         </div>
 
         <div class="card" id="card-medidas">
@@ -497,39 +541,47 @@
             const E = parseFloat(document.getElementById('espessura').value || 0.1);
             const LU = parseFloat(document.getElementById('marca').value || 1.15);
             const temPiso = document.getElementById('temPiso').value === "sim";
+            const isInternas = document.getElementById('tipo-medida').checked;
 
             // Regra: Teto na menor medida para evitar vãos inviáveis
             const maxDim = Math.max(C, L);
             const isWidthSmallest = L <= C;
 
             let numTeto = Math.ceil(maxDim / LU);
-            let altParede = H - E; 
-            if(temPiso) altParede -= E;
-            const yParede = temPiso ? (altParede / 2) + E : (altParede / 2);
+            
+            // Lógica de Altura (Interna vs Externa)
+            let altParede = H;
+            if (!isInternas) {
+                altParede = H - E; 
+                if(temPiso) altParede -= E;
+            }
+            const yParede = (isInternas && !temPiso) ? (altParede / 2) : 
+                            (temPiso ? (altParede / 2) + E : (altParede / 2));
+
+            // Ajuste visual do teto se for Interna
+            const zTeto = isInternas ? altParede + (E/2) : H - (E/2);
 
             // LÓGICA DE PERÍMETRO TOTAL (ESTILO OBRA): 
-            // Soma-se todo o contorno e divide pela largura útil, permitindo aproveitamento total de retalhos.
             let Lef = L - (2 * E);
             let perimetroTotal = (C * 2) + (Lef * 2);
             let totalParedes = Math.ceil(perimetroTotal / LU);
 
-            renderTeto(C, L, H, E, LU, isWidthSmallest, maxDim);
+            renderTeto(C, L, zTeto, E, LU, isWidthSmallest, maxDim);
             if(temPiso) renderPiso(C, L, E, LU, isWidthSmallest, maxDim);
             renderParedes(C, L, E, LU, altParede, yParede);
 
             if (exibirRelatorio) {
-                // Passamos o total único de paredes calculado pelo perímetro
                 atualizarRelatorio(numTeto, totalParedes, L, C, altParede, temPiso, Lef);
             }
         }
 
-        function renderTeto(C, L, H, E, LU, isWidthSmallest, maxDim) {
+        function renderTeto(C, L, zPos, E, LU, isWidthSmallest, maxDim) {
             let num = Math.ceil(maxDim / LU);
             for(let i=0; i<num; i++) {
                 let w = (i === num-1) ? (maxDim % LU || LU) : LU;
                 let offset = (i * LU) + (w/2) - (maxDim/2);
-                if(isWidthSmallest) criarPainel3D(w, E, L, roofMat, offset, H-(E/2), 0);
-                else criarPainel3D(C, E, w, roofMat, 0, H-(E/2), offset);
+                if(isWidthSmallest) criarPainel3D(w, E, L, roofMat, offset, zPos, 0);
+                else criarPainel3D(C, E, w, roofMat, 0, zPos, offset);
             }
         }
 
