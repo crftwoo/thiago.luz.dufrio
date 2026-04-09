@@ -351,7 +351,7 @@
         <div class="toggle-container" id="toggle-medidas">
             <span class="toggle-label label-ext">Externas</span>
             <label class="switch">
-                <input type="checkbox" id="tipo-medida" onchange="document.getElementById('toggle-medidas').classList.toggle('active'); verificarMedidas();">
+                <input type="checkbox" id="tipo-medida" onchange="atualizarAutomaticoConfirmado()">
                 <span class="slider"></span>
             </label>
             <span class="toggle-label label-int">Internas</span>
@@ -660,6 +660,17 @@
 ${textoCorte}
                 </div>
             `;
+        }
+
+        function atualizarAutomaticoConfirmado() {
+            document.getElementById('toggle-medidas').classList.toggle('active');
+            verificarMedidas();
+            
+            // Se o relatório já estiver visível, atualiza ele na hora
+            const resultadoVisivel = !document.getElementById('resultado').classList.contains('hidden');
+            if (resultadoVisivel) {
+                gerarProjeto(true);
+            }
         }
 
         function copiarRelatorio(el) {
