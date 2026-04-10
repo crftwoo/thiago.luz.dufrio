@@ -26,14 +26,14 @@
 
     html,
     body {
-            background: transparent;
+            background: #050505 !important;
       color: #ffffff;
       font-family: 'Outfit', 'Inter', sans-serif;
       margin: 0;
       padding: 0;
     }
 
-    .wrap {
+    .wrap { position: relative; z-index: 10; 
       max-width: 1100px;
       margin: 40px auto;
       padding: 0 20px;
@@ -90,7 +90,7 @@
       font-weight: 900;
       margin: 48px 0 8px 0;
       padding: 16px;
-      background: transparent;
+      background: #050505 !important;
       text-transform: uppercase;
       letter-spacing: -0.5px;
       color: #ffffff;
@@ -173,7 +173,7 @@
     input[type="text"] {
       width: 100%;
       box-sizing: border-box;
-            background: transparent;
+            background: #050505 !important;
       color: #ffffff;
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -241,7 +241,7 @@
       letter-spacing: 0.5px;
       border-radius: 8px;
       border: 1px solid var(--border);
-            background: transparent;
+            background: #050505 !important;
       color: var(--green);
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -257,7 +257,7 @@
     }
 
     @media (max-width: 768px) {
-      .wrap {
+      .wrap { position: relative; z-index: 10; 
         padding: 0 16px;
         margin: 24px auto;
       }
@@ -304,7 +304,7 @@
 </head>
 
 <body>
-    <div style="position:fixed; inset:0; background:#050505; z-index:-2; pointer-events:none;"></div>
+    <div style="position:fixed; inset:0; background: #050505 !important; z-index:-2; pointer-events:none;"></div>
     <style>
       @keyframes auroraAnim {
         0% { transform: scale(1) translate(0, 0); }
@@ -571,6 +571,8 @@
 </body>
 
 </html>
+
+
 
 
 

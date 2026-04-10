@@ -29,12 +29,12 @@
             margin: 0;
             padding: 40px 20px;
             font-family: 'Outfit', 'Inter', sans-serif;
-            background: transparent;
+            background: #050505 !important;
             color: var(--text-main);
             padding-bottom: 600px;
         }
 
-        .container {
+        .container { position: relative; z-index: 10; 
             max-width: 1000px;
             margin: 0 auto;
             position: relative;
@@ -275,7 +275,7 @@
         .btn-resetar {
             width: 100%;
             margin-top: 10px;
-            background: transparent;
+            background: #050505 !important;
             color: var(--text-secondary);
             border: 1px solid var(--border);
         }
@@ -284,7 +284,7 @@
             flex: 1; 
             min-height: 400px; 
             position: relative;
-            background-color: transparent;
+            background-color: #050505 !important;
             border-radius: 12px;
             overflow: hidden; 
             border: 1px solid var(--border);
@@ -425,7 +425,7 @@
     </style>
 </head>
 <body>
-    <div style="position:fixed; inset:0; background: transparent; z-index:-2; pointer-events:none;"></div>
+    <div style="position:fixed; inset:0; background: #050505 !important; z-index:-2; pointer-events:none;"></div>
     <style>
       @keyframes auroraAnim {
         0% { transform: scale(1) translate(0, 0); }
@@ -1932,6 +1932,8 @@
     </div>
 </body>
 </html>
+
+
 
 
 

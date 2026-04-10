@@ -31,11 +31,11 @@
       margin: 0;
       padding: 40px 20px;
       font-family: 'Outfit', 'Inter', sans-serif;
-            background: transparent;
+            background: #050505 !important;
       color: var(--text-main);
     }
 
-    .container {
+    .container { position: relative; z-index: 10; 
       max-width: 1000px;
       margin: 0 auto;
       padding-bottom: 80px;
@@ -134,7 +134,7 @@
     }
 
     .tipo-btn.selecionado {
-            background: transparent;
+            background: #050505 !important;
       color: var(--dufrio-azul);
       border-color: var(--dufrio-azul);
       box-shadow: 0 0 0 2px var(--dufrio-azul), 0 4px 12px rgba(16,46,130,0.2);
@@ -167,7 +167,7 @@
 
     .card.dufrio-highlight {
       border: 1.5px solid var(--dufrio-azul);
-      background: transparent;
+      background: #050505 !important;
       box-shadow: 0 4px 12px rgba(16,46,130,0.06);
     }
 
@@ -241,7 +241,7 @@
     .tech-btn {
       padding: 8px 14px;
       color: var(--dufrio-azul);
-            background: transparent;
+            background: #050505 !important;
       font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
@@ -340,7 +340,7 @@
 
     .filter-badge.active[data-filter="premium"] { background: #b08d57; color: #fff; border-color: #b08d57; }
     .filter-badge.active[data-filter="boa"] { background: #00b050; color: #fff; border-color: #00b050; }
-    .filter-badge.active[data-filter="inter"] { background: #ffc000; color: #000; border-color: #ffc000; }
+    .filter-badge.active[data-filter="inter"] { background: #ffc000; color: var(--text-main); border-color: #ffc000; }
     .filter-badge.active[data-filter="basica"] { background: #ff0000; color: #fff; border-color: #ff0000; }
     .filter-badge.active[data-filter="sf"] { background: #4ba3e3; color: #fff; border-color: #4ba3e3; }
     .filter-badge.active[data-filter="qf"] { background: #e36a4b; color: #fff; border-color: #e36a4b; }
@@ -373,7 +373,7 @@
       width: 100%;
       max-width: 800px;
       height: 300px;
-            background: transparent;
+            background: #050505 !important;
       color: var(--text-main);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -495,7 +495,7 @@
 </head>
 
 <body>
-    <div style="position:fixed; inset:0; background: transparent; z-index:-2; pointer-events:none;"></div>
+    <div style="position:fixed; inset:0; background: #050505 !important; z-index:-2; pointer-events:none;"></div>
     <style>
       @keyframes auroraAnim {
         0% { transform: scale(1) translate(0, 0); }
@@ -578,13 +578,13 @@
 
         <p>Seleção em Massa por Qualidade</p>
         <div class="filter-badges">
-          <div class="filter-badge active" style="background:#b08d57; color:#000;" data-macro="premium"
+          <div class="filter-badge active" style="background:#b08d57; color: var(--text-main);" data-macro="premium"
             onclick="toggleQualityMacro('premium', this)">🔝 Premium</div>
-          <div class="filter-badge active" style="background:#00b050; color:#000;" data-macro="boa"
+          <div class="filter-badge active" style="background:#00b050; color: var(--text-main);" data-macro="boa"
             onclick="toggleQualityMacro('boa', this)">🟢 Boa</div>
-          <div class="filter-badge active" style="background:#ffc000; color:#000;" data-macro="inter"
+          <div class="filter-badge active" style="background:#ffc000; color: var(--text-main);" data-macro="inter"
             onclick="toggleQualityMacro('inter', this)">🟡 Intermediária</div>
-          <div class="filter-badge active" style="background:#ff0000; color:#000;" data-macro="basica"
+          <div class="filter-badge active" style="background:#ff0000; color: var(--text-main);" data-macro="basica"
             onclick="toggleQualityMacro('basica', this)">🔴 Básica</div>
         </div>
 
@@ -1473,6 +1473,8 @@
 </body>
 
 </html>
+
+
 
 
 

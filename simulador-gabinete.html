@@ -27,7 +27,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', 'Inter', sans-serif; }
 
         body {
-            background: transparent;
+            background: #050505 !important;
             color: var(--text-main);
             height: 100vh;
             display: flex;
@@ -266,10 +266,7 @@
         }
 
         /* 3D Container */
-        #canvas-container {
-            flex-grow: 1;
-            position: relative;
-            background: transparent;
+        #canvas-container { flex-grow: 1; position: relative; background: transparent !important;
         }
 
         .canvas-overlay {
@@ -298,7 +295,7 @@
 
         /* Custom Scrollbar */
         #sidebar::-webkit-scrollbar { width: 6px; }
-        #sidebar::-webkit-scrollbar-track { background: transparent; }
+        #sidebar::-webkit-scrollbar-track { background: #050505 !important; }
         #sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
         @media (max-width: 768px) {
@@ -339,7 +336,7 @@
     </style>
 </head>
 <body>
-    <div style="position:fixed; inset:0; background: transparent; z-index:-2; pointer-events:none;"></div>
+    <div style="position:fixed; inset:0; background: #050505 !important; z-index:-2; pointer-events:none;"></div>
     <style>
       @keyframes auroraAnim {
         0% { transform: scale(1) translate(0, 0); }
@@ -722,6 +719,9 @@ ${textoCorte}
     </script>
 </body>
 </html>
+
+
+
 
 
 
