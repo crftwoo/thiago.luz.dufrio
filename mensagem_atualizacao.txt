@@ -1,1 +1,1 @@
-Ajuste de UX: Otimizado escalonamento do Hub Principal para 80% (Zoom nativo), garantindo uma navegação com maior respiro de tela.
+Modernização Final UI/UX concluída: Ajuste fino de imagens de equipamentos, refinamento de painéis de filtro no Comparador, padronização de cabeçalhos na Precificação e remoção total de elementos claros residuais em todas as ferramentas. Suite Dufrio operando 100% em Neon Dark Mode.

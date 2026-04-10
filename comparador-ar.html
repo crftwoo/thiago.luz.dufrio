@@ -126,7 +126,7 @@
     .tipo-btn img {
       width: 160px;
       transition: transform 0.3s ease;
-      mix-blend-mode: darken;
+      filter: drop-shadow(0 0 10px rgba(79, 172, 254, 0.4));
     }
 
     .tipo-btn:hover img {
@@ -320,9 +320,9 @@
       font-size: 11px;
       font-weight: 700;
       cursor: pointer;
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      color: #71717a;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
       transition: all 0.2s;
       user-select: none;
       opacity: 0.6;
@@ -331,7 +331,7 @@
 
     .filter-badge.active {
       color: var(--text-main);
-      background: #fff;
+      background: rgba(255, 255, 255, 0.05);
       border-color: #cbd5e1;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       opacity: 1;
@@ -411,7 +411,7 @@
 
     .visual-card:hover {
       border-color: var(--dufrio-azul-claro);
-      background: #fff;
+      background: rgba(255, 255, 255, 0.05);
       transform: translateY(-2px);
       box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
     }
@@ -419,7 +419,7 @@
     .vc-img-box {
       width: 100%;
       aspect-ratio: 4 / 3;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.05);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -566,7 +566,7 @@
             <button class="tech-btn" onclick="limparComparador()"
               style="--btn-color: #ff4444; padding: 6px 12px; font-size: 9px;">Limpar Lista 🗑️</button>
             <button id="btn-toggle-all-filters" class="tech-btn"
-              style="--btn-color: #71717a; padding: 6px 12px; font-size: 9px;" onclick="toggleAllFilters()">Desmarcar
+              style="--btn-color: var(--text-muted); padding: 6px 12px; font-size: 9px;" onclick="toggleAllFilters()">Desmarcar
               Todos</button>
           </div>
         </div>
@@ -1471,6 +1471,7 @@
 </body>
 
 </html>
+
 
 
 
