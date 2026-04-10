@@ -1,1 +1,1 @@
-﻿Botao de plano de corte agora abre em uma nova aba
+﻿Fix silent execution error on 'Enviar para plano de corte' cross-tab navigation
