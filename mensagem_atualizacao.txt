@@ -1,1 +1,1 @@
-﻿Adiciona CSS @media otimizado para navegacao no celular (mobile-friendly) no index
+﻿Atualização visual 2.0 (Glassmorphism e Neon) implantados no hub precificacao-ar.html
