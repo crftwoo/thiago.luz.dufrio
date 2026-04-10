@@ -48,327 +48,239 @@
             z-index: 10;
             display: flex;
             flex-direction: column;
-            gap: 20px;
         }
 
-        .header { margin-bottom: 25px; }
-        .header h1 { color: var(--text-main);  
-            font-size: 28px; 
-            font-weight: 900; 
-            text-transform: uppercase; 
+        .header h1 {
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
             font-style: italic;
             color: var(--primary);
-            letter-spacing: -1.5px;
-            line-height: 1;
-            margin-bottom: 5px;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
         }
-        .header p { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 1.2px; opacity: 0.8; }
 
-        .pro-review-note {
-            background: rgba(49, 130, 206, 0.05);
-            border-left: 3px solid var(--primary);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 10px;
+        .header p {
+            font-size: 12px;
             color: var(--text-secondary);
-            margin-bottom: 25px;
-            line-height: 1.5;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
         }
 
-        .pro-review-note strong { color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
-
+        /* Card System */
         .card {
             background: var(--card-bg);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--border);
             border-radius: 16px;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            margin-bottom: 20px;
             transition: all 0.3s ease;
-            animation: fadeIn 0.5s ease forwards;
         }
+
+        .card:hover { border-color: rgba(79, 172, 254, 0.3); }
 
         .hidden { display: none !important; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Inputs */
+        .input-group { margin-bottom: 15px; }
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
         }
 
-        .card:hover { border-color: var(--primary); box-shadow: 0 0 20px rgba(49, 130, 206, 0.1); }
-
-        .input-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-        .input-group label { font-size: 10px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+        .row { display: flex; gap: 15px; }
+        .row .input-group { flex: 1; }
 
         input, select {
             width: 100%;
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 12px;
-            color: white;
-            font-size: 14px;
-            font-weight: 700;
+            background: rgba(15, 15, 15, 0.9) !important;
+            border: 1.5px solid var(--border) !important;
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white !important;
+            font-size: 15px;
+            font-weight: 600;
             transition: all 0.2s;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
+            height: 48px;
         }
+        select option { background-color: #050505 !important; color: #fff !important; }
 
-        select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            padding-right: 40px;
-        }
+        input:focus, select:focus { outline: none; border-color: var(--primary) !important; background: rgba(255, 255, 255, 0.08); }
 
-        /* Remover setinhas do input number */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
-        }
-
-        /* Toggle Switch Premium */
+        /* Toggle Button */
         .toggle-container {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            background: rgba(15, 23, 42, 0.4);
-            padding: 10px;
-            border-radius: 12px;
-            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 14px;
+            margin-bottom: 15px;
             border: 1px solid var(--border);
         }
-        .toggle-label { font-size: 10px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 22px;
+
+        .toggle-label {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
         }
+
+        .toggle-container.active .label-int { color: var(--primary); }
+
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute;
             cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #334155;
+            background-color: rgba(255,255,255,0.1);
             transition: .4s;
-            border-radius: 34px;
+            border-radius: 24px;
         }
+
         .slider:before {
             position: absolute;
             content: "";
-            height: 16px; width: 16px;
+            height: 18px; width: 18px;
             left: 3px; bottom: 3px;
             background-color: white;
             transition: .4s;
             border-radius: 50%;
         }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(22px); }
-        .toggle-container.active .label-ext { color: var(--text-secondary); }
-        .toggle-container.active .label-int { color: var(--primary); }
-        .toggle-container:not(.active) .label-ext { color: var(--primary); }
-        .toggle-container:not(.active) .label-int { color: var(--text-secondary); }
 
-        button {
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Button */
+        #btn-calcular {
+            width: 100%;
             background: var(--primary);
-            color: white;
+            color: #000;
             border: none;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 14px;
+            padding: 18px;
+            border-radius: 14px;
             font-weight: 900;
+            font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 1px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             margin-top: 10px;
         }
 
-        button:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        button:active { transform: translateY(0); }
-
-        /* Report Area */
-        #resultado { margin-top: 10px; }
-        .resumo-title { font-size: 11px; font-weight: 900; color: var(--primary); text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; }
-        .resumo-title::before { content: ''; width: 20px; height: 2px; background: var(--primary); border-radius: 2px; }
-
-        .peca-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
-            margin-bottom: 8px;
-            border: 1px solid transparent;
-            transition: 0.2s;
-        }
-        .peca-item:hover { background: rgba(255, 255, 255, 0.05); border-color: var(--glass-border); }
-        .peca-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
-        .peca-value { font-size: 11px; color: white; font-weight: 800; }
-
-        .relatorio-resumo {
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(49, 130, 206, 0.05);
-            border-left: 3px solid var(--primary);
-            border-radius: 8px;
-            font-size: 11px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-        }
-
-        .relatorio-resumo strong { color: var(--text-main); }
-
-        .formato-corte {
-            margin-top: 15px;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 11px;
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            white-space: pre-wrap;
-            user-select: all;
-            cursor: pointer;
-        }
-        .formato-corte::before {
-            content: attr(data-label);
-            display: block;
-            font-family: 'Inter', sans-serif;
-            font-size: 9px;
-            color: #64748b;
-            margin-bottom: 8px;
-            font-weight: 800;
-            transition: all 0.3s;
-        }
-        .formato-corte.copiado::before {
-            content: 'COPIADO COM SUCESSO!';
-            color: #10b981;
-        }
-
-        /* 3D Container */
-        #canvas-container { flex-grow: 1; position: relative; background: transparent !important;
-        }
-
+        /* Legends */
         .canvas-overlay {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 30px;
+            right: 30px;
             display: flex;
             gap: 15px;
-            pointer-events: none;
+            z-index: 100;
         }
 
         .legend-item {
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(10, 10, 10, 0.6);
             backdrop-filter: blur(10px);
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--glass-border);
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
+            gap: 8px;
         }
+
         .dot { width: 8px; height: 8px; border-radius: 50%; }
 
-        /* Custom Scrollbar */
-        #sidebar::-webkit-scrollbar { width: 6px; }
-        #sidebar::-webkit-scrollbar-track { background: #050505 !important; }
-        #sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-        @media (max-width: 768px) {
-            body { 
-                flex-direction: column; 
-                overflow-y: auto; 
-                height: auto;
-            }
-            
-            #sidebar { 
-                width: 100%; 
-                height: auto; 
-                border-right: none; 
-                border-bottom: 1px solid var(--border);
-                padding: 20px;
-                order: 1;
-            }
-
-            #canvas-container { 
-                width: 100%;
-                height: 50vh; 
-                min-height: 350px;
-                order: 2;
-                flex-shrink: 0;
-            }
-
-            .header h1 { color: var(--text-main);  font-size: 22px; }
-            .card { padding: 15px; }
-            .row { gap: 10px; }
-            
-            .canvas-overlay {
-                top: 10px;
-                right: 10px;
-                flex-direction: column;
-                gap: 5px;
-            }
+        /* Relatorio UI */
+        #lista-pecas { margin-top: 15px; }
+        .peca-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
         }
+        .peca-label { font-size: 12px; color: var(--text-secondary); }
+        .peca-value { font-size: 13px; font-weight: 800; color: #fff; }
+
+        .relatorio-resumo {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(79, 172, 254, 0.05);
+            border-left: 3px solid var(--primary);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .formato-corte {
+            margin-top: 20px;
+            padding: 15px;
+            background: #000;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #10b981;
+            white-space: pre-wrap;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .formato-corte.copiado::after {
+            content: 'COPIADO!';
+            position: absolute;
+            inset: 0 ;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+        }
+
+        /* 3D Container */
+        #canvas-container {
+            flex-grow: 1;
+            position: relative;
+            background: transparent !important;
+        }
+        
+        /* Esconder Spinners de campos numéricos */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 8px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
     </style>
 </head>
 <body>
     <div style="position:fixed; inset:0; background: #050505 !important; z-index:-2; pointer-events:none;"></div>
-    <style>
-      @keyframes auroraAnim {
-        0% { transform: scale(1) translate(0, 0); }
-        100% { transform: scale(1.3) translate(50px, -50px); }
-      }
-    </style>
-    <div class="aurora" style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);z-index:-1;opacity:0.25;background:#3b82f6;top:-10%;left:-10%;animation:auroraAnim 15s infinite alternate ease-in-out;pointer-events:none;"></div>
-    <div class="aurora" style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);z-index:-1;opacity:0.25;background:#8b5cf6;bottom:-10%;right:-5%;animation:auroraAnim 20s infinite alternate ease-in-out;pointer-events:none;"></div>
-
-
-<!-- BOTAO VOLTAR FLUTUANTE GLOBAL -->
-<style>
-.btn-voltar-global { position: fixed; top: 15px; left: 15px; background: rgba(20,20,20,0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px 10px; border-radius: 30px; text-decoration: none; font-weight: 800; font-size: 9px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 999999; display: flex; align-items: center; gap: 4px; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.5px; }
-  .btn-voltar-global:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
-  .btn-voltar-global svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 3; fill: none; }
-  body > div.container:first-of-type, body > main, body > aside .header, body > .header-app { margin-top: 40px !important; }
-</style>
-<a href="index.html" class="btn-voltar-global">
-  <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-  Menu Principal
-</a>
+    <div class="aurora" style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);z-index:-1;opacity:0.25;background:#3b82f6;top:-10%;left:-10%;pointer-events:none;"></div>
+    <div class="aurora" style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);z-index:-1;opacity:0.25;background:#8b5cf6;bottom:-10%;right:-5%;pointer-events:none;"></div>
 
     <aside id="sidebar">
         <div class="header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1>Gabinete 3D</h1>
-            </div>
-            <p>Simulador 3D (Camaras-frias)</p>
+            <a href="index.html" style="display: inline-flex; align-items: center; gap: 8px; color: #fff; text-decoration: none; font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 25px; opacity: 0.8;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Menu Principal
+            </a>
+            <h1>Gabinete 3D</h1>
+            <p>Simulador 3D (Câmaras-frias)</p>
         </div>
 
-        <div style="font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: -15px; margin-top: 5px;">Tipo de Medida</div>
-        <div class="toggle-container active" id="toggle-medidas" style="margin-bottom: 5px;">
+        <div class="toggle-container active" id="toggle-medidas">
             <span class="toggle-label label-ext">Externas</span>
             <label class="switch">
                 <input type="checkbox" id="tipo-medida" checked onchange="atualizarAutomaticoConfirmado()">
@@ -381,16 +293,16 @@
             <div class="row">
                 <div class="input-group">
                     <label>Comprimento (C)</label>
-                    <input type="number" id="comp" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
+                    <input type="number" id="comp" placeholder="0.00" step="0.01" oninput="verificarMedidas()" min="0.01">
                 </div>
                 <div class="input-group">
                     <label>Largura (L)</label>
-                    <input type="number" id="larg" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
+                    <input type="number" id="larg" placeholder="0.00" step="0.01" oninput="verificarMedidas()" min="0.01">
                 </div>
             </div>
             <div class="input-group">
                 <label>Altura (H)</label>
-                <input type="number" id="alt" placeholder="0.00" step="0.01" oninput="verificarMedidas()">
+                <input type="number" id="alt" placeholder="0.00" step="0.01" oninput="verificarMedidas()" min="0.01">
             </div>
         </div>
 
@@ -408,7 +320,7 @@
                     <select id="espessura" onchange="gerarProjeto(false)"></select>
                 </div>
                 <div class="input-group">
-                    <label>Marca / Fabricante</label>
+                    <label>Fabricante</label>
                     <select id="marca" onchange="gerarProjeto(false)"></select>
                 </div>
             </div>
@@ -424,7 +336,6 @@
         <button id="btn-calcular" class="hidden" onclick="gerarProjeto(true)">Gerar Relatório de Peças</button>
 
         <div id="resultado" class="card hidden">
-            <div class="resumo-title">Relatório de Peças</div>
             <div id="lista-pecas"></div>
         </div>
     </aside>
@@ -438,7 +349,6 @@
     </main>
 
     <script>
-        // Configuração Three.js
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
@@ -451,278 +361,187 @@
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         
-        // Iluminação Premium
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
         const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
         mainLight.position.set(20, 40, 20);
         scene.add(mainLight);
 
-        const helperLight = new THREE.PointLight(0x3182ce, 0.5);
-        helperLight.position.set(-20, 20, -20);
-        scene.add(helperLight);
-
         camera.position.set(8, 6, 8);
 
-        // Materiais
-        const wallMat = new THREE.MeshPhysicalMaterial({
-            color: 0x3182ce,
-            metalness: 0.1,
-            roughness: 0.2,
-            transmission: 0,
-            clearcoat: 1.0,
-            clearcoatRoughness: 0.1
-        });
-
-        const roofMat = new THREE.MeshPhysicalMaterial({
-            color: 0xffffff,
-            metalness: 0.0,
-            roughness: 0.1,
-            clearcoat: 0.5
-        });
-
-        const floorMat = new THREE.MeshPhysicalMaterial({
-            color: 0x64748b,
-            metalness: 0.3,
-            roughness: 0.4
-        });
-
-        // Lógica de Inputs
-        function verificarMedidas() {
-            const getVal = (id) => parseFloat(document.getElementById(id).value.toString().replace(',', '.') || 0);
-            const c = getVal('comp');
-            const l = getVal('larg');
-            const h = getVal('alt');
-            
-            const cardIso = document.getElementById('card-isolamento');
-            const btnCalc = document.getElementById('btn-calcular');
-
-            if (c > 0 && l > 0 && h > 0) {
-                cardIso.classList.remove('hidden');
-                btnCalc.classList.remove('hidden');
-                gerarProjeto(false);
-            } else {
-                cardIso.classList.add('hidden');
-                btnCalc.classList.add('hidden');
-                document.getElementById('resultado').classList.add('hidden');
-            }
-        }
+        const wallMat = new THREE.MeshPhysicalMaterial({ color: 0x3182ce, metalness: 0.1, roughness: 0.2, clearcoat: 1.0 });
+        const roofMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.1 });
+        const floorMat = new THREE.MeshPhysicalMaterial({ color: 0x64748b, roughness: 0.4 });
 
         function aoMudarTipo() {
-            const tipo = document.getElementById('tipo').value;
-            const espCombo = document.getElementById('espessura');
-            const marcaCombo = document.getElementById('marca');
-            
-            espCombo.innerHTML = "";
-            marcaCombo.innerHTML = "";
+            const tipo = document.getElementById("tipo").value;
+            const espCombo = document.getElementById("espessura");
+            const marcaCombo = document.getElementById("marca");
+            espCombo.innerHTML = ""; marcaCombo.innerHTML = "";
 
             if(tipo === "PIR") {
-                [70, 100, 120, 150].forEach(v => {
-                    const opt = new Option(v + " mm", v / 1000);
-                    if(v === 100) opt.selected = true;
+                const options = [
+                    { v: 70, t: "-10°C" }, { v: 100, t: "-20°C" }, { v: 120, t: "-24°C" }, { v: 150, t: "-30°C" }
+                ];
+                options.forEach(optData => {
+                    const opt = new Option(`${optData.v}mm`, optData.v / 1000);
+                    if(optData.v === 70) opt.selected = true;
                     espCombo.add(opt);
                 });
                 marcaCombo.add(new Option("Brastelha (1.10m)", "1.10"));
                 marcaCombo.add(new Option("MPB / Isoblock (1.15m)", "1.15"));
             } else {
-                [50, 100, 150, 200].forEach(v => {
-                    const opt = new Option(v + " mm", v / 1000);
-                    if(v === 100) opt.selected = true;
+                const options = [
+                    { v: 50, t: "+5°C" }, { v: 100, t: "-10°C" }, { v: 150, t: "-20°C" }, { v: 200, t: "-24°C" }
+                ];
+                options.forEach(optData => {
+                    const opt = new Option(`${optData.v}mm`, optData.v / 1000);
+                    if(optData.v === 100) opt.selected = true;
                     espCombo.add(opt);
                 });
-                marcaCombo.add(new Option("Estufagem / Padrão (1.15m)", "1.15"));
+                marcaCombo.add(new Option("Brastelha (1.15m)", "1.15"));
+                marcaCombo.add(new Option("MPB / Isoblock (1.15m)", "1.15"));
             }
+        }
+
+        let debounceTimeout = null;
+        function verificarMedidas() {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                const getVal = (id) => parseFloat(document.getElementById(id).value.toString().replace(',', '.') || 0);
+                const c = getVal('comp');
+                const l = getVal('larg');
+                const h = getVal('alt');
+                
+                if (c > 0 && l > 0 && h > 0) {
+                    document.getElementById('card-isolamento').classList.remove('hidden');
+                    document.getElementById('btn-calcular').classList.remove('hidden');
+                    gerarProjeto(false);
+                } else {
+                    document.getElementById('card-isolamento').classList.add('hidden');
+                    document.getElementById('btn-calcular').classList.add('hidden');
+                    document.getElementById('resultado').classList.add('hidden');
+                }
+            }, 300);
         }
 
         function criarPainel3D(w, h, d, material, x, y, z, rotationY = 0) {
             const geometry = new THREE.BoxGeometry(w, h, d);
             const mesh = new THREE.Mesh(geometry, material);
-            mesh.position.set(x, y, z);
-            mesh.rotation.y = rotationY;
+            mesh.position.set(x, y, z); mesh.rotation.y = rotationY;
+            mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({ color: 0x1e293b, transparent: true, opacity: 0.3 })));
+            if(window.chamberGroup) window.chamberGroup.add(mesh); else scene.add(mesh);
+        }
 
-            const edges = new THREE.EdgesGeometry(geometry);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x1e293b, transparent: true, opacity: 0.5 }));
-            mesh.add(line);
-
-            scene.add(mesh);
+        function fitCameraToRoom() {
+            if (!window.chamberGroup) return;
+            const box = new THREE.Box3().setFromObject(window.chamberGroup);
+            const center = new THREE.Vector3(); box.getCenter(center);
+            const size = new THREE.Vector3(); box.getSize(size);
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = camera.fov * (Math.PI / 180);
+            const distance = Math.abs(maxDim / (2 * Math.tan(fov / 2))) * 1.5;
+            camera.position.copy(center).add(new THREE.Vector3(1, 0.8, 1).normalize().multiplyScalar(distance));
+            if (window.controls) { controls.target.copy(center); controls.update(); }
         }
 
         function gerarProjeto(exibirRelatorio = false) {
-            const getVal = (id) => parseFloat(document.getElementById(id).value.toString().replace(',', '.') || 0);
-            const C = getVal('comp');
-            const L = getVal('larg');
-            const H = getVal('alt');
-            
+            const C = parseFloat(document.getElementById('comp').value || 0);
+            const L = parseFloat(document.getElementById('larg').value || 0);
+            const H = parseFloat(document.getElementById('alt').value || 0);
             if (C <= 0 || L <= 0 || H <= 0) return;
 
-            while(scene.children.length > 3) scene.remove(scene.children[scene.children.length-1]);
+            if (window.chamberGroup) scene.remove(window.chamberGroup);
+            window.chamberGroup = new THREE.Group(); scene.add(window.chamberGroup);
 
             const E = parseFloat(document.getElementById('espessura').value || 0.1);
             const LU = parseFloat(document.getElementById('marca').value || 1.15);
             const temPiso = document.getElementById('temPiso').value === "sim";
             const isInternas = document.getElementById('tipo-medida').checked;
 
-            // Regra: Teto na menor medida para evitar vãos inviáveis
             const maxDim = Math.max(C, L);
             const isWidthSmallest = L <= C;
-
             let numTeto = Math.ceil(maxDim / LU);
             
-            // Lógica de Altura (Interna vs Externa)
-            let altParede = H;
-            if (!isInternas) {
-                altParede = H - E; 
-                if(temPiso) altParede -= E;
-            }
-            const yParede = (isInternas && !temPiso) ? (altParede / 2) : 
-                            (temPiso ? (altParede / 2) + E : (altParede / 2));
+            let altP = H; if (!isInternas) { altP = H - E; if(temPiso) altP -= E; }
+            const yP = (isInternas && !temPiso) ? (altP / 2) : (temPiso ? (altP / 2) + E : (altP / 2));
+            const zT = isInternas ? altP + (E/2) : H - (E/2);
 
-            // Ajuste visual do teto se for Interna
-            const zTeto = isInternas ? altParede + (E/2) : H - (E/2);
-
-            // LÓGICA DE PERÍMETRO TOTAL (ESTILO OBRA): 
             let Lef = L - (2 * E);
-            let perimetroTotal = (C * 2) + (Lef * 2);
-            let totalParedes = Math.ceil(perimetroTotal / LU);
+            let totalP = Math.ceil(((C * 2) + (Lef * 2)) / LU);
 
-            renderTeto(C, L, zTeto, E, LU, isWidthSmallest, maxDim);
-            if(temPiso) renderPiso(C, L, E, LU, isWidthSmallest, maxDim);
-            renderParedes(C, L, E, LU, altParede, yParede);
+            const loop = (n, m, z, mat) => {
+                for(let i=0; i<n; i++) {
+                    let w = (i === n-1) ? (m % LU || LU) : LU;
+                    let off = (i * LU) + (w/2) - (m/2);
+                    if(isWidthSmallest) criarPainel3D(w, E, L, mat, off, z, 0);
+                    else criarPainel3D(C, E, w, mat, 0, z, off);
+                }
+            };
+            loop(numTeto, maxDim, zT, roofMat);
+            if(temPiso) loop(numTeto, maxDim, E/2, floorMat);
 
-            if (exibirRelatorio) {
-                atualizarRelatorio(numTeto, totalParedes, L, C, altParede, temPiso, Lef);
-            }
+            const wallSide = (len, rot) => {
+                let n = Math.ceil(len / LU);
+                for(let i=0; i<n; i++) {
+                    let w = (i === n-1) ? (len % LU || LU) : LU;
+                    let off = (i * LU) + (w/2) - (len/2);
+                    if(!rot) {
+                        criarPainel3D(w, altP, E, wallMat, off, yP, -(L/2) + E/2);
+                        criarPainel3D(w, altP, E, wallMat, off, yP, (L/2) - E/2);
+                    } else {
+                        criarPainel3D(E, altP, w, wallMat, -(C/2) + E/2, yP, off);
+                        criarPainel3D(E, altP, w, wallMat, (C/2) - E/2, yP, off);
+                    }
+                }
+            };
+            wallSide(C, false); wallSide(Lef, true);
+
+            fitCameraToRoom();
+            if (exibirRelatorio) atualizarRelatorio(numTeto, totalP, L, C, altP, temPiso, Lef);
         }
 
-        function renderTeto(C, L, zPos, E, LU, isWidthSmallest, maxDim) {
-            let num = Math.ceil(maxDim / LU);
-            for(let i=0; i<num; i++) {
-                let w = (i === num-1) ? (maxDim % LU || LU) : LU;
-                let offset = (i * LU) + (w/2) - (maxDim/2);
-                if(isWidthSmallest) criarPainel3D(w, E, L, roofMat, offset, zPos, 0);
-                else criarPainel3D(C, E, w, roofMat, 0, zPos, offset);
-            }
-        }
-
-        function renderPiso(C, L, E, LU, isWidthSmallest, maxDim) {
-            let num = Math.ceil(maxDim / LU);
-            for(let i=0; i<num; i++) {
-                let w = (i === num-1) ? (maxDim % LU || LU) : LU;
-                let offset = (i * LU) + (w/2) - (maxDim/2);
-                if(isWidthSmallest) criarPainel3D(w, E, L, floorMat, offset, E/2, 0);
-                else criarPainel3D(C, E, w, floorMat, 0, E/2, offset);
-            }
-        }
-
-        function renderParedes(C, L, E, LU, altP, yP) {
-            let numC = Math.ceil(C / LU);
-            for(let i=0; i<numC; i++){
-                let w = (i === numC-1) ? (C % LU || LU) : LU;
-                let px = (i * LU) + (w/2) - (C/2);
-                criarPainel3D(w, altP, E, wallMat, px, yP, -(L/2) + E/2);
-                criarPainel3D(w, altP, E, wallMat, px, yP, (L/2) - E/2);
-            }
-            let Lef = L - (2*E);
-            let numL = Math.ceil(Lef / LU);
-            for(let i=0; i<numL; i++){
-                let w = (i === numL-1) ? (Lef % LU || LU) : LU;
-                let pz = (i * LU) + (w/2) - (Lef/2);
-                criarPainel3D(E, altP, w, wallMat, -(C/2) + E/2, yP, pz);
-                criarPainel3D(E, altP, w, wallMat, (C/2) - E/2, yP, pz);
-            }
-        }
-
-        function atualizarRelatorio(numT, totalParedes, L, C, altP, temPiso, Lef) {
-            const container = document.getElementById('lista-pecas');
-            const res = document.getElementById('resultado');
-            res.classList.remove('hidden');
+        function atualizarRelatorio(nT, totalP, L, C, aP, temP, Lef) {
+            const res = document.getElementById("resultado");
+            res.classList.remove("hidden");
+            const tipo = document.getElementById("tipo").value;
+            const marcaNome = document.getElementById("marca").options[document.getElementById("marca").selectedIndex].text.split("(")[0].trim();
+            const esp = (parseFloat(document.getElementById("espessura").value)*1000).toFixed(0);
+            const numTP = temP ? (nT*2) : nT;
+            const labelT = temP ? "(Teto e Piso)" : "(Teto)";
+            const compT = L <= C ? L : C;
+            const fmt = (v) => v.toFixed(2).replace(".", ",");
+            const altU = document.getElementById("alt").value.replace(",", ".");
             
-            const compPainelTeto = L <= C ? L : C;
-            const tipoIso = document.getElementById('tipo').value;
-            const marcaNome = document.getElementById('marca').options[document.getElementById('marca').selectedIndex].text;
-            const espDisplay = (parseFloat(document.getElementById('espessura').value) * 1000).toFixed(0);
+            const txt = `${numTP.toString().padStart(2,"0")} PAINEL | ${fmt(compT)} | ${tipo} | ${esp}mm\n${totalP.toString().padStart(2,"0")} PAINEL | ${fmt(aP)} | ${tipo} | ${esp}mm`;
 
-            // Formatação para o Plano de Corte (usando vírgula como no pedido)
-            const fmt = (v) => v.toFixed(2).replace('.', ',');
-            const qty = (n) => n.toString().padStart(2, '0');
-            
-            // Lógica de unificação (Teto e Piso)
-            const numTetoPiso = temPiso ? (numT * 2) : numT;
-            const labelTetoPiso = temPiso ? "(Teto e Piso)" : "(Teto)";
-
-            let textoCorte = `${qty(numTetoPiso)} PAINEL | ${fmt(compPainelTeto)} | ${tipoIso} | ${espDisplay}mm\n`;
-            textoCorte += `${qty(totalParedes)} PAINEL | ${fmt(altP)} | ${tipoIso} | ${espDisplay}mm`;
-
-            container.innerHTML = `
-                <div class="peca-item">
-                    <span class="peca-label">Painéis de Cobertura ${labelTetoPiso} (Comp: ${compPainelTeto.toFixed(2)}m)</span>
-                    <span class="peca-value">${numTetoPiso} pçs</span>
-                </div>
-                <div class="peca-item">
-                    <span class="peca-label">Painéis de Parede (Alt: ${altP.toFixed(2)}m)</span>
-                    <span class="peca-value">${totalParedes} pçs</span>
-                </div>
-                <div class="peca-item" style="margin-top: 15px; border-top: 1px solid var(--primary); padding-top: 15px;">
-                    <span class="peca-label" style="color: var(--primary)">Total de Painéis</span>
-                    <span class="peca-value" style="color: var(--primary)">${numTetoPiso + totalParedes} pçs</span>
+            document.getElementById("lista-pecas").innerHTML = `
+                <div class="peca-item" style="border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 12px;">
+                    <span class="peca-label" style="font-weight: 900; color: var(--primary); text-transform: uppercase; font-size: 10px; letter-spacing: 1px;">Relatório Detalhado</span>
                 </div>
                 
-                <div class="relatorio-resumo">
-                    <strong>RESUMO DA DEMANDA (OTIMIZADO):</strong><br>
-                    Para este gabinete de <strong>${C.toFixed(2)}m x ${L.toFixed(2)}m x ${document.getElementById('alt').value.replace(',', '.')}m</strong>, será necessária a aquisição de <strong>${numTetoPiso + totalParedes} painéis</strong> isolantes <strong>${tipoIso}</strong> (<strong>${marcaNome.split('(')[0].trim()}</strong>) com espessura de <strong>${espDisplay}mm</strong>.<br><br>
-                    • <strong>${numTetoPiso} peças</strong> de ${compPainelTeto.toFixed(2)}m ${labelTetoPiso}<br>
-                    • <strong>${totalParedes} peças</strong> de ${altP.toFixed(2)}m (Paredes)
+                <div class="relatorio-resumo" style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); border-left: 4px solid var(--primary); margin-bottom: 20px; color: #fff; font-size: 13px; line-height: 1.6;">
+                    Para este gabinete de <strong>${fmt(C)}m x ${fmt(L)}m x ${fmt(parseFloat(altU))}m</strong>, será necessária a aquisição de <strong>${numTP + totalP} painéis</strong> isolantes <strong>${tipo} (${marcaNome})</strong> com espessura de <strong>${esp}mm</strong>.<br><br>
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ccc;">
+                        <span>• <strong>${numTP} peças</strong> de ${fmt(compT)}m ${labelT}</span>
+                        <span>• <strong>${totalP} peças</strong> de ${fmt(aP)}m (Paredes)</span>
+                    </div>
                 </div>
 
-                <div class="formato-corte" data-label="FORMATO PARA PLANO DE CORTE (CLIQUE PARA COPIAR)" onclick="copiarRelatorio(this)">
-${textoCorte}
-                </div>
-                <button onclick="window.location.href='plano-corte.html?dados=' + encodeURIComponent('${textoCorte.replace(/\n/g, '\\n')}')" style="background:#10b981; color:white; margin-top:20px; width:100%; border:none; border-radius:12px; padding:16px; font-weight:800; cursor:pointer; font-family:'Inter', sans-serif; font-size:14px; text-transform:uppercase;">➔ ENVIAR PARA PLANO DE CORTE</button>
+                <div class="formato-corte" data-label="FORMATO PLANO DE CORTE" onclick="navigator.clipboard.writeText(this.innerText); this.classList.add('copiado'); setTimeout(()=>this.classList.remove('copiado'),2000)">${txt}</div>
+                
+                <button onclick="window.location.href='plano-corte.html?dados=' + encodeURIComponent(txt)" style="background:#10b981; color:white; margin-top:20px; width:100%; border:none; border-radius:12px; padding:16px; font-weight:800; cursor:pointer; font-family:inherit; font-size:12px; text-transform:uppercase; letter-spacing: 0.5px;">🚀 Enviar para Plano de Corte</button>
             `;
         }
 
         function atualizarAutomaticoConfirmado() {
             document.getElementById('toggle-medidas').classList.toggle('active');
             verificarMedidas();
-            
-            // Se o relatório já estiver visível, atualiza ele na hora
-            const resultadoVisivel = !document.getElementById('resultado').classList.contains('hidden');
-            if (resultadoVisivel) {
-                gerarProjeto(true);
-            }
+            if (!document.getElementById('resultado').classList.contains('hidden')) gerarProjeto(true);
         }
 
-        function copiarRelatorio(el) {
-            const texto = el.innerText.split('\n').filter(l => l.trim().length > 0).join('\n');
-            navigator.clipboard.writeText(texto).then(() => {
-                el.classList.add('copiado');
-                setTimeout(() => el.classList.remove('copiado'), 2000);
-            });
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
-
-        aoMudarTipo();
-        animate();
-
+        function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+        window.addEventListener('resize', () => { camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); });
+        aoMudarTipo(); animate();
     </script>
 </body>
 </html>
-
-
-
-
-
-
-

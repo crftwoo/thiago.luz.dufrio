@@ -1,1 +1,1 @@
-Correção Global de Background: Efeito aurora (nebulosa) habilitado e visível em todas as ferramentas. Título da Precificação ajustado. Padronização final de design concluída.
+Fix simulador gabinete labels and default thickness to 70mm, removing temperature tags and phantom gaps
