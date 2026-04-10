@@ -25,6 +25,46 @@
     </style>
 </head>
 <body>
+
+<!-- BOTAO VOLTAR FLUTUANTE GLOBAL -->
+<style>
+  .btn-voltar-global {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #102E82;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 13px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+  }
+  .btn-voltar-global:hover {
+    background: #0a1f5c;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  }
+  .btn-voltar-global svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    fill: none;
+  }
+</style>
+<a href="index.html" class="btn-voltar-global">
+  <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+  Menu Principal
+</a>
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useMemo, useRef, useCallback } = React;
