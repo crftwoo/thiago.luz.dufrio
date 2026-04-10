@@ -1,1 +1,1 @@
-Design UI Globalizado: Estética Neon Dark Mode expandida para todas as ferramentas restantes (Cotações, Precificação, Comparador de Ar e Quantidade de Itens).
+Ajuste de UX: Otimizado escalonamento do Hub Principal para 80% (Zoom nativo), garantindo uma navegação com maior respiro de tela.

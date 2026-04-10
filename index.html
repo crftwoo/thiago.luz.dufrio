@@ -52,6 +52,7 @@
       max-width: 1400px;
       margin: 0 auto;
       padding: 60px 40px;
+      zoom: 0.8;
     }
 
     /* Header Novo e Futurista */
@@ -424,13 +425,25 @@
 
     // GitHub Fetch
     fetch("https://api.github.com/repos/crftwoo/thiago.luz.dufrio/commits/main?v=" + new Date().getTime())
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error("Acesso Limitado: " + r.status);
+        return r.json();
+      })
       .then(d => {
         if (d && d.commit && d.commit.author && d.commit.author.date) {
           const dt = new Date(d.commit.author.date);
-          document.getElementById("updateText").innerHTML = `Última atualização: ${dt.toLocaleDateString("pt-BR")} às ${dt.toLocaleTimeString("pt-BR")}`;
+          const hoje = new Date();
+          const hojeStr = hoje.toLocaleDateString("pt-BR");
+          const commitStr = dt.toLocaleDateString("pt-BR");
+          const dataTxt = (hojeStr === commitStr) ? "Hoje" : commitStr;
+
+          document.getElementById("updateText").innerHTML = `Última atualização: <strong>${dataTxt}</strong> às <strong>${dt.toLocaleTimeString("pt-BR")}</strong>`;
           document.getElementById("updateMessage").textContent = `"${d.commit.message}"`;
         }
+      })
+      .catch(e => {
+        document.getElementById("updateText").innerHTML = `Conexão bloqueada temporariamente (Antispam do GitHub)`;
+        document.getElementById("updateMessage").textContent = `"Você carregou essa página muitas vezes na última hora. O GitHub ocultou o horário como medida de segurança. Aguarde alguns minutos."`;
       });
   </script>
 </body>
