@@ -165,11 +165,11 @@
       display: flex;
       flex-direction: column;
       align-items: center; 
-      margin-left: var(--sidebar-collapsed-width);
+      margin-left: 0;
       padding: 0;
       overflow-y: auto;
       overflow-x: hidden;
-      width: calc(100vw - var(--sidebar-collapsed-width));
+      width: 100vw;
     }
 
     /* === MENU HUB CENTRALIZADO === */
@@ -460,21 +460,6 @@
 
 <body>
 
-  <!-- SIDEBAR LATERAL RETRÁTIL -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <!-- Espaço reservado para o logo pequeno -->
-    </div>
-
-    <!-- O menu recebe exatamente as mesmas ferramentas da home dinamicamente -->
-    <ul class="sidebar-menu" id="sidebarMenu">
-      <li class="menu-link active" onclick="location.reload()" title="Página Inicial">
-        <svg class="menu-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-        <span class="menu-text">Menu Inicial</span>
-      </li>
-      <!-- Links Injetados Rápido -->
-    </ul>
-  </aside>
 
   <!-- ÁREA PRINCIPAL -->
   <main class="main-area">
@@ -543,19 +528,12 @@
     ];
 
     const menuGrid = document.getElementById("menuGrid");
-    const sidebarMenu = document.getElementById("sidebarMenu");
     const menuHub = document.getElementById("menuHub");
     const iframeView = document.getElementById("iframeView");
     const iframeTitle = document.getElementById("iframeTitle");
     const frame = document.getElementById("frame");
-    const sidebar = document.getElementById("sidebar");
 
-    // Lógica para Expandir/Recuar Sidebar
-    function toggleSidebar() {
-      sidebar.classList.toggle('open');
-    }
-
-    // Lógica para desenhar os Cards Neumórficos no Grid Central + Lincar com Sidebar
+    // Lógica para desenhar os Cards Neumórficos no Grid Central
     function renderizarCardsELista() {
       menuGrid.innerHTML = '';
       ferramentas.forEach((f, index) => {
@@ -573,20 +551,11 @@
           </div>
         `;
         menuGrid.insertAdjacentHTML('beforeend', cardHtml);
-
-        // 2. Injeta também na barra lateral automaticamente
-        const listHtml = `
-          <li class="menu-link hide-active" title="${f.nome}" onclick="abrirFerramenta(${index}, this)">
-            <span class="menu-icon">${f.icone}</span>
-            <span class="menu-text">${f.nome}</span>
-          </li>
-        `;
-        sidebarMenu.insertAdjacentHTML('beforeend', listHtml);
       });
     }
 
     // Abertura com suavidade
-    window.abrirFerramenta = function(index, menuItemEl = null) {
+    window.abrirFerramenta = function(index) {
       const f = ferramentas[index];
       if (f.isDownload) {
         if (confirm(`Deseja baixar os arquivos do projeto e a extensão?`)) {
@@ -599,21 +568,6 @@
         }
         return;
       }
-      
-      // Controla Active da Esquerda
-      document.querySelectorAll('.menu-link').forEach(el => el.classList.remove('active'));
-      if(menuItemEl) {
-        menuItemEl.classList.add('active');
-      } else {
-        // Find matching sidebar link if clicked via card
-        const links = document.querySelectorAll('.menu-link');
-        for (let l of links) {
-          if (l.getAttribute("title") === f.nome) {
-             l.classList.add('active');
-             break;
-          }
-        }
-      }
 
       // Abre o ambiente de Iframe puxando o titulo dinamicamente
       menuHub.style.display = "none";
@@ -625,8 +579,6 @@
     // Fechar Ferramenta (Botão Voltar)
     window.fecharFerramenta = function() {
       frame.src = "";
-      document.querySelectorAll('.menu-link').forEach(el => el.classList.remove('active'));
-      document.querySelector('.menu-link[title="Página Inicial"]').classList.add('active');
 
       iframeView.style.display = "none";
       menuHub.style.display = "flex";
