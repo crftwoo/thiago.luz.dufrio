@@ -1,1 +1,1 @@
-﻿Reverte zoom global do index para 0.8 e estabiliza tamanho maior pontual do rodape
+﻿Adiciona CSS @media otimizado para navegacao no celular (mobile-friendly) no index
