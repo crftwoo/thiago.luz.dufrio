@@ -127,6 +127,7 @@
       width: 160px;
       transition: transform 0.3s ease;
       filter: drop-shadow(0 0 10px rgba(79, 172, 254, 0.4));
+      mix-blend-mode: screen;
     }
 
     .tipo-btn:hover img {
@@ -975,11 +976,8 @@
       renderizarCaixa();
     });
 
-    // Em vez de apagar os dados quando a página abre, automaticamente "Puxa" da extensão
-    // para recuperar a sessão caso ele tenha aberto a página agora.
-    setTimeout(() => {
-      window.postMessage({ type: "TWO_GET_COMPARADOR_DATA" }, "*");
-    }, 500);
+    // Sincronização automática removida para evitar puxar dados antigos da extensão.
+    // Use o botão "Puxar da Extensão" para atualizar manualmente.
 
     // Helpers para formatar (idênticos à extensão)
     function extractProductInfo(titleStr) {
@@ -1473,6 +1471,7 @@
 </body>
 
 </html>
+
 
 
 
