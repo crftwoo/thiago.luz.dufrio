@@ -1,1 +1,1 @@
-Deploy Oficial concluído: Ativação definitiva do novo Dashboard Neon Dark Mode (Bento Grid) como front-end principal da extensão.
+Ajuste de UX: Inserido preenchimento global para evitar sobreposição do Botão Menu Principal com os Títulos.

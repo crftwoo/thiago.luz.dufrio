@@ -424,38 +424,10 @@
 
 <!-- BOTAO VOLTAR FLUTUANTE GLOBAL -->
 <style>
-  .btn-voltar-global {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    background: #102E82;
-    color: white;
-    padding: 8px 14px;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 800;
-    font-size: 11px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    z-index: 999999;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'Inter', sans-serif;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-  }
-  .btn-voltar-global:hover {
-    background: #0a1f5c;
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-  }
-  .btn-voltar-global svg {
-    width: 18px;
-    height: 18px;
-    stroke: currentColor;
-    stroke-width: 2.5;
-    fill: none;
-  }
+.btn-voltar-global { position: fixed; top: 15px; left: 15px; background: rgba(20,20,20,0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px 10px; border-radius: 30px; text-decoration: none; font-weight: 800; font-size: 9px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 999999; display: flex; align-items: center; gap: 4px; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.5px; }
+  .btn-voltar-global:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
+  .btn-voltar-global svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 3; fill: none; }
+  body > div.container:first-of-type, body > main, body > aside .header, body > .header-app { margin-top: 40px !important; }
 </style>
 <a href="index.html" class="btn-voltar-global">
   <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -1946,4 +1918,7 @@
     </div>
 </body>
 </html>
+
+
+
 
