@@ -529,7 +529,7 @@
 
                 <div class="formato-corte" data-label="FORMATO PLANO DE CORTE" onclick="navigator.clipboard.writeText(this.innerText); this.classList.add('copiado'); setTimeout(()=>this.classList.remove('copiado'),2000)">${txt}</div>
                 
-                <button onclick="window.location.href='plano-corte.html?dados=' + encodeURIComponent(txt)" style="background:#10b981; color:white; margin-top:20px; width:100%; border:none; border-radius:12px; padding:16px; font-weight:800; cursor:pointer; font-family:inherit; font-size:12px; text-transform:uppercase; letter-spacing: 0.5px;">🚀 Enviar para Plano de Corte</button>
+                <button onclick="window.open('plano-corte.html?dados=' + encodeURIComponent(txt), '_blank')" style="background:#10b981; color:white; margin-top:20px; width:100%; border:none; border-radius:12px; padding:16px; font-weight:800; cursor:pointer; font-family:inherit; font-size:12px; text-transform:uppercase; letter-spacing: 0.5px;">🚀 Enviar para Plano de Corte</button>
             `;
         }
 

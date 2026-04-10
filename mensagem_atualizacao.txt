@@ -1,1 +1,1 @@
-Fix simulador gabinete labels and default thickness to 70mm, removing temperature tags and phantom gaps
+﻿Botao de plano de corte agora abre em uma nova aba
