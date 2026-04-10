@@ -289,6 +289,15 @@
 
     let grupos = {}, planos = {}, ordem = [], decisoes = {}, idx = 0;
 
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const dados = urlParams.get('dados');
+      if (dados) {
+        document.getElementById('raw').value = dados;
+        interpretar();
+      }
+    });
+
     function interpretar() {
       let linhas = raw.value.split(/\n+/).map(l => l.trim()).filter(l => l);
       let table = document.getElementById("editTable");

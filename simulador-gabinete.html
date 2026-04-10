@@ -697,6 +697,7 @@
                 <div class="formato-corte" data-label="FORMATO PARA PLANO DE CORTE (CLIQUE PARA COPIAR)" onclick="copiarRelatorio(this)">
 ${textoCorte}
                 </div>
+                <button onclick="window.location.href='plano-corte.html?dados=' + encodeURIComponent('${textoCorte.replace(/\n/g, '\\n')}')" style="background:#10b981; color:white; margin-top:20px; width:100%; border:none; border-radius:12px; padding:16px; font-weight:800; cursor:pointer; font-family:'Inter', sans-serif; font-size:14px; text-transform:uppercase;">➔ ENVIAR PARA PLANO DE CORTE</button>
             `;
         }
 
