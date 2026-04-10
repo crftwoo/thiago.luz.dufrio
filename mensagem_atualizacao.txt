@@ -1,1 +1,1 @@
-Modernização da Ferramenta de CheckList: Todo o código CSS base e varíaveis adaptadas para o tema Neon Dark Mode e Glassmorphism. Lógica mantida intacta.
+Estilização UI: Plano de Corte adaptado integralmente ao Neon Dark Mode em simbiose com o Hub Principal. Componentes mantidos intactos.
