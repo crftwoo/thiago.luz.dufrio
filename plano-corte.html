@@ -356,6 +356,7 @@
       });
 
       editor.classList.remove("hidden");
+      setTimeout(() => document.getElementById("editor").scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     }
 
     function ajustarEsp(sel) {
@@ -385,7 +386,9 @@
       });
       input.value = out.trim();
       editor.classList.add("hidden"); 
-      document.getElementById("boxDemanda").classList.remove("hidden");
+      let docDemanda = document.getElementById("boxDemanda");
+      docDemanda.classList.remove("hidden");
+      setTimeout(() => docDemanda.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     }
 
     function otimizar(pecas, tamanhoPadrao) {
@@ -481,6 +484,7 @@
       decisao.innerHTML = `<div class="decision"><h3>Decisão – ${chave}</h3>
         <button onclick="decidir('PADRAO')">Painel 12,05 m (sobra ${(12.05-soma).toFixed(2).replace('.',',')} m)</button><br><br>
         <button onclick="decidir('ALT')">${txtAlt}</button></div>`;
+      setTimeout(() => document.getElementById("decisao").scrollIntoView({ behavior: "smooth", block: "center" }), 100);
     }
 
     function decidir(op) {
@@ -535,6 +539,8 @@
         <textarea id="txtResumo" style="height:${alturaDinamica}px; overflow:hidden; width:100%;">${resumoTxt.trim()}</textarea>
         <br><button onclick="navigator.clipboard.writeText(txtResumo.value)">Copiar</button>
       </div>`;
+      
+      setTimeout(() => document.getElementById("resultado").scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     }
 
     function fmtQtd(v) { let n = parseInt(v, 10); return isNaN(n) ? "" : (n < 10 ? "0" + n : String(n)); }
