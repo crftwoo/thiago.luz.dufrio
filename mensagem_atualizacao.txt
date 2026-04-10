@@ -1,1 +1,1 @@
-Ajuste de UX: Inserido preenchimento global para evitar sobreposição do Botão Menu Principal com os Títulos.
+Modernização da Ferramenta de CheckList: Todo o código CSS base e varíaveis adaptadas para o tema Neon Dark Mode e Glassmorphism. Lógica mantida intacta.
