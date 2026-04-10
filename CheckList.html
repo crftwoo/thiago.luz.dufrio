@@ -109,7 +109,7 @@
             max-width: 400px;
             padding: 14px 16px;
             margin-top: 8px;
-            background-color: var(--bg-color);
+            background-color: #151515 !important; /* Fundo sólido para evitar transparência bugada */
             color: var(--text-main);
             border: 1px solid var(--border);
             border-radius: 10px;
@@ -119,10 +119,17 @@
             transition: all 0.2s;
         }
 
+        /* Garante que o menu suspenso seja legível em qualquer navegador */
+        select option {
+            background-color: #151515;
+            color: #ffffff;
+        }
+
         input::placeholder { color: #aaa; font-weight: 500; }
         input:focus, select:focus {
             outline: none;
             border-color: var(--dufrio-azul-claro);
+            background-color: #1a1a1a !important;
             box-shadow: 0 0 0 3px rgba(43, 170, 226, 0.1);
         }
 
@@ -282,7 +289,7 @@
 
         #canvas-container {
             flex: 1; 
-            min-height: 400px; 
+            min-height: 500px; 
             position: relative;
             background-color: #050505 !important;
             border-radius: 12px;
@@ -1702,14 +1709,14 @@
             container.appendChild(renderer.domElement);
 
             const geometry = new THREE.BoxGeometry(1, 1, 1);
-            // depthWrite: false impede que a "cara" frontal da gelatina oculte os traços traseiros no motor de renderização
-            const material = new THREE.MeshBasicMaterial({ color: 0x2BAAE2, transparent: true, opacity: 0.15, depthWrite: false });
+            // Opacidade aumentada para 0.4 e cor Dufrio Azul para melhor visibilidade
+            const material = new THREE.MeshBasicMaterial({ color: 0x4facfe, transparent: true, opacity: 0.4, depthWrite: false });
             cubo = new THREE.Mesh(geometry, material);
             scene.add(cubo);
 
             const edgesGeometry = new THREE.EdgesGeometry(geometry);
-            // depthTest: false e renderOrder forçam os traços a serem impressos por cima do sólido, garantindo 100% de nitidez das 12 arestas
-            const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x102E82, linewidth: 2, depthTest: false });
+            // Cor das arestas alterada para o azul vibrante da Dufrio
+            const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x4facfe, linewidth: 2, depthTest: false });
             edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
             edges.renderOrder = 1; 
             scene.add(edges);
@@ -1742,8 +1749,8 @@
             edges.position.y = h/2;
 
             const maiorMedida = Math.max(w, h, d_depth);
-            // ZOOM IDEAL: Garante que os bicos diagonais do cubo caibam sem serem degolados pela câmera
-            const novoD = Math.max(maiorMedida * 1.35, 2.0); 
+            // ZOOM AJUSTADO: 1.15 para aproximar o cubo e deixá-lo mais visível
+            const novoD = Math.max(maiorMedida * 1.15, 2.0); 
 
             const container = document.getElementById('canvas-container');
             if(container) {
