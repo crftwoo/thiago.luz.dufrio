@@ -1,1 +1,1 @@
-Novo Design: Adicionado visual Bento Grid (Neon Dark Mode) e finalizada as rotas do Plano de Corte.
+Deploy Oficial concluído: Ativação definitiva do novo Dashboard Neon Dark Mode (Bento Grid) como front-end principal da extensão.

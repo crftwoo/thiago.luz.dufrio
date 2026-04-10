@@ -2,353 +2,277 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <title>Hub de Ferramentas - Dufrio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ferramentas Thiago Luz - Dufrio</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
+    /* Reset & Globals */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     :root {
-      --dufrio-azul: #102E82;
-      --dufrio-azul-hover: #0a1f5c;
-      --dufrio-azul-claro: #2BAAE2;
-      --bg-slate: #f4f7fe;
-      --surface: #ffffff;
-      --text-main: #1e293b;
-      --text-secondary: #64748b;
-      --border: #e2e8f0;
-      
-      --sidebar-width: 280px;
-      --sidebar-collapsed-width: 80px;
+      --bg-base: #050505;
+      --card-bg: rgba(20, 20, 20, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #ffffff;
+      --text-muted: #888888;
+      --font-outfit: 'Outfit', sans-serif;
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
     body {
-      background-color: var(--bg-slate);
+      font-family: var(--font-outfit);
+      min-height: 100vh;
+      background: var(--bg-base);
       color: var(--text-main);
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* === SIDEBAR LATERAL RETRÁTIL === */
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100vh;
-      width: var(--sidebar-collapsed-width); 
-      background-color: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      padding: 24px 0;
-      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 1000;
-      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
-      white-space: nowrap;
-    }
-
-
-
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      margin-bottom: 40px;
-      gap: 16px;
-    }
-
-    .toggle-btn {
-      min-width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: var(--bg-slate);
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--dufrio-azul);
-      transition: all 0.2s;
-    }
-
-    .toggle-btn:hover { background: #e2e8f0; }
-    
-    .toggle-btn svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2.5; }
-
-    .sidebar-logo {
-      display: none;
-    }
-
-    .sidebar-menu {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 0 12px;
-    }
-
-    .menu-link {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 12px;
-      border-radius: 12px;
-      color: var(--text-main);
-      text-decoration: none;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .menu-link:hover {
-      background-color: var(--bg-slate);
-      color: var(--dufrio-azul);
-    }
-
-    .menu-link.active {
-      background-color: #eff6ff;
-      color: var(--dufrio-azul);
-    }
-
-    .menu-icon {
-      min-width: 24px;
-      height: 24px;
-      stroke: currentColor;
-      stroke-width: 2;
-      fill: none;
-    }
-
-    .menu-text {
-      position: absolute;
-      left: calc(100% + 10px);
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: var(--text-main);
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 0.2s, transform 0.2s;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      z-index: 2000;
-    }
-    
-    .menu-link:hover .menu-text { 
-      opacity: 1; 
-      visibility: visible;
-      transform: translateY(-50%) translateX(5px);
-    }
-
-    .menu-text::before {
-      content: '';
-      position: absolute;
-      left: -4px;
-      top: 50%;
-      transform: translateY(-50%);
-      border-width: 5px 5px 5px 0;
-      border-style: solid;
-      border-color: transparent var(--text-main) transparent transparent;
-    }
-
-
-    /* === MAIN AREA === */
-    .main-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center; 
-      margin-left: 0;
-      padding: 0;
-      overflow-y: auto;
       overflow-x: hidden;
-      width: 100vw;
+      font-feature-settings: "cv01", "cv02";
+    }
+    
+    /* Decorações Fluídas Escuras (Nebulosa/Aurora) */
+    .aurora {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: -1;
+      opacity: 0.25;
+      animation: auroraAnim 15s infinite alternate ease-in-out;
+    }
+    .aurora-1 { background: #3b82f6; top: -10%; left: -10%; } /* Azul */
+    .aurora-2 { background: #8b5cf6; bottom: -10%; right: -5%; animation-duration: 20s; } /* Roxo */
+    .aurora-3 { background: #10b981; top: 40%; left: 40%; animation-duration: 25s; filter: blur(150px); opacity: 0.15; } /* Verde Esmeralda */
+
+    @keyframes auroraAnim {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.3) translate(50px, -50px); }
     }
 
-    /* === MENU HUB CENTRALIZADO === */
-    .menu-hub {
+    /* Container Principal */
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
       padding: 60px 40px;
-      width: 100%;
-      max-width: 1100px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
 
-    .menu-title-container {
+    /* Header Novo e Futurista */
+    .header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      width: 100%;
-      gap: 40px;
       margin-bottom: 60px;
-      flex-wrap: wrap;
     }
-
-    .title-group {
-      display: flex;
-      flex-direction: column;
-      text-align: left;
-    }
-
-    .ferramentas-title {
-      font-size: 35px;
+    .header-text h1 {
+      font-size: 42px;
       font-weight: 900;
-      color: var(--dufrio-azul);
-      letter-spacing: -1.5px;
-      text-transform: uppercase;
-      line-height: 1;
+      color: var(--text-main);
+      letter-spacing: -2px;
+      margin-bottom: 8px;
     }
-
-    .ferramentas-subtitle {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--dufrio-azul-claro);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 4px;
+    .header-text p {
+      font-size: 16px;
+      color: var(--text-muted);
+      font-weight: 400;
+      letter-spacing: 0px;
     }
-
-    .menu-logo {
-      height: 60px;
+    .logo-container img {
+      height: 40px;
       object-fit: contain;
-      mix-blend-mode: multiply; /* Segredo pra remover fundo branco do webp */
+      filter: invert(1) brightness(1.2);
+      mix-blend-mode: screen;
     }
 
-    /* === TOOLS GRID CENTRALIZADO (3x3 perfeitamente) === */
-    .menu-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 24px;
-      width: 100%;
+    /* Títulos de Seção Minimalistas */
+    .section-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 50px;
+      margin-bottom: 20px;
+      opacity: 0.8;
     }
 
-    .dashboard-card {
-      width: calc(33.333% - 16px);
-      min-width: 300px;
-      max-width: 350px;
-      background: var(--surface);
-      border-radius: 20px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 10px 30px rgba(112, 144, 176, 0.08);
+    /* BENTO BOX GRID MÁGICO */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      grid-auto-rows: minmax(180px, auto);
+    }
+
+    /* Para Câmaras Frias (Topo) */
+    #gridCamara {
+      grid-template-areas: 
+        "simulador simulador checklist checklist"
+        "simulador simulador corte corte";
+    }
+
+    /* Para Ar Condicionado e Outros (Abaixo) */
+    #gridOutros {
+      grid-template-areas: 
+        "comparador comparador precificacao cotacao"
+        "extracao extracao baixar baixar";
+    }
+
+    /* Cards Ultrasleek */
+    .bento-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      padding: 30px;
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      text-align: left;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-
-    .dashboard-card::before {
+    
+    .bento-card::before {
       content: '';
       position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: var(--card-color, var(--dufrio-azul));
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.4s ease;
+      inset: 0;
+      border-radius: 28px;
+      padding: 2px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
     }
 
-    .dashboard-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 40px rgba(112, 144, 176, 0.12);
-      border-color: var(--card-color);
+    .bento-card:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 0 0 1px var(--card-color);
+      background: rgba(30, 30, 30, 0.8);
+    }
+    .bento-card:hover::before {
+      opacity: 1;
+      background: linear-gradient(135deg, var(--card-color) 0%, transparent 100%);
     }
 
-    .dashboard-card:hover::before {
-      transform: scaleX(1);
-    }
-
-    .card-header {
+    /* Elementos Internos do Card */
+    .card-top {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: 24px;
     }
-
-    .card-icon-wrapper {
+    
+    .icon-box {
       width: 50px;
       height: 50px;
       border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--card-bg-light, #f1f5f9);
-      color: var(--card-color, var(--dufrio-azul));
-      transition: transform 0.3s ease;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--card-color);
+      transition: all 0.4s ease;
     }
-
-    .card-icon-wrapper svg {
-      width: 24px;
-      height: 24px;
+    .bento-card:hover .icon-box {
+      background: var(--card-color);
+      color: #000;
+      transform: rotate(-10deg) scale(1.1);
+      box-shadow: 0 0 20px var(--card-color);
+    }
+    .icon-box svg {
+      width: 24px; height: 24px;
       stroke: currentColor;
-      stroke-width: 2;
+      stroke-width: 2.5;
     }
 
-    .dashboard-card:hover .card-icon-wrapper {
-      transform: scale(1.1);
+    .badge {
+      background: rgba(255,255,255,0.1);
+      color: var(--card-color);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 30px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid rgba(255,255,255,0.05);
     }
 
-    .card-body h3 {
-      font-size: 16px;
+    .card-title {
+      font-size: 20px;
       font-weight: 800;
       color: var(--text-main);
-      margin-bottom: 6px;
+      margin-bottom: 12px;
+      line-height: 1.1;
       text-transform: uppercase;
       letter-spacing: -0.5px;
     }
-
-    .card-body p {
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 500;
-      line-height: 1.4;
+    .card-desc {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-muted);
+      line-height: 1.5;
     }
 
-    /* === TOOLTIP & ATUALIZAÇÃO (RODAPÉ) === */
-    .footer-area {
-      margin-top: 60px;
+    /* Especificidades Estilos do Bento Grid */
+    [data-id="gabinete"] { grid-area: simulador; }
+    [data-id="gabinete"] .card-title { font-size: 32px; margin-bottom: 20px; }
+    [data-id="gabinete"] .icon-box { width: 70px; height: 70px; }
+    [data-id="gabinete"] .icon-box svg { width: 34px; height: 34px; }
+    [data-id="gabinete"] .card-desc { font-size: 16px; }
+
+    [data-id="checklist"] { grid-area: checklist; }
+    [data-id="corte"] { grid-area: corte; }
+
+    [data-id="comparador"] { grid-area: comparador; }
+    [data-id="precificacao"] { grid-area: precificacao; }
+    [data-id="cotacao"] { grid-area: cotacao; }
+    [data-id="extracao"] { grid-area: extracao; }
+    [data-id="download"] { grid-area: baixar; }
+
+    /* Footer Meta Info */
+    .meta-footer {
+      margin-top: 80px;
       text-align: center;
-      padding-bottom: 40px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 400;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
     }
-
-    #lastUpdate {
-      font-size: 12px !important;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-secondary);
-      font-weight: 600;
-      cursor: help;
+    .status-dot {
       display: inline-block;
+      width: 8px; height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      margin-right: 6px;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
 
+    /* === TOOLTIP DO RODAPÉ === */
     .tooltip {
       position: relative;
       display: inline-block;
+      cursor: help;
     }
-
     .tooltiptext {
       visibility: hidden;
       width: 380px;
-      background-color: var(--surface);
+      background-color: rgba(20, 20, 20, 0.95);
       color: var(--text-main);
       text-align: center;
       padding: 16px 20px;
       border-radius: 12px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--card-border);
       position: absolute;
       z-index: 100;
       bottom: 140%;
@@ -358,25 +282,23 @@
       transition: all 0.3s ease;
       font-size: 13px;
       font-weight: 500;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
       pointer-events: none;
+      backdrop-filter: blur(10px);
     }
-
     .tooltiptext strong {
       display: block;
-      color: var(--dufrio-azul);
+      color: #4facfe;
       margin-bottom: 8px;
       text-transform: uppercase;
       font-size: 11px;
       letter-spacing: 0.5px;
     }
-
     .tooltip:hover .tooltiptext {
       visibility: visible;
       opacity: 1;
       bottom: 160%;
     }
-
     .tooltiptext::after {
       content: "";
       position: absolute;
@@ -385,59 +307,59 @@
       margin-left: -8px;
       border-width: 8px;
       border-style: solid;
-      border-color: var(--surface) transparent transparent transparent;
+      border-color: rgba(20, 20, 20, 0.95) transparent transparent transparent;
     }
 
-    .creation-date {
-      font-size: 10px;
-      color: var(--text-muted, #94a3b8);
-      margin-top: 12px;
-      letter-spacing: 0.5px;
-      opacity: 0.8;
-      font-weight: 500;
+    /* Responsividade */
+    @media (max-width: 1000px) {
+      .bento-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-areas: none !important;
+        display: flex;
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
-
 <body>
 
+  <div class="aurora aurora-1"></div>
+  <div class="aurora aurora-2"></div>
+  <div class="aurora aurora-3"></div>
 
-  <!-- ÁREA PRINCIPAL -->
-  <main class="main-area">
-
-    <!-- MENU HUB CENTRALIZADO -->
-    <div class="menu-hub" id="menuHub">
-      <div class="menu-title-container">
-        <div class="title-group">
-          <h1 class="ferramentas-title">Ferramentas</h1>
-          <div class="ferramentas-subtitle">Thiago Luz</div>
-        </div>
-        <!-- Logo da Dufrio Original com correção de fundo -->
-        <img src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" alt="Dufrio" class="menu-logo">
+  <div class="dashboard-container">
+    
+    <div class="header">
+      <div class="header-text">
+        <h1>Workspace</h1>
+        <p>Hub central de ferramentas - Dufrio.</p>
       </div>
+      <div class="logo-container">
+        <img src="https://www.dufrio.com.br/media/logo/websites/1/Logo_Dufrio_3_1_.webp" alt="Dufrio" crossorigin="anonymous">
+      </div>
+    </div>
 
-      <!-- GRID DE CARDS (DASHBOARD) -->
-      <div class="menu-grid" id="menuGrid"></div>
+    <div class="section-title">Soluções em Câmara Fria</div>
+    <div class="bento-grid" id="gridCamara"></div>
 
-      <!-- RODAPÉ DE SISTEMA COM TOOLTIP (OCULTO A MENOS QUE HOVER) -->
-      <div class="footer-area">
-        <div id="lastUpdate" class="tooltip">
-          <span id="updateText">Verificando atualizações...</span>
-          <div class="tooltiptext" id="updateTooltip">
-            <strong>Histórico de Log</strong>
-            <span id="updateMessage">Carregando detalhes...</span>
-          </div>
-        </div>
-        <div class="creation-date">
-          Criado em 16/09/2024
+    <div class="section-title">Soluções em Ar Condicionado</div>
+    <div class="bento-grid" id="gridOutros"></div>
+
+    <div class="meta-footer">
+      <div><span class="status-dot"></span> Sistemas Operacionais e Online<br><span style="font-size: 11px; opacity: 0.5; display: block; margin-top: 5px;">Criado em 16/09/2024 por Thiago Luz</span></div>
+      
+      <div class="tooltip" style="opacity: 0.7; margin-top: 16px;">
+        <span id="updateText" style="border-bottom: 1px dotted rgba(255,255,255,0.3);">Verificando estabilidade do GitHub...</span>
+        <div class="tooltiptext" id="updateTooltip">
+          <strong>Histórico de Log</strong>
+          <span id="updateMessage" style="line-height:1.4; display:block;">Carregando detalhes...</span>
         </div>
       </div>
     </div>
 
-  </main>
+  </div>
 
-  <!-- SCRIPT -->
   <script>
-    // SVGs dos ícones originais
     const svgComparar = `<svg viewBox="0 0 24 24" fill="none"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>`;
     const svgPrecificar = `<svg viewBox="0 0 24 24" fill="none"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line><line x1="6" y1="18" x2="18" y2="6"></line></svg>`;
     const svgCotar = `<svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
@@ -447,96 +369,68 @@
     const svgChecklist = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>`;
     const svgBox3D = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>`;
 
-    // Arrays de Ferramentas Premium
+    // Nomes estritamente idênticos solicitados pelo usuário
     const ferramentas = [
-      { nome: "SIMULADOR DE GABINETE 3D", desc: "Visualização 3D e cálculo de painéis (PIR/EPS) para câmaras.", arquivo: "simulador-gabinete.html", icone: svgBox3D, color: "#3182ce", bg: "#f0f9ff", slug: "gabinete", badge: "Câmara Fria" },
-      { nome: "CHECKLIST CÂMARAS FRIAS - GERAR PDF", desc: "Formulário passo-a-passo. Geração de PDF para orçamento de câmara frigorífica.", arquivo: "CheckList.html", icone: svgChecklist, color: "#059669", bg: "#ecfdf5", slug: "checklist", badge: "Câmara Fria" },
-      { nome: "PLANO DE CORTE - PAINÉIS", desc: "Otimização de cortes de paineis EPS/PIR para melhor aproveitamento das chapas de 12m.", arquivo: "plano-corte.html", icone: svgCorte, color: "#ea580c", bg: "#fff7ed", slug: "corte", badge: "Câmara Fria" },
-      { nome: "COMPARADOR DE AR-CONDICIONADO", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#102E82", bg: "#eff6ff", slug: "comparador" },
-      { nome: "PRECIFICAÇÃO SKU'S (SITE)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#2BAAE2", bg: "#e0f2fe", slug: "precificacao" },
-      { nome: "COTAÇÃO EXPRESS", desc: "Orçamento rápido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#2563eb", bg: "#eff6ff", slug: "cotacao" },
-      { nome: "EXTRAÇÃO DE CÓDIGOS", desc: "Extração de códigos que constam quantidade em estoque.", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", bg: "#fdf4ff", slug: "extracao" },
-      { nome: "BAIXAR PROJETO", desc: "Baixar projeto e arquivos da extensão.", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#475569", bg: "#f8fafc", isDownload: true, slug: "download" }
+      { nome: "SIMULADOR DE GABINETE 3D", desc: "Visualização 3D e cálculo de painéis (PIR/EPS) para câmaras.", arquivo: "simulador-gabinete.html", icone: svgBox3D, color: "#4facfe", slug: "gabinete", badge: "Câmara Fria" },
+      { nome: "CHECKLIST CÂMARAS FRIAS - GERAR PDF", desc: "Formulário passo-a-passo. Geração de PDF para orçamento de câmara frigorífica.", arquivo: "CheckList.html", icone: svgChecklist, color: "#10b981", slug: "checklist", badge: "Câmara Fria" },
+      { nome: "PLANO DE CORTE - PAINÉIS", desc: "Otimização de cortes de paineis EPS/PIR para melhor aproveitamento das chapas de 12m.", arquivo: "plano-corte.html", icone: svgCorte, color: "#f97316", slug: "corte", badge: "Câmara Fria" },
+      { nome: "COMPARADOR DE AR-CONDICIONADO", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#6366f1", slug: "comparador" },
+      { nome: "PRECIFICAÇÃO SKU'S (SITE)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#0ea5e9", slug: "precificacao" },
+      { nome: "COTAÇÃO EXPRESS", desc: "Orçamento rápido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#8b5cf6", slug: "cotacao" },
+      { nome: "EXTRAÇÃO DE CÓDIGOS", desc: "Extração de códigos que constam quantidade em estoque.", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", slug: "extracao" },
+      { nome: "BAIXAR PROJETO", desc: "Baixar projeto e arquivos da extensão.", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#94a3b8", isDownload: true, slug: "download" }
     ];
 
-    const menuGrid = document.getElementById("menuGrid");
-    const menuHub = document.getElementById("menuHub");
-
-    // Lógica para desenhar os Cards Neumórficos no Grid Central
-    function renderizarCardsELista() {
-      menuGrid.innerHTML = '';
-      ferramentas.forEach((f, index) => {
-        
-        const badgeHtml = f.badge ? `<span class="badge-camara" style="font-size: 10px; font-weight: 800; color: #fff; background: var(--card-color); padding: 4px 8px; border-radius: 6px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">❄️ ${f.badge}</span>` : '';
-        
-        // 1. Injeta Card na Tela Principal
-        const cardHtml = `
-          <div class="dashboard-card" style="--card-color: ${f.color}; --card-bg-light: ${f.bg};" onclick="abrirFerramenta(${index})">
-            <div class="card-header">
-              <div class="card-icon-wrapper">${f.icone}</div>
-              ${badgeHtml}
-            </div>
-            <div class="card-body">
-              <h3>${f.nome}</h3>
-              <p>${f.desc}</p>
-            </div>
-          </div>
-        `;
-        menuGrid.insertAdjacentHTML('beforeend', cardHtml);
-      });
-    }
-
-    // Abertura com suavidade
-    window.abrirFerramenta = function(index) {
+    function openTool(index) {
       const f = ferramentas[index];
       if (f.isDownload) {
-        if (confirm(`Deseja baixar os arquivos do projeto e a extensão?`)) {
-          const link = document.createElement("a");
-          link.href = f.arquivo;
-          link.download = "extensao-dufrio.zip";
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
+        if (confirm(`Baixar projeto e a extensão zipada?`)) {
+          const l = document.createElement("a");
+          l.href = f.arquivo; l.download = "extensao-dufrio.zip";
+          document.body.appendChild(l); l.click(); l.remove();
         }
         return;
       }
-
-      // Redireciona para o link direto
       window.location.href = f.arquivo;
-    };
-
-    renderizarCardsELista();
-
-    // Lógica para abrir ferramenta via URL (ex: ?tool=gabinete)
-    function verificarUrl() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const toolSlug = urlParams.get('tool');
-      
-      if (toolSlug) {
-        const index = ferramentas.findIndex(f => f.slug === toolSlug);
-        if (index !== -1) {
-          abrirFerramenta(index);
-        }
-      }
     }
 
-    verificarUrl();
+    const gridC = document.getElementById('gridCamara');
+    const gridO = document.getElementById('gridOutros');
 
-    // Sincronização Server-side Fake (API GitHub real puxando o update)
+    ferramentas.forEach((f, idx) => {
+      const isCamara = !!f.badge;
+      const badgeHtml = isCamara ? `<div class="badge">${f.badge}</div>` : '';
+      
+      const card = document.createElement('div');
+      card.className = 'bento-card';
+      card.dataset.id = f.slug;
+      card.style.setProperty('--card-color', f.color);
+      card.onclick = () => openTool(idx);
+      
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="icon-box">${f.icone}</div>
+          ${badgeHtml}
+        </div>
+        <div>
+          <div class="card-title">${f.nome}</div>
+          <div class="card-desc">${f.desc}</div>
+        </div>
+      `;
+      
+      if(isCamara) gridC.appendChild(card);
+      else gridO.appendChild(card);
+    });
+
+    // GitHub Fetch
     fetch("https://api.github.com/repos/crftwoo/thiago.luz.dufrio/commits/main?v=" + new Date().getTime())
-      .then(response => response.json())
-      .then(data => {
-        if (data && data.commit && data.commit.author && data.commit.author.date) {
-          const date = new Date(data.commit.author.date);
-          const formattedDate = date.toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: 'numeric' });
-          const formattedTime = date.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
-          
-          document.getElementById("updateText").textContent = `⚡️ Última atualização: ${formattedDate} às ${formattedTime}`;
-          document.getElementById("updateMessage").textContent = `"${data.commit.message}"`;
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.commit && d.commit.author && d.commit.author.date) {
+          const dt = new Date(d.commit.author.date);
+          document.getElementById("updateText").innerHTML = `Última atualização: ${dt.toLocaleDateString("pt-BR")} às ${dt.toLocaleTimeString("pt-BR")}`;
+          document.getElementById("updateMessage").textContent = `"${d.commit.message}"`;
         }
-      }).catch(err => {
-        document.getElementById("updateText").textContent = "⚡️ Última atualização: Indisponível";
-        document.getElementById("updateMessage").textContent = "Não foi possível carregar o histórico.";
       });
   </script>
 </body>
