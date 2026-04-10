@@ -1,1 +1,1 @@
-﻿Fix silent execution error on 'Enviar para plano de corte' cross-tab navigation
+﻿Reverte zoom global do index para 0.8 e estabiliza tamanho maior pontual do rodape
