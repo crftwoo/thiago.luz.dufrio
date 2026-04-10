@@ -1,1 +1,1 @@
-Estilização UI: Plano de Corte adaptado integralmente ao Neon Dark Mode em simbiose com o Hub Principal. Componentes mantidos intactos.
+Design UI Globalizado: Estética Neon Dark Mode expandida para todas as ferramentas restantes (Cotações, Precificação, Comparador de Ar e Quantidade de Itens).
