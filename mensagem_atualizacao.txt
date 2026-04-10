@@ -1,1 +1,1 @@
-Modernização Final UI/UX concluída: Ajuste fino de imagens de equipamentos, refinamento de painéis de filtro no Comparador, padronização de cabeçalhos na Precificação e remoção total de elementos claros residuais em todas as ferramentas. Suite Dufrio operando 100% em Neon Dark Mode.
+Correção Global de Background: Efeito aurora (nebulosa) habilitado e visível em todas as ferramentas. Título da Precificação ajustado. Padronização final de design concluída.

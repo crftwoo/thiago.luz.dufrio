@@ -15,17 +15,19 @@
     }
 
     :root {
+      --text-main: #ffffff;
+      --text-muted: #888888;
       --green: #4facfe;
       --border: rgba(255, 255, 255, 0.08);
       --bg-color: transparent;
       --card-bg: rgba(20, 20, 20, 0.6);
-      --mut: #64748b;
+      --mut: #888888;
     }
 
     html,
     body {
-            background: #050505;
-      color: var(--text-main);
+            background: transparent;
+      color: #ffffff;
       font-family: 'Outfit', 'Inter', sans-serif;
       margin: 0;
       padding: 0;
@@ -62,7 +64,7 @@
       height: 50px;
     }
 
-    h1 {
+    h1 { color: var(--text-main); 
       font-size: 28px;
       font-weight: 900;
       margin: 4px 0 8px 0;
@@ -83,7 +85,7 @@
       padding-bottom: 24px;
     }
 
-    h2 {
+    h2 { color: var(--text-main); 
       font-size: 18px;
       font-weight: 900;
       margin: 48px 0 8px 0;
@@ -91,7 +93,7 @@
       background: transparent;
       text-transform: uppercase;
       letter-spacing: -0.5px;
-      color: var(--text-main);
+      color: #ffffff;
     }
 
     .hint {
@@ -171,8 +173,8 @@
     input[type="text"] {
       width: 100%;
       box-sizing: border-box;
-            background: #050505;
-      color: var(--text-main);
+            background: transparent;
+      color: #ffffff;
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 14px;
@@ -239,7 +241,7 @@
       letter-spacing: 0.5px;
       border-radius: 8px;
       border: 1px solid var(--border);
-            background: #050505;
+            background: transparent;
       color: var(--green);
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -260,7 +262,7 @@
         margin: 24px auto;
       }
 
-      h1 {
+      h1 { color: var(--text-main); 
         font-size: 22px;
       }
 
@@ -269,7 +271,7 @@
         padding-bottom: 16px;
       }
 
-      h2 {
+      h2 { color: var(--text-main); 
         font-size: 16px;
         margin: 32px 0 8px 0;
       }
@@ -302,6 +304,7 @@
 </head>
 
 <body>
+    <div style="position:fixed; inset:0; background:#050505; z-index:-2; pointer-events:none;"></div>
     <style>
       @keyframes auroraAnim {
         0% { transform: scale(1) translate(0, 0); }
@@ -310,6 +313,7 @@
     </style>
     <div class="aurora" style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);z-index:-1;opacity:0.25;background:#3b82f6;top:-10%;left:-10%;animation:auroraAnim 15s infinite alternate ease-in-out;pointer-events:none;"></div>
     <div class="aurora" style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);z-index:-1;opacity:0.25;background:#8b5cf6;bottom:-10%;right:-5%;animation:auroraAnim 20s infinite alternate ease-in-out;pointer-events:none;"></div>
+
 
 <!-- BOTAO VOLTAR FLUTUANTE GLOBAL -->
 <style>
@@ -567,6 +571,9 @@
 </body>
 
 </html>
+
+
+
 
 
 

@@ -24,7 +24,7 @@
 
     body {
       font-family: 'Outfit', 'Inter', sans-serif;
-      background: #050505;
+      background: transparent;
       color: var(--text-main);
       padding: 40px 20px;
       margin: 0;
@@ -41,7 +41,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    h1 {
+    h1 { color: var(--text-main); 
       font-size: 32px;
       font-weight: 900;
       margin-bottom: 8px;
@@ -62,7 +62,7 @@
       padding-bottom: 24px;
     }
 
-    h3 {
+    h3 { color: var(--text-main); 
       font-weight: 800;
       margin-top: 0;
       margin-bottom: 16px;
@@ -73,7 +73,7 @@
     }
 
     textarea {
-      background: #050505;
+      background: transparent;
       color: var(--text-main);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -105,7 +105,7 @@
     button {
       margin-top: 16px;
       padding: 16px 32px;
-      background: #050505;
+      background: transparent;
       color: var(--text-main);
       border: 1px solid var(--border);
       font-weight: 800;
@@ -175,7 +175,7 @@
     }
 
     select, input {
-      background: #050505;
+      background: transparent;
       color: var(--text-main);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -206,6 +206,7 @@
 </head>
 
 <body>
+    <div style="position:fixed; inset:0; background: transparent; z-index:-2; pointer-events:none;"></div>
     <style>
       @keyframes auroraAnim {
         0% { transform: scale(1) translate(0, 0); }
@@ -214,6 +215,7 @@
     </style>
     <div class="aurora" style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);z-index:-1;opacity:0.25;background:#3b82f6;top:-10%;left:-10%;animation:auroraAnim 15s infinite alternate ease-in-out;pointer-events:none;"></div>
     <div class="aurora" style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);z-index:-1;opacity:0.25;background:#8b5cf6;bottom:-10%;right:-5%;animation:auroraAnim 20s infinite alternate ease-in-out;pointer-events:none;"></div>
+
 
 <!-- BOTAO VOLTAR FLUTUANTE GLOBAL -->
 <style>
@@ -533,6 +535,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 

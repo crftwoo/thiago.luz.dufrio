@@ -27,7 +27,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', 'Inter', sans-serif; }
 
         body {
-            background: #050505;
+            background: transparent;
             color: var(--text-main);
             height: 100vh;
             display: flex;
@@ -52,7 +52,7 @@
         }
 
         .header { margin-bottom: 25px; }
-        .header h1 { 
+        .header h1 { color: var(--text-main);  
             font-size: 28px; 
             font-weight: 900; 
             text-transform: uppercase; 
@@ -325,7 +325,7 @@
                 flex-shrink: 0;
             }
 
-            .header h1 { font-size: 22px; }
+            .header h1 { color: var(--text-main);  font-size: 22px; }
             .card { padding: 15px; }
             .row { gap: 10px; }
             
@@ -339,6 +339,7 @@
     </style>
 </head>
 <body>
+    <div style="position:fixed; inset:0; background: transparent; z-index:-2; pointer-events:none;"></div>
     <style>
       @keyframes auroraAnim {
         0% { transform: scale(1) translate(0, 0); }
@@ -347,6 +348,7 @@
     </style>
     <div class="aurora" style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);z-index:-1;opacity:0.25;background:#3b82f6;top:-10%;left:-10%;animation:auroraAnim 15s infinite alternate ease-in-out;pointer-events:none;"></div>
     <div class="aurora" style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(120px);z-index:-1;opacity:0.25;background:#8b5cf6;bottom:-10%;right:-5%;animation:auroraAnim 20s infinite alternate ease-in-out;pointer-events:none;"></div>
+
 
 <!-- BOTAO VOLTAR FLUTUANTE GLOBAL -->
 <style>
@@ -720,5 +722,7 @@ ${textoCorte}
     </script>
 </body>
 </html>
+
+
 
 
