@@ -1,1 +1,0 @@
-Adicionada a nova ferramenta: SIMULADOR DE GABINETE 3D Premium em Dark Mode com Three.js e relatório quantitativo. Correção de layout e estética.
