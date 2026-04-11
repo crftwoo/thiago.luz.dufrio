@@ -1,1 +1,1 @@
-﻿Atualização visual 2.0 (Glassmorphism e Neon) implantados no hub precificacao-ar.html
+Ferramenta "Preços ao Vivo" 3.0: Nova listagem única organizada do mais barato ao mais caro, com badges de lojas e cópia automática de imagem e texto.
