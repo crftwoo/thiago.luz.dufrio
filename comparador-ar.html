@@ -1053,9 +1053,13 @@
       if (event.source !== window || !event.data || event.data.type !== "TWO_RETURN_COMPARADOR_DATA") return;
 
       const receivedData = event.data.data;
-      dadosExtensaoBrutos = receivedData || {};
 
-      // Se chegou algo da extensão (seja primeira vez ou nova loja), mantemos a lista organizada
+      // Ignora respostas vazias (pode vir de uma segunda extensão instalada com storage vazio)
+      if (!receivedData || Object.keys(receivedData).length === 0) return;
+
+      // Faz merge dos dados de todas as extensões que responderem
+      dadosExtensaoBrutos = { ...dadosExtensaoBrutos, ...receivedData };
+
       isSorted = true;
       updateDynamicFilters(dadosExtensaoBrutos);
       renderizarCaixa();
@@ -1475,19 +1479,12 @@
     }
 
     function puxarAbasAbertas(btnElement) {
-      const labelOriginal = "Puxar Caixas da Extensão 🔄";
-      btnElement.innerText = "Raspando Abas... ⏳";
-
-      // Dispara o pull nas abas abertas.
-      // O bridge.js (storage.onChanged) entrega os dados automaticamente quando o pull gravar no storage.
-      window.postMessage({ type: "TWO_PULL_TABS" }, "*");
-
-      // Fallback: restaura label se nada responder em 5s
+      const labelOriginal = "Puxar da Extensão 🔄";
+      btnElement.innerText = "Buscando... ⏳";
+      window.postMessage({ type: "TWO_GET_COMPARADOR_DATA" }, "*");
       setTimeout(() => {
-        if (btnElement.innerText.includes("⏳")) {
-          btnElement.innerText = labelOriginal;
-        }
-      }, 5000);
+        if (btnElement.innerText.includes("⏳")) btnElement.innerText = labelOriginal;
+      }, 3000);
     }
 
     window.addEventListener("message", (event) => {
