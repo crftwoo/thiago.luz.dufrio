@@ -211,6 +211,58 @@
       border-color: var(--dufrio-azul);
     }
 
+    .store-logo-container {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      padding: 6px 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      overflow: hidden; /* Evita logo transbordar o container */
+    }
+
+    .store-logo {
+      max-height: 32px;
+      max-width: 140px;
+      width: auto;
+      object-fit: contain;
+      object-position: center;
+      /* Branco puro: grayscale zera cores, brightness(0) apaga, invert(1) torna branco */
+      filter: grayscale(1) brightness(0) invert(1);
+      opacity: 1;
+      transition: transform 0.3s ease;
+    }
+
+    /* Dufrio: JPG com fundo BRANCO.
+       grayscale → torna o logo cinza; invert → fundo branco vira preto, logo vira claro;
+       brightness(3) → clareia o logo até branco; mix-blend-mode:screen → preto = transparente */
+    img[src*="logo_dufrio"] {
+      filter: grayscale(1) invert(1) brightness(3);
+      mix-blend-mode: screen;
+      max-height: 36px;
+      max-width: 140px;
+    }
+
+    /* STR: SVG com viewport grande, precisa de zoom */
+    img[src*="logo_str"] {
+      transform: scale(1.5);
+    }
+
+    .card:hover img[src*="logo_str"] {
+      transform: scale(1.57);
+    }
+
+    .card:hover .store-logo {
+      transform: scale(1.05);
+    }
+
+    img[src*="logo_dufrio"]:hover {
+      filter: none;
+    }
+
     .compare-section {
       margin-top: 60px;
       padding-top: 40px;
@@ -545,7 +597,7 @@
           style="--btn-color: var(--green); padding: 8px 16px; font-size: 10px;">Abrir Todas as Lojas ↗</button>
       </div>
       <div id="resultados"
-        style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 800px;">
+        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; width: 100%; max-width: 1000px;">
       </div>
       <div style="margin-top: 40px; width: 100%; display: flex; justify-content: center;">
         <button id="btn-puxar-abas" class="tech-btn" onclick="puxarAbasAbertas(this)"
@@ -636,6 +688,29 @@
       inter: ['springer', 'elgin', 'tcl', 'agratto', 'electrolux'],
       basica: ['consul', 'brastemp', 'philco', 'eos', 'britânia', 'britania', 'admiral', 'cadence', 'comfee']
     };
+
+    const STORE_LOGOS = {
+      "dufrio": "img/logo_dufrio.jpg",
+      "centralar": "img/logo_centralar.png",
+      "climario": "img/logo_climario.svg",
+      "frigelar": "img/logo_frigelar.svg",
+      "friopeças": "img/logo_friopecas.png",
+      "friopecas": "img/logo_friopecas.png",
+      "friopec": "img/logo_friopecas.png",
+      "leveros": "img/logo_leveros.svg",
+      "poloar": "img/logo_poloar.png",
+      "str": "img/logo_str.svg",
+      "webcontinental": "img/logo_webcontinental.png"
+    };
+
+    function getStoreLogo(siteName) {
+      if (!siteName) return "";
+      const lower = siteName.toLowerCase();
+      for (const [key, url] of Object.entries(STORE_LOGOS)) {
+        if (lower.includes(key)) return url;
+      }
+      return "";
+    }
 
     function extractExplicitBrand(titulo) {
       if (!titulo) return 'outras';
@@ -891,7 +966,17 @@
         const card = document.createElement("div");
         const isDufrio = i.Site.toLowerCase().includes('dufrio');
         card.className = isDufrio ? "card dufrio-highlight" : "card";
-        card.innerHTML = `<strong>${i.Site}</strong><br><br><a href="${i.Link}" target="_blank"><button>Abrir pesquisa</button></a>`;
+        
+        const logoUrl = getStoreLogo(i.Site);
+        const logoHtml = logoUrl ? `<div class="store-logo-container"><img src="${logoUrl}" class="store-logo" alt="${i.Site}"></div>` : "";
+        
+        card.innerHTML = `
+          ${logoHtml}
+          <strong>${i.Site}</strong>
+          <br><br>
+          <a href="${i.Link}" target="_blank">
+            <button>Abrir pesquisa</button>
+          </a>`;
         div.appendChild(card);
       });
     }
@@ -1390,14 +1475,25 @@
     }
 
     function puxarAbasAbertas(btnElement) {
+      const labelOriginal = "Puxar Caixas da Extensão 🔄";
+      btnElement.innerText = "Raspando Abas... ⏳";
+
+      // Passo 1: Manda a extensão raspar as abas abertas agora
       window.postMessage({ type: "TWO_PULL_TABS" }, "*");
-      const old = "Puxar Caixas da Extensão 🔄";
-      btnElement.innerText = "Puxando das Caixas... ⏳";
+
+      // Passo 2: Após a extensão raspar, busca o resultado recém-coletado
+      // (não é memória antiga — é o que acabou de ser raspado)
       setTimeout(() => {
-        if (btnElement.innerText === "Puxando das Caixas... ⏳") {
-          btnElement.innerText = old;
+        window.postMessage({ type: "TWO_GET_COMPARADOR_DATA" }, "*");
+        btnElement.innerText = "Carregando na Caixa... 📡";
+      }, 1200);
+
+      // Passo 3: Fallback — restaura label se nada responder
+      setTimeout(() => {
+        if (btnElement.innerText.includes("⏳") || btnElement.innerText.includes("📡")) {
+          btnElement.innerText = labelOriginal;
         }
-      }, 3000);
+      }, 5000);
     }
 
     window.addEventListener("message", (event) => {
