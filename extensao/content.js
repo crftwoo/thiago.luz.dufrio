@@ -618,8 +618,25 @@
         // Ordena os produtos do menor para o maior preço à vista
         products.sort((a, b) => parseSpotPrice(a.spot) - parseSpotPrice(b.spot));
 
-        // Atualiza a lista global para o botão Copiar Lista
+        // Atualiza a lista global
         currentProductsList = products;
+
+        // Auto-save no storage para a ferramenta de Preços ao Vivo
+        const _host = window.location.host;
+        let _store = 'Dufrio';
+        if (_host.includes('leveros')) _store = 'Leveros';
+        else if (_host.includes('centralar')) _store = 'Central Ar';
+        else if (_host.includes('frigelar')) _store = 'Frigelar';
+        else if (_host.includes('friopecas')) _store = 'Friopeças';
+        else if (_host.includes('poloar')) _store = 'Poloar';
+        else if (_host.includes('str.com')) _store = 'STR';
+        else if (_host.includes('webcontinental')) _store = 'Webcontinental';
+        else if (_host.includes('climario')) _store = 'Clima Rio';
+        chrome.storage.local.get(['comparador_data'], (r) => {
+            const d = r.comparador_data || {};
+            d[_store] = products;
+            chrome.storage.local.set({ comparador_data: d });
+        });
 
         // Atualiza o título no cabeçalho da extensão com as métricas inteligentes
         const headerTitleSpan = document.getElementById('dufrio-ext-main-title');
