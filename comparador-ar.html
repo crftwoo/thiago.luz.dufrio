@@ -1478,19 +1478,13 @@
       const labelOriginal = "Puxar Caixas da Extensão 🔄";
       btnElement.innerText = "Raspando Abas... ⏳";
 
-      // Passo 1: Manda a extensão raspar as abas abertas agora
+      // Dispara o pull nas abas abertas.
+      // O bridge.js (storage.onChanged) entrega os dados automaticamente quando o pull gravar no storage.
       window.postMessage({ type: "TWO_PULL_TABS" }, "*");
 
-      // Passo 2: Após a extensão raspar, busca o resultado recém-coletado
-      // (não é memória antiga — é o que acabou de ser raspado)
+      // Fallback: restaura label se nada responder em 5s
       setTimeout(() => {
-        window.postMessage({ type: "TWO_GET_COMPARADOR_DATA" }, "*");
-        btnElement.innerText = "Carregando na Caixa... 📡";
-      }, 1200);
-
-      // Passo 3: Fallback — restaura label se nada responder
-      setTimeout(() => {
-        if (btnElement.innerText.includes("⏳") || btnElement.innerText.includes("📡")) {
+        if (btnElement.innerText.includes("⏳")) {
           btnElement.innerText = labelOriginal;
         }
       }, 5000);
