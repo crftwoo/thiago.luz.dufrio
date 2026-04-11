@@ -9,11 +9,11 @@ window.addEventListener("message", (event) => {
     }
 
     if (event.data.type === "TWO_GET_COMPARADOR_DATA") {
-        // Obter os dados diretamente do banco de dados da extensão
         chrome.storage.local.get(['comparador_data'], (result) => {
             window.postMessage({
                 type: "TWO_RETURN_COMPARADOR_DATA",
                 id: event.data.id,
+                fetchId: event.data.fetchId,
                 data: result.comparador_data || {}
             }, "*");
         });
