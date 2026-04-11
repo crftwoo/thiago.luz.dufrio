@@ -311,13 +311,18 @@
       results.innerHTML = '';
       totalCount.textContent = '';
 
+      // 1. Limpa o storage antigo
+      window.postMessage({ type: 'TWO_CLEAR_COMPARADOR_DATA' }, '*');
+      
+      // 2. Solicita nova coleta das abas abertas
+      window.postMessage({ type: 'TWO_PULL_TABS' }, '*');
+
       fetchId = Date.now();
       const myId = fetchId;
       let coletado = {};
 
       const coletar = (event) => {
         if (event.source !== window || !event.data || event.data.type !== 'TWO_RETURN_COMPARADOR_DATA') return;
-        if (event.data.fetchId !== myId) return;
         const d = event.data.data;
         if (!d) return;
         Object.entries(d).forEach(([k, v]) => {
@@ -325,8 +330,8 @@
         });
       };
       window.addEventListener('message', coletar);
-      window.postMessage({ type: 'TWO_GET_COMPARADOR_DATA', fetchId: myId }, '*');
 
+      // Aguarda as abas responderem (1.5s)
       setTimeout(() => {
         window.removeEventListener('message', coletar);
         loading.style.display = 'none';
@@ -355,17 +360,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => setTimeout(carregarDados, 200));
-
-    // Atualização em tempo real (onChanged do bridge)
-    window.addEventListener('message', (event) => {
-      if (event.source !== window || !event.data || event.data.type !== 'TWO_RETURN_COMPARADOR_DATA') return;
-      if (event.data.fetchId) return;
-      const d = event.data.data;
-      if (!d) return;
-      let hasProducts = false;
-      Object.entries(d).forEach(([k,v]) => { if (k !== 'metadata_title' && Array.isArray(v) && v.length > 0) hasProducts = true; });
-      if (hasProducts) carregarDados();
-    });
   </script>
 </body>
 </html>
