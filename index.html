@@ -5,6 +5,7 @@
   <title>Hub de Ferramentas - Dufrio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+  <script src="ultimo_log.js"></script>
   <style>
     /* Reset & Globals */
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -94,26 +95,12 @@
       opacity: 0.8;
     }
 
-    /* BENTO BOX GRID MÁGICO */
     .bento-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 20px;
       grid-auto-rows: minmax(180px, auto);
-    }
-
-    /* Para Câmaras Frias (Topo) */
-    #gridCamara {
-      grid-template-areas: 
-        "simulador simulador checklist checklist"
-        "simulador simulador corte corte";
-    }
-
-    /* Para Ar Condicionado e Outros (Abaixo) */
-    #gridOutros {
-      grid-template-areas: 
-        "comparador comparador precificacao cotacao"
-        "extracao extracao baixar baixar";
+      margin-bottom: 50px;
     }
 
     /* Cards Ultrasleek */
@@ -216,21 +203,36 @@
       line-height: 1.5;
     }
 
-    /* Especificidades Estilos do Bento Grid */
-    [data-id="gabinete"] { grid-area: simulador; }
+    /* Especificidades Estilos do Bento Grid - Mantendo o Padrão de Tamanhos Diferentes */
+    [data-id="gabinete"] { grid-column: span 2; grid-row: span 2; }
     [data-id="gabinete"] .card-title { font-size: 32px; margin-bottom: 20px; }
     [data-id="gabinete"] .icon-box { width: 70px; height: 70px; }
     [data-id="gabinete"] .icon-box svg { width: 34px; height: 34px; }
     [data-id="gabinete"] .card-desc { font-size: 16px; }
 
-    [data-id="checklist"] { grid-area: checklist; }
-    [data-id="corte"] { grid-area: corte; }
+    [data-id="checklist"] { grid-column: span 2; }
+    [data-id="corte"] { grid-column: span 2; }
 
-    [data-id="comparador"] { grid-area: comparador; }
-    [data-id="precificacao"] { grid-area: precificacao; }
-    [data-id="cotacao"] { grid-area: cotacao; }
-    [data-id="extracao"] { grid-area: extracao; }
-    [data-id="download"] { grid-area: baixar; }
+    [data-id="comparador"] { grid-column: span 2; }
+    [data-id="precos-vivo"] { grid-column: span 2; }
+    [data-id="precificacao"] { grid-column: span 2; }
+
+    [data-id="cotacao"] { grid-column: span 1; }
+    [data-id="extracao"] { grid-column: span 2; }
+    [data-id="download"] { grid-column: span 1; }
+
+    /* Ajuste de responsividade */
+    @media (max-width: 1200px) {
+      .bento-grid { grid-template-columns: repeat(2, 1fr); }
+      [data-id="gabinete"] { grid-column: span 2; grid-row: span 1; }
+      [data-id="checklist"], [data-id="corte"], [data-id="comparador"], [data-id="precos-vivo"], [data-id="precificacao"], [data-id="extracao"] { grid-column: span 1; }
+    }
+    @media (max-width: 700px) {
+      .bento-grid { grid-template-columns: 1fr; }
+      [data-id="gabinete"], [data-id="checklist"], [data-id="corte"], [data-id="comparador"], [data-id="precos-vivo"], [data-id="precificacao"], [data-id="extracao"], [data-id="cotacao"], [data-id="download"] { grid-column: span 1; }
+      .container { padding: 40px 20px; }
+      .header h1 { font-size: 38px; }
+    }
 
     /* Footer Meta Info */
     .meta-footer {
@@ -404,6 +406,9 @@
     <div class="bento-grid" id="gridCamara"></div>
 
     <div class="section-title">Soluções em Ar Condicionado</div>
+    <div class="bento-grid" id="gridAr"></div>
+
+    <div class="section-title">Outras Ferramentas</div>
     <div class="bento-grid" id="gridOutros"></div>
 
     <div class="meta-footer">
@@ -432,15 +437,20 @@
 
     // Nomes estritamente idênticos solicitados pelo usuário
     const ferramentas = [
-      { nome: "SIMULADOR DE GABINETE 3D", desc: "Visualização 3D e cálculo de painéis (PIR/EPS) para câmaras.", arquivo: "simulador-gabinete.html", icone: svgBox3D, color: "#4facfe", slug: "gabinete", badge: "Câmara Fria" },
-      { nome: "CHECKLIST CÂMARAS FRIAS - GERAR PDF", desc: "Formulário passo-a-passo. Geração de PDF para orçamento de câmara frigorífica.", arquivo: "CheckList.html", icone: svgChecklist, color: "#10b981", slug: "checklist", badge: "Câmara Fria" },
-      { nome: "PLANO DE CORTE - PAINÉIS", desc: "Otimização de cortes de paineis EPS/PIR para melhor aproveitamento das chapas de 12m.", arquivo: "plano-corte.html", icone: svgCorte, color: "#f97316", slug: "corte", badge: "Câmara Fria" },
-      { nome: "COMPARADOR DE AR-CONDICIONADO", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#6366f1", slug: "comparador" },
-      { nome: "PREÇOS AO VIVO", desc: "Visualiza em cards os produtos raspados pela extensão das abas abertas nas lojas.", arquivo: "precos-ao-vivo.html", icone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`, color: "#00e676", slug: "precos-vivo" },
-      { nome: "PRECIFICAÇÃO SKU'S (SITE)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#0ea5e9", slug: "precificacao" },
-      { nome: "COTAÇÃO EXPRESS", desc: "Orçamento rápido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#8b5cf6", slug: "cotacao" },
-      { nome: "EXTRAÇÃO DE CÓDIGOS", desc: "Extração de códigos que constam quantidade em estoque.", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", slug: "extracao" },
-      { nome: "BAIXAR PROJETO", desc: "Baixar projeto e arquivos da extensão.", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#94a3b8", isDownload: true, slug: "download" }
+      // Câmara Fria
+      { nome: "SIMULADOR DE GABINETE 3D", desc: "Visualização 3D e cálculo de painéis (PIR/EPS) para câmaras.", arquivo: "simulador-gabinete.html", icone: svgBox3D, color: "#4facfe", slug: "gabinete", category: "camara" },
+      { nome: "PLANO DE CORTE - PAINÉIS", desc: "Otimização de cortes de paineis EPS/PIR para melhor aproveitamento das chapas de 12m.", arquivo: "plano-corte.html", icone: svgCorte, color: "#f97316", slug: "corte", category: "camara" },
+      { nome: "CHECKLIST CÂMARAS FRIAS - GERAR PDF", desc: "Formulário passo-a-passo. Geração de PDF para orçamento de câmara frigorífica.", arquivo: "CheckList.html", icone: svgChecklist, color: "#10b981", slug: "checklist", category: "camara" },
+      
+      // Ar Condicionado
+      { nome: "COMPARADOR DE AR-CONDICIONADO", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#6366f1", slug: "comparador", category: "ar" },
+      { nome: "PREÇOS AO VIVO", desc: "Visualiza em cards os produtos raspados pela extensão das abas abertas nas lojas.", arquivo: "precos-ao-vivo.html", icone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`, color: "#00e676", slug: "precos-vivo", category: "ar" },
+      { nome: "PRECIFICAÇÃO SKU'S (SITE)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#0ea5e9", slug: "precificacao", category: "ar" },
+      
+      // Outras
+      { nome: "COTAÇÃO EXPRESS", desc: "Orçamento rápido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#8b5cf6", slug: "cotacao", category: "outros" },
+      { nome: "EXTRAÇÃO DE CÓDIGOS", desc: "Extração de códigos que constam quantidade em estoque.", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", slug: "extracao", category: "outros" },
+      { nome: "BAIXAR PROJETO", desc: "Baixar projeto e arquivos da extensão.", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#94a3b8", isDownload: true, slug: "download", category: "outros" }
     ];
 
     function openTool(index) {
@@ -457,12 +467,10 @@
     }
 
     const gridC = document.getElementById('gridCamara');
+    const gridA = document.getElementById('gridAr');
     const gridO = document.getElementById('gridOutros');
 
     ferramentas.forEach((f, idx) => {
-      const isCamara = !!f.badge;
-      const badgeHtml = isCamara ? `<div class="badge">${f.badge}</div>` : '';
-      
       const card = document.createElement('div');
       card.className = 'bento-card';
       card.dataset.id = f.slug;
@@ -472,7 +480,6 @@
       card.innerHTML = `
         <div class="card-top">
           <div class="icon-box">${f.icone}</div>
-          ${badgeHtml}
         </div>
         <div>
           <div class="card-title">${f.nome}</div>
@@ -480,24 +487,16 @@
         </div>
       `;
       
-      if(isCamara) gridC.appendChild(card);
+      if(f.category === 'camara') gridC.appendChild(card);
+      else if(f.category === 'ar') gridA.appendChild(card);
       else gridO.appendChild(card);
     });
 
-    // Local Message Fetch
-    fetch("mensagem_atualizacao.txt?v=" + new Date().getTime())
-      .then(r => r.text())
-      .then(text => {
-        if (text) {
-          const hoje = new Date();
-          const dataTxt = "Hoje";
-          document.getElementById("updateText").innerHTML = `Última atualização: <strong>${dataTxt}</strong> às <strong>${hoje.toLocaleTimeString("pt-BR")}</strong>`;
-          document.getElementById("updateMessage").textContent = `"${text.trim()}"`;
-        }
-      })
-      .catch(e => {
-        document.getElementById("updateText").innerHTML = `Erro ao carregar log local`;
-      });
+    // Renderização do Log (vindo de ultimo_log.js)
+    if (typeof LATEST_LOG !== 'undefined') {
+      document.getElementById("updateText").innerHTML = `Última atualização: <strong>${LATEST_LOG.date}</strong> às <strong>${LATEST_LOG.time}</strong>`;
+      document.getElementById("updateMessage").textContent = `"${LATEST_LOG.message}"`;
+    }
   </script>
 </body>
 </html>
