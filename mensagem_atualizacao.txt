@@ -1,1 +1,1 @@
-Refatorado fluxo da Etapa 9: Qtd de portas Walking primeiro, botão OK para confirmar frame e revelação lógica das portas normais.
+Refatorado fluxo da Etapa 9 (Walking Cooler) + Ferramenta Preços ao Vivo 3.0: Nova listagem única organizada do mais barato ao mais caro, com badges de lojas e cópia automática de imagem e texto.

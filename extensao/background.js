@@ -15,7 +15,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "pullTabs") {
         chrome.tabs.query({
             url: [
-                "*://*.dufrio.com.br/*"
+                "*://*.dufrio.com.br/*",
+                "*://*.leveros.com.br/*",
+                "*://*.vendas.leveros.com.br/*",
+                "*://*.centralar.com.br/*",
+                "*://*.parceiro.centralar.com.br/*",
+                "*://*.frigelar.com.br/*",
+                "*://*.friopecas.com.br/*",
+                "*://*.poloar.com.br/*",
+                "*://*.str.com.br/*",
+                "*://*.webcontinental.com.br/*",
+                "*://*.climario.com.br/*"
             ]
         }, (tabs) => {
             let responsesNeeded = tabs.length;

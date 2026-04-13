@@ -49,50 +49,12 @@
             });
         };
 
-        const pushToCompareBtn = document.createElement('button');
-        pushToCompareBtn.id = 'dufrio-ext-push-compare';
-        pushToCompareBtn.innerText = 'Jogar p/ Comparador ⇄';
-        pushToCompareBtn.onclick = () => {
-            if (currentProductsList.length === 0) return;
 
-            // Define qual é a loja atual baseada na URL
-            const host = window.location.host;
-            let currentStore = 'Dufrio';
-
-            // Busca os dados antigos, mescla com a lista nova sob a key da loja atual e salva
-            chrome.storage.local.get(['comparador_data'], (result) => {
-                const data = result.comparador_data || {};
-                const incomingTitle = generateSmartTitle(currentProductsList);
-
-                // ISOLAMENTO DE PESQUISA: Se o contexto da pesquisa mudou (ex: era Hiwall 9000 e agora é Cassete 24000), limpar antes.
-                if (data.metadata_title && data.metadata_title !== incomingTitle) {
-                    Object.keys(data).forEach(k => delete data[k]);
-                }
-
-                data.metadata_title = incomingTitle;
-                data[currentStore] = currentProductsList; // Sobrescreve a lista da loja para não duplicar infinitamente
-
-                chrome.storage.local.set({ comparador_data: data }, () => {
-                    const originalText = pushToCompareBtn.innerText;
-                    pushToCompareBtn.innerText = 'Enviado! ✔️';
-                    pushToCompareBtn.style.backgroundColor = '#28a745';
-                    pushToCompareBtn.style.color = '#fff';
-                    pushToCompareBtn.style.border = 'none';
-                    setTimeout(() => {
-                        pushToCompareBtn.innerText = originalText;
-                        pushToCompareBtn.style.backgroundColor = '';
-                        pushToCompareBtn.style.color = '';
-                        pushToCompareBtn.style.border = '';
-                    }, 2000);
-                });
-            });
-        };
 
         const buttonsArea = document.createElement('div');
         buttonsArea.style.display = 'flex';
         buttonsArea.style.gap = '8px';
         buttonsArea.appendChild(copyListBtn);
-        buttonsArea.appendChild(pushToCompareBtn);
 
         titleArea.appendChild(titleSpan);
         titleArea.appendChild(buttonsArea);
@@ -656,8 +618,25 @@
         // Ordena os produtos do menor para o maior preço à vista
         products.sort((a, b) => parseSpotPrice(a.spot) - parseSpotPrice(b.spot));
 
-        // Atualiza a lista global para o botão Copiar Lista
+        // Atualiza a lista global
         currentProductsList = products;
+
+        // Auto-save no storage para a ferramenta de Preços ao Vivo
+        const _host = window.location.host;
+        let _store = 'Dufrio';
+        if (_host.includes('leveros')) _store = 'Leveros';
+        else if (_host.includes('centralar')) _store = 'Central Ar';
+        else if (_host.includes('frigelar')) _store = 'Frigelar';
+        else if (_host.includes('friopecas')) _store = 'Friopeças';
+        else if (_host.includes('poloar')) _store = 'Poloar';
+        else if (_host.includes('str.com')) _store = 'STR';
+        else if (_host.includes('webcontinental')) _store = 'Webcontinental';
+        else if (_host.includes('climario')) _store = 'Clima Rio';
+        chrome.storage.local.get(['comparador_data'], (r) => {
+            const d = r.comparador_data || {};
+            d[_store] = products;
+            chrome.storage.local.set({ comparador_data: d });
+        });
 
         // Atualiza o título no cabeçalho da extensão com as métricas inteligentes
         const headerTitleSpan = document.getElementById('dufrio-ext-main-title');
