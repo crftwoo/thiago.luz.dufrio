@@ -109,7 +109,7 @@
             max-width: 400px;
             padding: 14px 16px;
             margin-top: 8px;
-            background-color: var(--bg-color);
+            background-color: #1a1a1a; /* Fundo sólido para garantir visibilidade */
             color: var(--text-main);
             border: 1px solid var(--border);
             border-radius: 10px;
@@ -117,6 +117,11 @@
             font-family: 'Outfit', 'Inter', sans-serif;
             font-weight: 600;
             transition: all 0.2s;
+        }
+
+        select option {
+            background-color: #1a1a1a;
+            color: white;
         }
 
         input::placeholder { color: #aaa; font-weight: 500; }
@@ -422,6 +427,43 @@
             input[type="text"], input[type="number"], select { max-width: 100%; }
             .pergunta-container { padding: 20px; }
         }
+
+        /* ESTILOS WALKING COOLER */
+        .secao-walking-cooler {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+        .card-frame {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: flex-end;
+            animation: fadeIn 0.3s ease;
+        }
+        .card-frame label { font-size: 11px; margin-bottom: 4px; color: var(--text-secondary); }
+        .btn-remover-frame {
+            background: #ef4444;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-remover-frame:hover { background: #dc2626; transform: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -633,7 +675,54 @@
                 <strong>4 Batentes:</strong> Para piso elevado e sem rampa.
             </div>
 
-            <div id="setup_qtd_portas">
+            <!-- NOVA SEÇÃO WALKING COOLER -->
+            <label>O projeto possui portas Walking Cooler?</label>
+            <div class="radio-group" style="margin-bottom: 20px;">
+                <label class="radio-option">
+                    <input type="radio" name="has_walking" value="sim" onchange="toggleWalkingCooler(true)"> SIM
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="has_walking" value="nao" onchange="toggleWalkingCooler(false)" checked> NÃO
+                </label>
+            </div>
+
+            <div id="secao_walking" class="secao-walking-cooler oculta">
+                <div style="margin-bottom: 16px;">
+                    <strong style="color: var(--dufrio-azul); text-transform: uppercase; font-size: 14px;">Configuração do Frame (Walking)</strong>
+                </div>
+                <!-- Campos reordenados: Qtd -> Tamanho -> Lado abertura -->
+                <div class="card-frame" id="card_frame_walking" style="grid-template-columns: 1fr 1fr 1fr auto;">
+                    <div class="campo-linha">
+                        <label>Qtd Portas (Frame)</label>
+                        <select id="wc_qtd">
+                            <option value="1">01 Porta</option>
+                            <option value="2">02 Portas</option>
+                            <option value="3">03 Portas</option>
+                            <option value="4">04 Portas</option>
+                            <option value="5">05 Portas</option>
+                        </select>
+                    </div>
+                    <div class="campo-linha">
+                        <label>Tamanho</label>
+                        <select id="wc_tamanho">
+                            <option value="600x1600">600mm x 1600mm</option>
+                            <option value="700x1700">700mm x 1700mm</option>
+                        </select>
+                    </div>
+                    <div class="campo-linha">
+                        <label>Lado abertura</label>
+                        <select id="wc_lado">
+                            <option value="esq">Esquerda</option>
+                            <option value="dir">Direita</option>
+                        </select>
+                    </div>
+                    <div class="porta-btn-container">
+                        <button type="button" id="btn_ok_walking" class="btn-confirmar-porta" onclick="confirmarWalkingCooler()">OK</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="setup_qtd_portas" class="oculta">
                 <label for="qtd_portas">Quantas portas a câmara terá?</label><br>
                 <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
                     <input type="number" id="qtd_portas" min="1" value="1" style="width: 100px; margin-top: 0;">
@@ -997,6 +1086,76 @@
         }
 
         // ==========================================
+        // LÓGICA DAS PORTAS WALKING COOLER
+        // ==========================================
+        const FRAMES_DB = {
+            "600x1600": {
+                1: { desc: "FRAME WALK IN 653 x 1713 LED C/01 PORTA 600X1600", esq: "100260876", dir: "100230055" },
+                2: { desc: "FRAME WALK IN 1268 x 1713 LED C/02 PORTAS 600X1600", esq: "100260801", dir: "100206211" },
+                3: { desc: "FRAME WALK IN 1883 x 1713 LED C/03 PORTAS 600X1600", esq: "100260855", dir: "100206210" },
+                4: { desc: "FRAME WALK IN 2498 x 1713 LED C/04 PORTAS 600X1600", esq: "100260857", dir: "100229792" },
+                5: { desc: "FRAME WALK IN 3113 x 1713 LED C/05 PORTAS 600X1600", esq: "100260859", dir: "100230076" }
+            },
+            "700x1700": {
+                1: { desc: "FRAME WALK IN 753X1813 LED C/01 PORTA 700X1700", esq: "100260877", dir: "100230077" },
+                2: { desc: "FRAME WALK IN 1468X1813 LED C/02 PORTAS 700X1700", esq: "100260802", dir: "100230078" },
+                3: { desc: "FRAME WALK IN 2183X1813 LED C/03 PORTAS 700X1700", esq: "100260856", dir: "100218456" },
+                4: { desc: "FRAME WALK IN 2898X1813 LED C/04 PORTAS 700X1700", esq: "100260858", dir: "100218457" },
+                5: { desc: "FRAME WALK IN 3613X1813 LED C/05 PORTAS 700X1700", esq: "100260875", dir: "100215370" }
+            }
+        };
+
+        function toggleWalkingCooler(exibir) {
+            const secao = document.getElementById('secao_walking');
+            const setupPortas = document.getElementById('setup_qtd_portas');
+            const containerPortas = document.getElementById('container_grade_portas');
+            
+            // Resetar estados se houver troca
+            setupPortas.classList.add('oculta');
+            containerPortas.innerHTML = '';
+            portasConfirmadas = 0;
+            
+            if (exibir) {
+                secao.classList.remove('oculta');
+                document.getElementById('card_frame_walking').style.opacity = '1';
+                document.getElementById('card_frame_walking').style.pointerEvents = 'auto';
+                document.getElementById('btn_ok_walking').innerText = "OK";
+                document.getElementById('btn_ok_walking').style.backgroundColor = "#059669";
+            } else {
+                secao.classList.add('oculta');
+                setupPortas.classList.remove('oculta'); // Se não tem walking, mostra perguntas diretas
+            }
+            atualizarVisibilidadeBotaoAvancar9();
+        }
+
+        function confirmarWalkingCooler() {
+            const card = document.getElementById('card_frame_walking');
+            const btn = document.getElementById('btn_ok_walking');
+            
+            card.style.opacity = '0.6';
+            card.style.pointerEvents = 'none';
+            btn.innerText = "✔ OK";
+            btn.style.backgroundColor = "#218838";
+            
+            // Revela a pergunta de portas normais
+            const setupPortas = document.getElementById('setup_qtd_portas');
+            setupPortas.classList.remove('oculta');
+            setTimeout(() => {
+                setupPortas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        function atualizarVisibilidadeBotaoAvancar9() {
+            const btnAvancar = document.getElementById('btn_avancar_9');
+            // Revertido para lógica padrão: exige confirmação das portas normais
+            if (portasConfirmadas > 0 && portasConfirmadas === totalPortas) {
+                btnAvancar.classList.remove('oculta');
+            } else {
+                btnAvancar.classList.add('oculta');
+            }
+        }
+
+        // ==========================================
         // LÓGICA DAS PORTAS EM LINHA (ETAPA 9)
         // ==========================================
         let totalPortas = 0;
@@ -1106,15 +1265,16 @@
             btn.style.backgroundColor = "#218838";
 
             portasConfirmadas++;
+            atualizarVisibilidadeBotaoAvancar9();
 
             if(portasConfirmadas === totalPortas) {
                 const btnAvancar9 = document.getElementById('btn_avancar_9');
-                btnAvancar9.classList.remove('oculta');
-                setTimeout(() => {
-                    // Mira e desce suavemente e especificamente para o botão
-                    btnAvancar9.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    btnAvancar9.focus({ preventScroll: true });
-                }, 150);
+                if(!btnAvancar9.classList.contains('oculta')) {
+                    setTimeout(() => {
+                        btnAvancar9.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        btnAvancar9.focus({ preventScroll: true });
+                    }, 150);
+                }
             }
         }
 
@@ -1286,8 +1446,6 @@
         // GERAÇÃO DO PDF (JSPDF + AUTOTABLE)
         // ==========================================
         function gerarPDF() {
-            // Removemos a ocultação do botão para o usuário poder clicar várias vezes se quiser
-
             // 1. Extração dos Dados do Formulário
             const nomeCliente = document.getElementById('nome_cliente').value.trim() || 'Não informado';
             const codCliente = document.getElementById('codigo_cliente').value.trim() || 'Não informado';
@@ -1315,6 +1473,22 @@
             const piso = pisoEl ? pisoEl.value : 'Não informado';
 
             let portasArray = [];
+            
+            // PORTAS WALKING COOLER
+            const hasWalkingEl = document.querySelector('input[name="has_walking"]:checked');
+            const hasWalking = hasWalkingEl ? hasWalkingEl.value === 'sim' : false;
+            if (hasWalking) {
+                const tam = document.getElementById('wc_tamanho').value;
+                const qtd = document.getElementById('wc_qtd').value;
+                const lado = document.getElementById('wc_lado').value;
+                const data = FRAMES_DB[tam][qtd];
+                const ladoDesc = (lado === 'esq') ? "Esquerda" : "Direita";
+                
+                // Removido o código numérico por solicitação do usuário
+                portasArray.push([`Walking Frame`, data.desc, "-", "-", ladoDesc]);
+            }
+
+            // PORTAS CONVENCIONAIS
             for(let i = 1; i <= totalPortas; i++) {
                 let tipo = document.getElementById(`tipo_porta_${i}`).value;
                 let batente = document.getElementById(`batentes_porta_${i}`).value;
@@ -1343,10 +1517,8 @@
             const tensao = tensaoEl ? tensaoEl.value : 'Não informado';
             const obsFinais = document.getElementById('observacoes_finais').value.trim();
 
-            // O Motor de Geração foi encapsulado no Auto-Zoom Dinâmico abaixo.
-
             // ==========================================
-            // LÓGICA DE CAPTURA DO 3D (Roda apenas 1 vez)
+            // LÓGICA DE CAPTURA DO 3D
             // ==========================================
             let img3D = null;
             let imgRatio = 1;
@@ -1412,7 +1584,6 @@
                         }
                     });
 
-                    // RECORTAMOS as "sobras" inúteis do topo e chão (Céu e chão do 3D puro) para um aspecto retangular (wide)
                     const hCorteTop = Math.floor(canvas2d.height * 0.15); 
                     const hCorteBot = Math.floor(canvas2d.height * 0.15);
                     const finalCanvasH = canvas2d.height - hCorteTop - hCorteBot;
@@ -1434,16 +1605,14 @@
             }
 
             // ==========================================
-            // MOTOR DE GERAÇÃO COM REDUÇÃO AUTOMÁTICA DE ZOOM E TEMATIZAÇÃO PREMIUM
+            // MOTOR DE GERAÇÃO PDF
             // ==========================================
             const { jsPDF } = window.jspdf;
-            
             const corPrimaria = [16, 46, 130]; 
-            const corFundoCelulas = [248, 250, 252]; // Slate-50 muito sutil e moderno
-            const corBordas = [203, 213, 225]; // Slate-300 para linhas incrivelmente finas e elegantes
-            const corTextoDark = [51, 65, 85]; // Slate-700
+            const corFundoCelulas = [248, 250, 252];
+            const corBordas = [203, 213, 225];
+            const corTextoDark = [51, 65, 85];
 
-            // INSERINDO A LOGO (Processo Seguro) - CAPTURA APENAS 1 VEZ
             let imgData = null;
             try {
                 const imgLogo = document.getElementById('logo-dufrio');
@@ -1455,179 +1624,70 @@
                     ctx.drawImage(imgLogo, 0, 0);
                     imgData = canvas.toDataURL('image/png');
                 }
-            } catch(e) {
-                console.warn('Não foi possível carregar a imagem da logo para o PDF.', e);
-            }
+            } catch(e) { console.warn(e); }
 
             let docFinal = null;
-            
-            // Loop para auto-encaixar páginas grandes (Smart Fit)
             for (let zoom = 1.0; zoom >= 0.5; zoom -= 0.05) {
                 const doc = new jsPDF();
-                
                 const fSizeH1 = 15 * zoom;
-                const fSizeLogoFallback = 24 * zoom;
-                const tPadX = Math.max(2, 4 * zoom); 
-                const tPadY = Math.max(2, 3 * zoom); 
                 const tHeaderSize = 9.5 * zoom;
                 const tBodySize = 9.5 * zoom;
 
-                if (imgData) {
-                    doc.addImage(imgData, 'PNG', 14, 12, 45 * zoom, 15 * zoom);
-                } else {
-                    doc.setTextColor(...corPrimaria);
-                    doc.setFontSize(fSizeLogoFallback);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("DUFRIO", 14, 25); 
-                }
-                
+                if (imgData) doc.addImage(imgData, 'PNG', 14, 12, 45 * zoom, 15 * zoom);
                 doc.setTextColor(...corPrimaria);
                 doc.setFontSize(fSizeH1);
                 doc.setFont("helvetica", "bold");
                 doc.text("Checklist Oficial - Câmara Frigorífica", 195, 20, null, null, "right");
 
-                let startY = 28 + (5 * zoom); 
+                let startY = 32 + (5 * zoom); 
 
-                // ESTILOS PREMIUM
-                const headStylesGeral = { 
-                    fillColor: corPrimaria, 
-                    textColor: 255, 
-                    fontStyle: 'bold', 
-                    halign: 'left', 
-                    fontSize: tHeaderSize, 
-                    cellPadding: { top: tPadY, bottom: tPadY, left: tPadX, right: tPadX },
-                    lineColor: corPrimaria,
-                    lineWidth: 0.1
-                };
-                const bodyStylesGeral = { 
-                    textColor: corTextoDark, 
-                    fontSize: tBodySize, 
-                    cellPadding: { top: tPadY, bottom: tPadY, left: tPadX, right: tPadX },
-                    lineColor: corBordas,
-                    lineWidth: 0.1
-                };
+                const headStylesGeral = { fillColor: corPrimaria, textColor: 255, fontStyle: 'bold', fontSize: tHeaderSize };
+                const bodyStylesGeral = { textColor: corTextoDark, fontSize: tBodySize, lineColor: corBordas, lineWidth: 0.1 };
 
-                // ------------------------------------------
-                // TABELA 1: DADOS DO CLIENTE E VENDA
-                // ------------------------------------------
                 doc.autoTable({
                     startY: startY,
                     theme: 'grid',
                     headStyles: headStylesGeral,
                     bodyStyles: bodyStylesGeral,
                     head: [['DADOS DO CLIENTE/VENDA', '']],
-                    body: [
-                        ['Cliente:', nomeCliente],
-                        ['Código Cliente:', codCliente],
-                        ['Contato:', contatoCliente],
-                        ['Vendedor:', vendedor],
-                        ['Condição de Pagto:', formaPgto],
-                    ],
+                    body: [['Cliente:', nomeCliente], ['Código Cliente:', codCliente], ['Contato:', contatoCliente], ['Vendedor:', vendedor], ['Condição de Pagto:', formaPgto]],
                     columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
                 });
                 startY = doc.lastAutoTable.finalY + (7 * zoom);
-
-                // ------------------------------------------
-                // TABELA 2: ESTRUTURA FÍSICA E PAINÉIS
-                // ------------------------------------------
-                let finalImgH = 0;
-                let minRowHeight = 11 * zoom;
-                let targetImgWTemporaria = 77 * zoom; // Previsão da largura do cellWidth "auto"
-                
-                if (window.img3DBase) {
-                    finalImgH = targetImgWTemporaria * window.img3DRatio;
-                    // Forçamos a tabela a se esticar pra CIMA e pra BAIXO perfeitamente baseada na proporção matemática pura da imagem
-                    minRowHeight = Math.max(9 * zoom, finalImgH / 4); 
-                }
-
-                let coordImgX = 0;
-                let coordImgY = 0;
-                let coordCellW = 0;
-                let coordCellH = 0;
 
                 doc.autoTable({
                     startY: startY,
                     theme: 'grid',
                     headStyles: headStylesGeral,
-                    bodyStyles: { ...bodyStylesGeral, minCellHeight: minRowHeight, valign: 'middle' },
-                    head: [[ { content: 'ESTRUTURA FÍSICA E ISOLAMENTO', colSpan: 3, styles: { halign: 'left' } } ]],
+                    bodyStyles: { ...bodyStylesGeral, minCellHeight: 11 * zoom, valign: 'middle' },
+                    head: [[ { content: 'ESTRUTURA FÍSICA E ISOLAMENTO', colSpan: 3 } ]],
                     body: [
-                        ['Medidas Externas (C x L x A):', `${comp} x ${larg} x ${alt}`, { content: '', rowSpan: 4 }],
+                        ['Medidas Externas:', `${comp} x ${larg} x ${alt}`, { content: '', rowSpan: 4 }],
                         ['Tipo de Painel:', tipoPainel],
-                        ['Espessura / Temp. Referência:', espessuraPainel],
-                        ['Isolamento do Piso:', piso]
+                        ['Espessura Ref.:', espessuraPainel],
+                        ['Isolamento Piso:', piso]
                     ],
-                    columnStyles: { 
-                        0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas },
-                        1: { cellWidth: 50 },
-                        2: { cellWidth: 'auto' } 
-                    },
+                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas }, 1: { cellWidth: 50 } },
                     didDrawCell: function(data) {
                         if (data.section === 'body' && data.row.index === 0 && data.column.index === 2) {
-                            coordImgX = data.cell.x;
-                            coordImgY = data.cell.y;
-                            coordCellW = data.cell.width;
-                            coordCellH = data.cell.height;
+                            if (window.img3DBase) {
+                                const m = 1;
+                                doc.addImage(window.img3DBase, 'PNG', data.cell.x + m, data.cell.y + m, data.cell.width - (m*2), data.cell.height - (m*2));
+                            }
                         }
                     }
                 });
-                
-                if (window.img3DBase && coordImgX > 0) {
-                    // Mantemos o recuo mínimo para não riscar a borda slate-300
-                    const m = 0.5 * zoom; 
-                    
-                    let imgW_Absoluta = coordCellW - (m*2);
-                    let imgH_Absoluta = imgW_Absoluta * window.img3DRatio;
-
-                    // Caixa limitadora de segurança severa: garante que a imagem inteira apareça (NUNCA CORTADA)
-                    if (imgH_Absoluta > coordCellH - (m*2)) {
-                        imgH_Absoluta = coordCellH - (m*2);
-                        imgW_Absoluta = imgH_Absoluta / window.img3DRatio;
-                    }
-
-                    const offsetX = (coordCellW - imgW_Absoluta) / 2;
-                    const offsetY = (coordCellH - imgH_Absoluta) / 2;
-                    
-                    doc.addImage(window.img3DBase, 'PNG', coordImgX + offsetX, coordImgY + offsetY, imgW_Absoluta, imgH_Absoluta); 
-                }
-                
                 startY = doc.lastAutoTable.finalY + (7 * zoom);
-
-                // ------------------------------------------
-                // TABELA 3: PORTAS
-                // ------------------------------------------
-                let headStylesPortas = Object.assign({}, headStylesGeral);
-                headStylesPortas.halign = 'center';
 
                 doc.autoTable({
                     startY: startY,
                     theme: 'grid',
-                    headStyles: headStylesPortas,
+                    headStyles: headStylesGeral,
                     bodyStyles: { ...bodyStylesGeral, halign: 'center' },
-                    head: [
-                        [{ content: 'PORTAS', colSpan: 5, styles: { halign: 'left', fillColor: corPrimaria } }],
-                        ['Identificação', 'Tipo', 'Batentes', 'Tamanho', 'Lado de Abert.']
-                    ],
+                    head: [[{ content: 'PORTAS / FRAMES', colSpan: 5 }], ['Identificação', 'Tipo/Produto', 'Batentes', 'Tamanho/Código', 'Lado']],
                     body: portasArray
                 });
                 startY = doc.lastAutoTable.finalY + (8 * zoom);
-
-                // ------------------------------------------
-                // TABELA 4: CONDIÇÕES DE OPERAÇÃO
-                // ------------------------------------------
-                let condicoesBody = [
-                    ['Produto Armazenado:', produto],
-                    ['Temperatura de Entrada:', tempEnt],
-                    ['Temperatura Interna Final:', tempFin],
-                    ['Tempo de Processo:', tempoProc],
-                    ['Capacidade Armazenada:', capArmazenada],
-                    ['Movimentação no Período:', movim],
-                    ['Frequência de Abertura:', freqAbertura]
-                ];
-
-                if (obsAbertura && obsAbertura.trim() !== '' && obsAbertura.toLowerCase() !== 'nenhuma' && obsAbertura.toLowerCase() !== 'não informado') {
-                    condicoesBody.push(['Obs. da Abertura:', obsAbertura]);
-                }
 
                 doc.autoTable({
                     startY: startY,
@@ -1635,47 +1695,28 @@
                     headStyles: headStylesGeral,
                     bodyStyles: bodyStylesGeral,
                     head: [['CONDIÇÕES DE OPERAÇÃO', '']],
-                    body: condicoesBody,
+                    body: [
+                        ['Produto Armazenado:', produto], ['Temperatura Entrada:', tempEnt], ['Temp. Interna Final:', tempFin], ['Tempo de Processo:', tempoProc], ['Capacidade:', capArmazenada], ['Movimentação:', movim], ['Frequência Abertura:', freqAbertura]
+                    ],
                     columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
                 });
                 startY = doc.lastAutoTable.finalY + (8 * zoom);
-
-                // ------------------------------------------
-                // TABELA 5: DADOS TÉCNICOS E OBSERVAÇÕES
-                // ------------------------------------------
-                let dadosTecnicosBody = [
-                    ['Distância UC x EVAP:', distUC],
-                    ['Tensão Elétrica:', tensao]
-                ];
-
-                if (obsFinais && obsFinais.trim() !== '' && obsFinais.toLowerCase() !== 'nenhuma' && obsFinais.toLowerCase() !== 'não informado') {
-                    dadosTecnicosBody.push(['Observações Gerais:', obsFinais]);
-                }
 
                 doc.autoTable({
                     startY: startY,
                     theme: 'grid',
                     headStyles: headStylesGeral,
                     bodyStyles: bodyStylesGeral,
-                    head: [['DADOS TÉCNICOS E OBSERVAÇÕES FINAIS', '']],
-                    body: dadosTecnicosBody,
+                    head: [['DADOS TÉCNICOS E OBSERVAÇÕES', '']],
+                    body: [['Distância UC x EVAP:', distUC], ['Tensão Elétrica:', tensao], ['Observações:', obsFinais]],
                     columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
                 });
 
-                // VERIFICA SE TUDO COUBE EM APENAS 1 PÁGINA
-                if (doc.internal.getNumberOfPages() === 1) {
-                    docFinal = doc;
-                    break; // Sucesso! Esse nível de Zoom foi perfeito. Quebra o loop.
-                }
+                if (doc.internal.getNumberOfPages() === 1) { docFinal = doc; break; }
             }
 
-            // 3. Download do Arquivo PDF
             const nomeArquivo = `Orcamento_${nomeCliente.replace(/\s+/g, '_')}.pdf`;
-            if (docFinal) {
-                docFinal.save(nomeArquivo);
-            } else {
-                console.warn('O conteúdo é tão massivo que nem minimizado pra 50% coube em 1 página.');
-            }
+            if (docFinal) docFinal.save(nomeArquivo);
         }
 
         // ===============================================
@@ -1686,34 +1727,27 @@
 
         function init3D() {
             const container = document.getElementById('canvas-container');
+            if(!container) return;
             const width = container.clientWidth;
             const height = container.clientHeight;
-
             scene = new THREE.Scene();
-
             const aspect = width / height;
             const d = 5; 
             camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
             camera.position.set(20, 20, 20); 
             camera.lookAt(scene.position);
-
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
             renderer.setSize(width, height);
             container.appendChild(renderer.domElement);
-
             const geometry = new THREE.BoxGeometry(1, 1, 1);
-            // depthWrite: false impede que a "cara" frontal da gelatina oculte os traços traseiros no motor de renderização
             const material = new THREE.MeshBasicMaterial({ color: 0x2BAAE2, transparent: true, opacity: 0.15, depthWrite: false });
             cubo = new THREE.Mesh(geometry, material);
             scene.add(cubo);
-
             const edgesGeometry = new THREE.EdgesGeometry(geometry);
-            // depthTest: false e renderOrder forçam os traços a serem impressos por cima do sólido, garantindo 100% de nitidez das 12 arestas
             const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x102E82, linewidth: 2, depthTest: false });
             edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
             edges.renderOrder = 1; 
             scene.add(edges);
-
             animate();
         }
 
@@ -1727,44 +1761,26 @@
 
         function redesenharCubo() {
             if(!cubo) return;
-
             const w = parseFloat(document.getElementById('input_comp').value) || 0.1;
             const h = parseFloat(document.getElementById('input_alt').value) || 0.1;
             const d_depth = parseFloat(document.getElementById('input_larg').value) || 0.1;
-
             cubo.geometry.dispose();
             cubo.geometry = new THREE.BoxGeometry(w, h, d_depth);
-            
             edges.geometry.dispose();
             edges.geometry = new THREE.EdgesGeometry(cubo.geometry);
-
             cubo.position.y = h/2; 
             edges.position.y = h/2;
-
             const maiorMedida = Math.max(w, h, d_depth);
-            // ZOOM IDEAL: Garante que os bicos diagonais do cubo caibam sem serem degolados pela câmera
             const novoD = Math.max(maiorMedida * 1.35, 2.0); 
-
             const container = document.getElementById('canvas-container');
             if(container) {
                 const aspect = container.clientWidth / container.clientHeight;
-                camera.left = -novoD * aspect;
-                camera.right = novoD * aspect;
-                camera.top = novoD;     // Sem corte virtual para não engolir o bico superior
-                camera.bottom = -novoD; // Sem corte virtual para não engolir o bico inferior
-                
-                // Foca o "olho" da câmera milimetricamente no centro de elevação (h/2) da caixa. Simetria total.
+                camera.left = -novoD * aspect; camera.right = novoD * aspect; camera.top = novoD; camera.bottom = -novoD;
                 camera.position.set(20, 20 + h/2, 20);
                 camera.lookAt(new THREE.Vector3(0, h/2, 0));
-
                 camera.updateProjectionMatrix();
             }
-
-            scene.children.forEach(child => {
-                if (child.type === "GridHelper") scene.remove(child);
-            });
-            
-            // Grid mais bonito em tons claros (slate-300 e slate-200)
+            scene.children.forEach(child => { if (child.type === "GridHelper") scene.remove(child); });
             const novoTamanhoGrid = Math.ceil(Math.max(20, maiorMedida * 2));
             const gridHelper = new THREE.GridHelper(novoTamanhoGrid, novoTamanhoGrid, 0x94a3b8, 0xcbd5e1);
             gridHelper.position.y = 0;
@@ -1773,37 +1789,26 @@
 
         function atualizarEtiquetas() {
             if(!camera || !cubo) return;
-
             const w = parseFloat(document.getElementById('input_comp').value) || 0.1;
             const h = parseFloat(document.getElementById('input_alt').value) || 0.1;
             const d_depth = parseFloat(document.getElementById('input_larg').value) || 0.1;
-
             const offset = Math.max(w, h, d_depth) * 0.12; 
-
-            // Frente-Esquerda no eixo Z (Comprimento)
             const posComp = new THREE.Vector3(0, 0, d_depth/2 + offset); 
-            // Frente-Direita no eixo X (Largura)
             const posLarg = new THREE.Vector3(w/2 + offset, 0, 0);       
-            // Movido estrategicamente para a aresta VERTICAL DIREITA extrema para não atropelar a base
             const posAlt = new THREE.Vector3(-w/2 - offset, h/2, d_depth/2 + offset); 
-
             const container = document.getElementById('canvas-container');
             const width = container.clientWidth;
             const height = container.clientHeight;
-
             function moverEtiqueta(id, vetor3D, texto) {
                 const label = document.getElementById(id);
                 const vetorCopia = vetor3D.clone(); 
                 vetorCopia.project(camera);
-                
                 const x = (vetorCopia.x * 0.5 + 0.5) * width;
                 const y = (vetorCopia.y * -0.5 + 0.5) * height;
-                
                 label.style.left = `${x}px`;
                 label.style.top = `${y}px`;
                 label.innerText = `${texto} m`;
             }
-
             moverEtiqueta('lbl-comp', posComp, w);
             moverEtiqueta('lbl-larg', posLarg, d_depth);
             moverEtiqueta('lbl-alt', posAlt, h);
@@ -1823,53 +1828,26 @@
         }
 
         function resetarValores() {
-            document.getElementById('range_comp').value = 2.5;
-            document.getElementById('input_comp').value = 2.5;
-            document.getElementById('range_larg').value = 2.0;
-            document.getElementById('input_larg').value = 2.0;
-            document.getElementById('range_alt').value = 2.4;
-            document.getElementById('input_alt').value = 2.4;
+            document.getElementById('range_comp').value = 2.5; document.getElementById('input_comp').value = 2.5;
+            document.getElementById('range_larg').value = 2.0; document.getElementById('input_larg').value = 2.0;
+            document.getElementById('range_alt').value = 2.4; document.getElementById('input_alt').value = 2.4;
             redesenharCubo();
         }
 
         // ===============================================
-        // Auto-Avanço e Reset Dinâmico das Etapas
+        // Auto-Avanço e Atalhos Teclado
         // ===============================================
         document.addEventListener('keydown', (e) => {
             if(e.key === 'Enter') {
                 if(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
-                
-                // Exceções e Atalhos da Etapa 9 (Portas)
-                if(e.target.id === 'qtd_portas') {
-                    e.preventDefault();
-                    e.target.blur();
-                    document.querySelector('#setup_qtd_portas button').click();
-                    return;
-                }
-                if(e.target.id && e.target.id.startsWith('medida_especial_porta_')) {
-                    e.preventDefault();
-                    e.target.blur();
-                    const idx = e.target.id.split('_').pop();
-                    document.getElementById(`btn_confirma_porta_${idx}`).click();
-                    return;
-                }
-
+                if(e.target.id === 'qtd_portas') { e.preventDefault(); e.target.blur(); document.querySelector('#setup_qtd_portas button').click(); return; }
+                if(e.target.id && e.target.id.startsWith('medida_especial_porta_')) { e.preventDefault(); e.target.blur(); const idx = e.target.id.split('_').pop(); document.getElementById(`btn_confirma_porta_${idx}`).click(); return; }
                 const container = e.target.closest('.pergunta-container');
                 if(!container) return;
-                
-                e.preventDefault();
-                e.target.blur(); // Perde o foco para disparar o evento 'change' instantaneamente (reseta o que vier abaixo) ANTES de clicar
-                
-                setTimeout(() => { // Aguarda curtíssimo período pra garantir que o DOM processou as remoções de classes
+                e.preventDefault(); e.target.blur();
+                setTimeout(() => {
                     const btnAvancar = container.querySelector('.btn-prox-etapa');
-                    if(btnAvancar && !btnAvancar.classList.contains('oculta')) {
-                        btnAvancar.click();
-                    } else if(e.target.type === 'radio') {
-                         setTimeout(() => {
-                            const btn = container.querySelector('.btn-prox-etapa');
-                            if(btn && !btn.classList.contains('oculta')) btn.click();
-                         }, 100);
-                    }
+                    if(btnAvancar && !btnAvancar.classList.contains('oculta')) btnAvancar.click();
                 }, 10);
             }
         });
@@ -1877,24 +1855,19 @@
         document.addEventListener('change', (e) => {
             const container = e.target.closest('.pergunta-container');
             if(!container) return;
-            
             const match = container.id.match(/etapa-(\d+)/);
             if(!match) return;
             const currentStep = parseInt(match[1]);
-
             const btnAvancar = container.querySelector('.btn-prox-etapa');
-            
-            // CORREÇÃO: Não reacende o botão cegamente se for a Etapa 9!
             if (currentStep === 9) {
                 if(e.target.id === 'qtd_portas') {
                     if (btnAvancar) btnAvancar.classList.add('oculta');
-                    document.getElementById('container_grade_portas').innerHTML = ''; // Limpa as linhas anteriores
-                    window.portasConfirmadas = 0; // Exige gerar e confirmar novamente
+                    document.getElementById('container_grade_portas').innerHTML = '';
+                    window.portasConfirmadas = 0;
                 }
             } else if(btnAvancar && currentStep !== 19) {
                 btnAvancar.classList.remove('oculta');
             }
-
             const todasEtapas = document.querySelectorAll('.pergunta-container');
             todasEtapas.forEach(outraEtapa => {
                 const outroMatch = outraEtapa.id.match(/etapa-(\d+)/);
@@ -1903,7 +1876,6 @@
                     if(outroStep > currentStep) {
                         outraEtapa.classList.add('oculta');
                         const outroBtn = outraEtapa.querySelector('.btn-prox-etapa');
-                        // Se for a etapa 9, reseta totalmente o botão e as portas construídas
                         if (outroBtn) {
                             if(outroStep === 9) {
                                 outroBtn.classList.add('oculta');
@@ -1922,24 +1894,9 @@
             if(!camera || !renderer) return;
             const container = document.getElementById('canvas-container');
             if(!container) return;
-            
             redesenharCubo(); 
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            renderer.setSize(width, height);
+            renderer.setSize(container.clientWidth, container.clientHeight);
         });
     </script>
-    </div>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-

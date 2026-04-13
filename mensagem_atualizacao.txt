@@ -1,1 +1,1 @@
-﻿Atualização visual 2.0 (Glassmorphism e Neon) implantados no hub precificacao-ar.html
+Refatorado fluxo da Etapa 9: Qtd de portas Walking primeiro, botão OK para confirmar frame e revelação lógica das portas normais.
