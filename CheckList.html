@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Checklist Câmara Frigorífica</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
+    <title>Checklist Resfriados e Congelados - Dufrio</title>
+    <!-- REMOVIDO THREE.JS PARA DEIXAR O PROJETO MAIS LEVE E UNIFICAR O ESTILO 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
@@ -119,10 +118,159 @@
             transition: all 0.2s;
         }
 
-        /* Garante que o menu suspenso seja legível em qualquer navegador */
-        select option {
-            background-color: #151515;
-            color: #ffffff;
+        /* Estilos do Auxiliar de Capacidade (Etapa 15) */
+        .auxiliar-capacidade {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: none; /* Oculto por padrão */
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .auxiliar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .auxiliar-title {
+            color: var(--accent-light);
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .visualizer-auxiliar {
+            background-color: #0c0c0c;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            height: 300px;
+        }
+
+        .scene-auxiliar {
+            perspective: 1000px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+        }
+
+        .cube-wrapper-auxiliar {
+            position: relative;
+            transform-style: preserve-3d;
+            --rx: -15deg; 
+            --ry: -35deg;
+            transform: rotateX(var(--rx)) rotateY(var(--ry));
+        }
+
+        .face-aux {
+            position: absolute;
+            left: 50%; top: 50%;
+            transform-style: preserve-3d;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .face-aux.inner {
+            background: rgba(33, 150, 243, 0.3);
+            border: 1px solid rgba(33, 150, 243, 0.7);
+        }
+
+        .label3d-aux {
+            position: absolute;
+            left: 50%; top: 50%;
+            background: #1a1a1a;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .footer-auxiliar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-usar-peso {
+            background: #218838;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-usar-peso:hover { background: #28a745; transform: scale(1.05); }
+
+        .btn-calc-ajuda {
+            background: transparent;
+            color: #4facfe;
+            border: 1px dashed #4facfe;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .btn-calc-ajuda:hover { background: rgba(79, 172, 254, 0.1); }
+
+        /* HEADER DE ESTATISTICAS DA CALCULADORA */
+        .aux-stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .aux-stat-box { display: flex; flex-direction: column; text-align: left; }
+        .aux-stat-label { font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+        .aux-stat-value { font-size: 16px; font-weight: 800; color: #fff; }
+
+        .aux-nota { font-size: 0.7rem; color: #888; margin-bottom: 15px; font-style: italic; border-left: 2px solid #555; padding-left: 10px; }
+
+        .viz-header { text-align: center; margin-bottom: 10px; }
+        .viz-header h4 { margin: 0; font-size: 16px; color: #eee; }
+        .viz-header p { margin: 2px 0; font-size: 12px; color: #aaa; }
+        .viz-header span { font-size: 10px; color: var(--dufrio-azul); font-weight: bold; }
+
+        .emoji3d-aux {
+            position: absolute;
+            left: 50%; top: 50%;
+            font-size: 40px;
+            pointer-events: none;
+            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.4));
+        }
+
+        .campo-linha input:disabled {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #888 !important;
+            cursor: not-allowed;
         }
 
         input::placeholder { color: #aaa; font-weight: 500; }
@@ -593,10 +741,13 @@
                     <button type="button" class="btn-resetar" onclick="resetarValores()">Resetar Valores</button>
                 </div>
 
-                <div id="canvas-container">
-                    <div id="lbl-comp" class="label-3d"></div>
-                    <div id="lbl-larg" class="label-3d"></div>
-                    <div id="lbl-alt" class="label-3d"></div>
+                <div class="visualizer-auxiliar" style="flex: 1; min-height: 400px; height: auto; background: radial-gradient(circle, #1a1a1a 0%, #050505 100%);">
+                    <div class="scene-auxiliar" id="scene-principal" style="height: 400px;">
+                        <div class="cube-wrapper-auxiliar" id="cube-wrapper-principal"></div>
+                    </div>
+                    <div style="text-align: center; font-size: 10px; color: var(--dufrio-azul); font-weight: bold; margin-bottom: 10px;">
+                        👆 Clique e arraste para girar o gabinete
+                    </div>
                 </div>
             </div>
             <br>
@@ -684,7 +835,7 @@
                     <input type="radio" name="has_walking" value="sim" onchange="toggleWalkingCooler(true)"> SIM
                 </label>
                 <label class="radio-option">
-                    <input type="radio" name="has_walking" value="nao" onchange="toggleWalkingCooler(false)" checked> NÃO
+                    <input type="radio" name="has_walking" value="nao" onchange="toggleWalkingCooler(false)"> NÃO
                 </label>
             </div>
 
@@ -896,6 +1047,92 @@
             <div class="info-box" style="margin-top: 25px;">
                 Quantos kg do produto (<span id="display_produto_15_b">...</span>) serão estocados no local?
             </div>
+            
+            <button type="button" id="btn_ajuda_capacidade" class="btn-calc-ajuda" onclick="toggleAuxiliarCapacidade()">💡 Ajudar com o cálculo de capacidade</button>
+
+            <!-- PAINEL AUXILIAR DE CAPACIDADE (RESTAURADO) -->
+            <div id="painel_auxiliar" class="auxiliar-capacidade">
+                <div class="auxiliar-header" style="margin-bottom: 20px;">
+                    <h3 style="margin:0; font-size:16px;">Calculadora de Capacidade de Estoque</h3>
+                    <button type="button" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-weight:bold;" onclick="toggleAuxiliarCapacidade()">[X] FECHAR</button>
+                </div>
+
+                <div class="aux-stats-header">
+                    <div class="aux-stat-box">
+                        <span class="aux-stat-label">Volume Útil (70%)</span>
+                        <span class="aux-stat-value"><span id="lbl_aux_vol_util">0,00</span> m³</span>
+                    </div>
+                    <div class="aux-stat-box">
+                        <span class="aux-stat-label">Cap. Recomendada</span>
+                        <span class="aux-stat-value" style="color:var(--dufrio-azul);"><span id="lbl_aux_cap_recomendada">0</span> kg</span>
+                    </div>
+                    <div class="aux-stat-box">
+                        <span class="aux-stat-label">Produto</span>
+                        <span class="aux-stat-value"><span id="lbl_aux_produto_nome">Gelo</span></span>
+                    </div>
+                </div>
+
+                <p class="aux-nota">Nota: O cálculo considera 70% de ocupação real e o peso final é arredondado para cima (centena superior).</p>
+                
+                <div class="viz-header">
+                    <h4>Espaço Físico: <span id="lbl_aux_dimensoes">0 x 0 x 0</span>m</h4>
+                    <p>Volume Total: <span id="lbl_aux_vol_total">0,00</span> m³</p>
+                    <span>👆 Clique e arraste para girar a câmara 3D</span>
+                </div>
+
+                <div class="visualizer-auxiliar" style="height: 350px; background: radial-gradient(circle, #1a1a1a 0%, #050505 100%); border: 1px solid #333;">
+                    <div class="scene-auxiliar" id="scene-auxiliar">
+                        <div class="cube-wrapper-auxiliar" id="cube-wrapper-auxiliar"></div>
+                    </div>
+                </div>
+
+                <div class="controls-grid" style="grid-template-columns: 1fr; gap: 15px;">
+                    <div class="controle-grupo">
+                        <label style="font-size: 12px; color: #aaa;">Produto p/ Simulador</label>
+                        <select id="aux_produto" onchange="calcularCapacidadeAuxiliar()" style="max-width: 100%;">
+                            <option value="">Selecione o produto...</option>
+                            <option value="450" data-emoji="🧊">Gelo</option>
+                            <option value="375" data-emoji="🥩">Carnes (Bov/Suí)</option>
+                            <option value="350" data-emoji="🍗">Aves (Frango)</option>
+                            <option value="375" data-emoji="🐟">Peixes</option>
+                            <option value="275" data-emoji="🍺">Cerveja</option>
+                            <option value="275" data-emoji="🥤">Bebidas / Sucos</option>
+                            <option value="275" data-emoji="🧀">Laticínios</option>
+                            <option value="225" data-emoji="🍎">Frutas</option>
+                            <option value="225" data-emoji="🥦">Vegetais</option>
+                            <option value="200" data-emoji="🍕">Congelados (Pizzas)</option>
+                            <option value="175" data-emoji="🥖">Massas / Pães</option>
+                            <option value="200" data-emoji="🍦">Sorvete</option>
+                            <option value="200" data-emoji="💊">Medicamentos</option>
+                            <option value="60"  data-emoji="💐">Flores</option>
+                        </select>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                        <div class="campo-linha">
+                            <label style="font-size: 11px;">Comp. (m)</label>
+                            <input type="number" id="aux_comp" step="0.1" disabled style="padding: 10px;">
+                        </div>
+                        <div class="campo-linha">
+                            <label style="font-size: 11px;">Larg. (m)</label>
+                            <input type="number" id="aux_larg" step="0.1" disabled style="padding: 10px;">
+                        </div>
+                        <div class="campo-linha">
+                            <label style="font-size: 11px;">Alt. (m)</label>
+                            <input type="number" id="aux_alt" step="0.1" disabled style="padding: 10px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-auxiliar">
+                    <div style="text-align: left;">
+                        <span style="font-size: 11px; color: #aaa; text-transform: uppercase;">Capacidade Sugerida</span><br>
+                        <span style="font-size: 20px; font-weight: 900; color: #2196f3;"><span id="aux_resultado_kg">0</span> KG</span>
+                    </div>
+                    <button type="button" class="btn-usar-peso" onclick="confirmarPesoCalculado()">✅ Usar este peso</button>
+                </div>
+            </div>
+
             <p class="dica">💡 Dica: Responda em quilogramas (kg).</p>
             
             <br>
@@ -1144,7 +1381,7 @@
             setupPortas.classList.remove('oculta');
             setTimeout(() => {
                 setupPortas.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
+            }, 50);
         }
 
         function atualizarVisibilidadeBotaoAvancar9() {
@@ -1158,8 +1395,176 @@
         }
 
         // ==========================================
-        // LÓGICA DAS PORTAS EM LINHA (ETAPA 9)
+        // LÓGICA DO AUXILIAR DE CAPACIDADE (SANDBOX)
         // ==========================================
+        let isDraggingAux = false;
+        let prevXAux = 0, prevYAux = 0;
+        let currRxAux = -15, currRyAux = -35; 
+
+        function initInteracaoAuxiliar() {
+            const scene = document.getElementById('scene-auxiliar');
+            const wrapper = document.getElementById('cube-wrapper-auxiliar');
+            if(!scene) return;
+
+            scene.onmousedown = (e) => { isDraggingAux = true; prevXAux = e.clientX; prevYAux = e.clientY; scene.style.cursor = 'grabbing'; };
+            window.onmousemove = (e) => {
+                if(!isDraggingAux) return;
+                const dx = e.clientX - prevXAux;
+                const dy = e.clientY - prevYAux;
+                prevXAux = e.clientX; prevYAux = e.clientY;
+                currRyAux += dx * 0.5;
+                currRxAux -= dy * 0.5;
+                currRxAux = Math.max(-80, Math.min(80, currRxAux));
+                wrapper.style.setProperty('--rx', `${currRxAux}deg`);
+                wrapper.style.setProperty('--ry', `${currRyAux}deg`);
+            };
+            window.onmouseup = () => { isDraggingAux = false; scene.style.cursor = 'grab'; };
+        }
+
+        function toggleAuxiliarCapacidade() {
+            const painel = document.getElementById('painel_auxiliar');
+            if(painel.style.display === 'block') {
+                painel.style.display = 'none';
+            } else {
+                painel.style.display = 'block';
+                // Puxar dados das etapas anteriores
+                document.getElementById('aux_comp').value = document.getElementById('input_comp').value;
+                document.getElementById('aux_larg').value = document.getElementById('input_larg').value;
+                document.getElementById('aux_alt').value = document.getElementById('input_alt').value;
+                
+                // Tentar mapear produto
+                mapearProdutoAuxiliar();
+                
+                initInteracaoAuxiliar();
+                calcularCapacidadeAuxiliar();
+                
+                setTimeout(() => { painel.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+            }
+        }
+
+        function mapearProdutoAuxiliar() {
+            const digitado = document.getElementById('produto_armazenado').value.toLowerCase();
+            const select = document.getElementById('aux_produto');
+            
+            // Valor padrão: Vazio (Selecione...)
+            select.value = "";
+            
+            // Lógica simples de busca por palavra-chave
+            if (digitado.includes('gelo')) select.value = "450";
+            else if (digitado.includes('carne') || digitado.includes('boi') || digitado.includes('suin')) select.value = "375";
+            else if (digitado.includes('frango') || digitado.includes('ave')) select.value = "350";
+            else if (digitado.includes('peixe')) select.value = "375";
+            else if (digitado.includes('cerveja')) select.value = "275";
+            else if (digitado.includes('bebida') || digitado.includes('suco')) select.value = "275";
+            else if (digitado.includes('leite') || digitado.includes('queijo') || digitado.includes('latic')) select.value = "275";
+            else if (digitado.includes('fruta')) select.value = "225";
+            else if (digitado.includes('vegeta') || digitado.includes('legum')) select.value = "225";
+            else if (digitado.includes('pizza') || digitado.includes('congelado')) select.value = "200";
+            else if (digitado.includes('massa') || digitado.includes('pão') || digitado.includes('padaria')) select.value = "175";
+            else if (digitado.includes('sorvete')) select.value = "200";
+            else if (digitado.includes('remedio') || digitado.includes('medica')) select.value = "200";
+            else if (digitado.includes('flor')) select.value = "60";
+        }
+
+        function calcularCapacidadeAuxiliar() {
+            const c = parseFloat(document.getElementById('aux_comp').value) || 0;
+            const l = parseFloat(document.getElementById('aux_larg').value) || 0;
+            const a = parseFloat(document.getElementById('aux_alt').value) || 0;
+            const selectProd = document.getElementById('aux_produto');
+            const selectedOption = selectProd.options[selectProd.selectedIndex];
+            const densidade = parseFloat(selectedOption.value);
+            const nomeProduto = selectedOption.text;
+            const emojiProduto = selectedOption.getAttribute('data-emoji');
+            
+            const volTotal = c * l * a;
+            const volUtil = volTotal * 0.70;
+            
+            // Labels de Cabeçalho e Título
+            document.getElementById('lbl_aux_vol_total').innerText = volTotal.toFixed(2).replace('.', ',');
+            document.getElementById('lbl_aux_vol_util').innerText = volUtil.toFixed(2).replace('.', ',');
+            document.getElementById('lbl_aux_dimensoes').innerText = `${c.toFixed(2)} x ${l.toFixed(2)} x ${a.toFixed(2)}`;
+            document.getElementById('lbl_aux_produto_nome').innerText = nomeProduto;
+
+            if (!selectProd.value) {
+                document.getElementById('aux_resultado_kg').innerText = "0";
+                document.getElementById('lbl_aux_cap_recomendada').innerText = "0";
+                document.getElementById('lbl_aux_produto_nome').innerText = "Selecione...";
+                build3DCubeAuxiliar(c, a, l, null);
+                return;
+            }
+            
+            const pesoExato = volUtil * densidade;
+            let pesoArredondado = Math.ceil(pesoExato / 100) * 100;
+            if (pesoExato === 0) pesoArredondado = 0;
+
+            document.getElementById('aux_resultado_kg').innerText = pesoArredondado.toLocaleString('pt-BR');
+            document.getElementById('lbl_aux_cap_recomendada').innerText = pesoArredondado.toLocaleString('pt-BR');
+            build3DCubeAuxiliar(c, a, l, emojiProduto);
+        }
+
+        function build3DCubeAuxiliar(w, h, d, emoji) {
+            const wrapper = document.getElementById('cube-wrapper-auxiliar');
+            wrapper.innerHTML = '';
+            if (w === 0 || h === 0 || d === 0) return;
+            const maxDim = Math.max(w, h, d);
+            const scale = 180 / maxDim; 
+            const pw = w * scale; const ph = h * scale; const pd = d * scale;
+            const ih = ph * 0.70;
+
+            const createFace = (cls, width, height, transform) => {
+                const div = document.createElement('div');
+                div.className = `face-aux ${cls}`;
+                div.style.width = `${width}px`; div.style.height = `${height}px`;
+                div.style.marginLeft = `${-width/2}px`; div.style.marginTop = `${-height/2}px`;
+                div.style.transform = transform;
+                return div;
+            };
+
+            // Câmara Principal
+            wrapper.appendChild(createFace('', pw, ph, `translateZ(${pd/2}px)`));
+            wrapper.appendChild(createFace('', pw, ph, `rotateY(180deg) translateZ(${pd/2}px)`));
+            wrapper.appendChild(createFace('', pd, ph, `rotateY(90deg) translateZ(${pw/2}px)`));
+            wrapper.appendChild(createFace('', pd, ph, `rotateY(-90deg) translateZ(${pw/2}px)`));
+            wrapper.appendChild(createFace('', pw, pd, `rotateX(90deg) translateZ(${ph/2}px)`));
+            wrapper.appendChild(createFace('', pw, pd, `rotateX(-90deg) translateZ(${ph/2}px)`));
+
+            // Volume Útil (Azul)
+            const innerWrap = document.createElement('div');
+            innerWrap.style.position = 'absolute'; innerWrap.style.transformStyle = 'preserve-3d';
+            innerWrap.style.transform = `translateY(${(ph - ih) / 2}px)`;
+            wrapper.appendChild(innerWrap);
+            innerWrap.appendChild(createFace('inner', pw, ih, `translateZ(${pd/2}px)`));
+            innerWrap.appendChild(createFace('inner', pw, ih, `rotateY(180deg) translateZ(${pd/2}px)`));
+            innerWrap.appendChild(createFace('inner', pd, ih, `rotateY(90deg) translateZ(${pw/2}px)`));
+            innerWrap.appendChild(createFace('inner', pd, ih, `rotateY(-90deg) translateZ(${pw/2}px)`));
+            innerWrap.appendChild(createFace('inner', pw, pd, `rotateX(90deg) translateZ(${ih/2}px)`));
+            innerWrap.appendChild(createFace('inner', pw, pd, `rotateX(-90deg) translateZ(${ih/2}px)`));
+
+            // Emoji Flutuante
+            if (emoji) {
+                const emj = document.createElement('div');
+                emj.className = 'emoji3d-aux';
+                emj.style.transform = `translate(-50%, -50%) translateY(${-ih/2 - 25}px) rotateY(calc(-1 * var(--ry))) rotateX(calc(-1 * var(--rx)))`;
+                emj.innerText = emoji;
+                innerWrap.appendChild(emj);
+            }
+
+            // Etiquetas (Dimensões)
+            const createLbl = (txt, tr) => {
+                const l = document.createElement('div'); l.className = 'label3d-aux';
+                l.style.transform = `translate(-50%, -50%) ${tr} rotateY(calc(-1 * var(--ry))) rotateX(calc(-1 * var(--rx)))`;
+                l.innerText = txt; wrapper.appendChild(l);
+            };
+            createLbl(`C: ${w.toFixed(2)}m`, `translate3d(0, ${ph/2+15}px, ${pd/2}px)`);
+            createLbl(`L: ${d.toFixed(2)}m`, `translate3d(${pw/2+15}px, ${ph/2}px, 0)`);
+            createLbl(`A: ${h.toFixed(2)}m`, `translate3d(${pw/2+15}px, 0, ${pd/2}px)`);
+        }
+
+        function confirmarPesoCalculado() {
+            const peso = document.getElementById('aux_resultado_kg').innerText.replace(/\./g, '');
+            document.getElementById('capacidade_armazenada').value = peso + ' kg';
+            toggleAuxiliarCapacidade();
+        }
         let totalPortas = 0;
         let portasConfirmadas = 0;
 
@@ -1423,13 +1828,12 @@
                 setTimeout(() => {
                     const alvoScroll = divProxima.querySelector('h3, label[id^="lbl_"]') || divProxima.querySelector('label') || divProxima;
                     alvoScroll.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 10);
+                }, 50);
                 
-                if(proximaEtapa === 6 && typeof init3D === 'function' && !window.threeIniciado) {
+                if(proximaEtapa === 6) {
                     setTimeout(() => {
-                        init3D();
+                        initInteracaoPrincipal();
                         redesenharCubo();
-                        window.threeIniciado = true;
                     }, 100);
                 }
 
@@ -1520,91 +1924,85 @@
             const obsFinais = document.getElementById('observacoes_finais').value.trim();
 
             // ==========================================
-            // LÓGICA DE CAPTURA DO 3D
+            // LÓGICA DE CAPTURA DO 3D (DESENHO TÉCNICO INDUSTRIAL - SOLUÇÃO FINAL)
             // ==========================================
-            let img3D = null;
-            let imgRatio = 1;
             try {
-                if(typeof renderer !== 'undefined' && renderer && scene && camera) {
-                    renderer.render(scene, camera); 
-                    const canvas2d = document.createElement('canvas');
-                    canvas2d.width = renderer.domElement.width;
-                    canvas2d.height = renderer.domElement.height;
-                    const ctx = canvas2d.getContext('2d');
-                    
-                    ctx.fillStyle = "#ffffff";
-                    ctx.fillRect(0, 0, canvas2d.width, canvas2d.height);
-                    ctx.drawImage(renderer.domElement, 0, 0);
+                const comp = parseFloat(document.getElementById('input_comp').value) || 2.5;
+                const larg = parseFloat(document.getElementById('input_larg').value) || 2.0;
+                const alt = parseFloat(document.getElementById('input_alt').value) || 2.4;
+                
+                const isoX = { x: 0.866, y: 0.5 };
+                const isoY = { x: -0.866, y: 0.5 };
+                const isoZ = { x: 0, y: -1 };
+                
+                const scale = 400 / Math.max(comp, larg, alt);
+                const gX = comp * scale; const gY = larg * scale; const gZ = alt * scale;
+                const proj = (vx, vy, vz) => ({
+                    x: (vx * isoX.x + vy * isoY.x),
+                    y: (vx * isoX.y + vy * isoY.y + vz * isoZ.y)
+                });
+                const verts = [
+                    proj(0,0,0), proj(gX,0,0), proj(gX,gY,0), proj(0,gY,0),
+                    proj(0,0,gZ), proj(gX,0,gZ), proj(gX,gY,gZ), proj(0,gY,gZ)
+                ];
+                
+                // Margem Extra-Generosa (200px) para garantir que medidas gigantes não cortem
+                const minX = Math.min(...verts.map(v => v.x)) - 200;
+                const maxX = Math.max(...verts.map(v => v.x)) + 200;
+                const minY = Math.min(...verts.map(v => v.y)) - 200;
+                const maxY = Math.max(...verts.map(v => v.y)) + 200;
 
-                    const scale = canvas2d.width / document.getElementById('canvas-container').clientWidth;
+                const drawW = maxX - minX;
+                const drawH = maxY - minY;
 
-                    const labels = ['lbl-comp', 'lbl-larg', 'lbl-alt'];
-                    labels.forEach(id => {
-                        const lbl = document.getElementById(id);
-                        if(lbl && lbl.innerText) {
-                            const lx = parseFloat(lbl.style.left) * scale;
-                            const ly = parseFloat(lbl.style.top) * scale;
-                            
-                            if(!isNaN(lx) && !isNaN(ly)) {
-                                const fontSize = Math.round(24 * scale);
-                                ctx.font = "bold " + fontSize + "px sans-serif";
-                                const textW = ctx.measureText(lbl.innerText).width;
-                                
-                                const padX = 14 * scale;
-                                const padY = 8 * scale;
-                                const w = textW + padX * 2;
-                                const h = fontSize + padY * 2;
-                                
-                                const px = lx - w/2;
-                                const py = ly - h/2;
-                                const r = 6 * scale; 
-                                
-                                ctx.fillStyle = "#ffffff";
-                                ctx.lineWidth = 1.5 * scale;
-                                ctx.strokeStyle = "#102E82";
-                                
-                                ctx.beginPath();
-                                ctx.moveTo(px + r, py);
-                                ctx.lineTo(px + w - r, py);
-                                ctx.quadraticCurveTo(px + w, py, px + w, py + r);
-                                ctx.lineTo(px + w, py + h - r);
-                                ctx.quadraticCurveTo(px + w, py + h, px + w - r, py + h);
-                                ctx.lineTo(px + r, py + h);
-                                ctx.quadraticCurveTo(px, py + h, px, py + h - r);
-                                ctx.lineTo(px, py + r);
-                                ctx.quadraticCurveTo(px, py, px + r, py);
-                                ctx.closePath();
-                                
-                                ctx.fill();
-                                ctx.stroke();
-                                
-                                ctx.fillStyle = "#102E82";
-                                ctx.textAlign = "center";
-                                ctx.textBaseline = "middle";
-                                ctx.fillText(lbl.innerText, lx, ly + (2 * scale));
-                            }
-                        }
-                    });
+                const canvas2d = document.createElement('canvas');
+                canvas2d.width = drawW; canvas2d.height = drawH;
+                const ctx = canvas2d.getContext('2d');
+                ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, drawW, drawH);
 
-                    const hCorteTop = Math.floor(canvas2d.height * 0.15); 
-                    const hCorteBot = Math.floor(canvas2d.height * 0.15);
-                    const finalCanvasH = canvas2d.height - hCorteTop - hCorteBot;
+                const v = verts.map(pt => ({ x: pt.x - minX, y: pt.y - minY }));
 
-                    const canvasCortado = document.createElement('canvas');
-                    canvasCortado.width = canvas2d.width;
-                    canvasCortado.height = finalCanvasH;
-                    const ctxCortado = canvasCortado.getContext('2d');
-                    ctxCortado.fillStyle = "#ffffff";
-                    ctxCortado.fillRect(0, 0, canvasCortado.width, canvasCortado.height);
-                    
-                    ctxCortado.drawImage(canvas2d, 0, hCorteTop, canvas2d.width, finalCanvasH, 0, 0, canvasCortado.width, finalCanvasH);
+                const drawEdge = (p1, p2, col, w) => {
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+                    ctx.strokeStyle = col; ctx.lineWidth = w; ctx.stroke();
+                };
 
-                    window.img3DBase = canvasCortado.toDataURL('image/png');
-                    window.img3DRatio = finalCanvasH / canvasCortado.width;
-                }
-            } catch(e) {
-                console.warn('Erro ao capturar 3D:', e);
-            }
+                // 1. Faces (Sombreado técnico sem borda)
+                const drawFace = (pts, cor) => {
+                    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+                    pts.forEach(pt => ctx.lineTo(pt.x, pt.y));
+                    ctx.closePath(); ctx.fillStyle = cor; ctx.fill();
+                };
+                drawFace([v[0], v[1], v[5], v[4]], "rgba(79, 172, 254, 0.1)");
+                drawFace([v[1], v[2], v[6], v[5]], "rgba(79, 172, 254, 0.15)");
+                drawFace([v[4], v[5], v[6], v[7]], "rgba(79, 172, 254, 0.2)");
+                
+                // 2. Uniformização de Traço (Todas as 12 arestas sólidas e grossas)
+                const colMain = "#000000";
+                const wMain = 6;
+                
+                // Arestas Visíveis e Ocultas todas iguais (Aramado Sólido)
+                drawEdge(v[0], v[1], colMain, wMain); drawEdge(v[1], v[2], colMain, wMain); drawEdge(v[2], v[3], colMain, wMain); drawEdge(v[3], v[0], colMain, wMain);
+                drawEdge(v[4], v[5], colMain, wMain); drawEdge(v[5], v[6], colMain, wMain); drawEdge(v[6], v[7], colMain, wMain); drawEdge(v[7], v[4], colMain, wMain);
+                drawEdge(v[0], v[4], colMain, wMain); drawEdge(v[1], v[5], colMain, wMain); drawEdge(v[2], v[6], colMain, wMain); drawEdge(v[3], v[7], colMain, wMain);
+
+                // 3. Etiquetas de Medida Gigantes (65px)
+                ctx.font = "bold 65px sans-serif"; ctx.textAlign = "center";
+                const drawLbl = (txt, pos) => {
+                    const tw = ctx.measureText(txt).width + 30;
+                    ctx.fillStyle = "#ffffff"; ctx.fillRect(pos.x - tw/2, pos.y - 40, tw, 85);
+                    ctx.strokeStyle = "#000000"; ctx.lineWidth = 4; ctx.strokeRect(pos.x - tw/2, pos.y - 40, tw, 85);
+                    ctx.fillStyle = "#000000"; ctx.fillText(txt, pos.x, pos.y + 25);
+                };
+                // Reposicionamento técnico final (C, L, A nas arestas frontais da base e vertical central)
+                drawLbl(`C: ${comp}m`, { x: (v[0].x + v[1].x)/2 + 40, y: (v[0].y + v[1].y)/2 + 110 });
+                drawLbl(`L: ${larg}m`, { x: (v[0].x + v[3].x)/2 - 40, y: (v[0].y + v[3].y)/2 + 110 });
+                drawLbl(`A: ${alt}m`, { x: (v[0].x + v[4].x)/2 - 130, y: (v[0].y + v[4].y)/2 });
+
+                window.img3DBase = canvas2d.toDataURL('image/png');
+                window.img3DRatio = drawH / drawW;
+            } catch(e) { console.warn('Erro ao gerar 3D:', e); }
 
             // ==========================================
             // MOTOR DE GERAÇÃO PDF
@@ -1664,7 +2062,7 @@
                     bodyStyles: { ...bodyStylesGeral, minCellHeight: 11 * zoom, valign: 'middle' },
                     head: [[ { content: 'ESTRUTURA FÍSICA E ISOLAMENTO', colSpan: 3 } ]],
                     body: [
-                        ['Medidas Externas:', `${comp} x ${larg} x ${alt}`, { content: '', rowSpan: 4 }],
+                        ['Medidas Externas:', `C: ${comp} | L: ${larg} | A: ${alt}`, { content: '', rowSpan: 4 }],
                         ['Tipo de Painel:', tipoPainel],
                         ['Espessura Ref.:', espessuraPainel],
                         ['Isolamento Piso:', piso]
@@ -1674,7 +2072,22 @@
                         if (data.section === 'body' && data.row.index === 0 && data.column.index === 2) {
                             if (window.img3DBase) {
                                 const m = 1;
-                                doc.addImage(window.img3DBase, 'PNG', data.cell.x + m, data.cell.y + m, data.cell.width - (m*2), data.cell.height - (m*2));
+                                const cellW = data.cell.width - (m*2);
+                                const cellH = data.cell.height - (m*2);
+                                
+                                // Cálculo p/ manter proporção sem esticar
+                                let finalW = cellW;
+                                let finalH = finalW * window.img3DRatio;
+                                
+                                if (finalH > cellH) {
+                                    finalH = cellH;
+                                    finalW = finalH / window.img3DRatio;
+                                }
+                                
+                                const offX = (cellW - finalW) / 2;
+                                const offY = (cellH - finalH) / 2;
+                                
+                                doc.addImage(window.img3DBase, 'PNG', data.cell.x + m + offX, data.cell.y + m + offY, finalW, finalH);
                             }
                         }
                     }
@@ -1691,18 +2104,37 @@
                 });
                 startY = doc.lastAutoTable.finalY + (8 * zoom);
 
+                const bodyCondicoes = [
+                    ['Produto Armazenado:', produto],
+                    ['Temperatura Entrada:', tempEnt],
+                    ['Temp. Interna Final:', tempFin],
+                    ['Tempo de Processo:', tempoProc],
+                    ['Capacidade:', capArmazenada],
+                    ['Movimentação:', movim],
+                    ['Frequência Abertura:', freqAbertura]
+                ];
+                if (obsAbertura) {
+                    bodyCondicoes.push(['Observações:', obsAbertura]);
+                }
+
                 doc.autoTable({
                     startY: startY,
                     theme: 'grid',
                     headStyles: headStylesGeral,
                     bodyStyles: bodyStylesGeral,
                     head: [['CONDIÇÕES DE OPERAÇÃO', '']],
-                    body: [
-                        ['Produto Armazenado:', produto], ['Temperatura Entrada:', tempEnt], ['Temp. Interna Final:', tempFin], ['Tempo de Processo:', tempoProc], ['Capacidade:', capArmazenada], ['Movimentação:', movim], ['Frequência Abertura:', freqAbertura]
-                    ],
+                    body: bodyCondicoes,
                     columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
                 });
                 startY = doc.lastAutoTable.finalY + (8 * zoom);
+
+                const rowsFinal = [
+                    ['Distância UC x EVAP:', distUC],
+                    ['Tensão Elétrica:', tensao]
+                ];
+                if (obsFinais) {
+                    rowsFinal.push(['Observações:', obsFinais]);
+                }
 
                 doc.autoTable({
                     startY: startY,
@@ -1710,7 +2142,7 @@
                     headStyles: headStylesGeral,
                     bodyStyles: bodyStylesGeral,
                     head: [['DADOS TÉCNICOS E OBSERVAÇÕES', '']],
-                    body: [['Distância UC x EVAP:', distUC], ['Tensão Elétrica:', tensao], ['Observações:', obsFinais]],
+                    body: rowsFinal,
                     columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, fillColor: corFundoCelulas } }
                 });
 
@@ -1722,101 +2154,95 @@
         }
 
         // ===============================================
-        // Simulador 3D (Etapa 6)
+        // NOVO MOTOR 3D CSS (ETAPA 6) - ESTILO GLASS
         // ===============================================
-        let scene, camera, renderer, cubo, edges;
-        window.threeIniciado = false; 
+        let isDraggingPrin = false;
+        let prevXPrin = 0, prevYPrin = 0;
+        let currRxPrin = -15, currRyPrin = -35; 
 
-        function init3D() {
-            const container = document.getElementById('canvas-container');
-            if(!container) return;
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            scene = new THREE.Scene();
-            const aspect = width / height;
-            const d = 5; 
-            camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
-            camera.position.set(20, 20, 20); 
-            camera.lookAt(scene.position);
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-            renderer.setSize(width, height);
-            container.appendChild(renderer.domElement);
-            const geometry = new THREE.BoxGeometry(1, 1, 1);
-            // Opacidade aumentada para 0.4 e cor Dufrio Azul para melhor visibilidade
-            const material = new THREE.MeshBasicMaterial({ color: 0x4facfe, transparent: true, opacity: 0.4, depthWrite: false });
-            cubo = new THREE.Mesh(geometry, material);
-            scene.add(cubo);
-            const edgesGeometry = new THREE.EdgesGeometry(geometry);
-            // Cor das arestas alterada para o azul vibrante da Dufrio
-            const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x4facfe, linewidth: 2, depthTest: false });
-            edges = new THREE.LineSegments(edgesGeometry, edgesMaterial);
-            edges.renderOrder = 1; 
-            scene.add(edges);
-            animate();
-        }
+        function initInteracaoPrincipal() {
+            const scene = document.getElementById('scene-principal');
+            const wrapper = document.getElementById('cube-wrapper-principal');
+            if(!scene) return;
 
-        function animate() {
-            requestAnimationFrame(animate);
-            if(renderer && scene && camera) {
-                renderer.render(scene, camera);
-                atualizarEtiquetas(); 
-            }
+            scene.onmousedown = (e) => { isDraggingPrin = true; prevXPrin = e.clientX; prevYPrin = e.clientY; scene.style.cursor = 'grabbing'; };
+            window.onmousemove = (e) => {
+                if(!isDraggingPrin) return;
+                const dx = e.clientX - prevXPrin;
+                const dy = e.clientY - prevYPrin;
+                prevXPrin = e.clientX; prevYPrin = e.clientY;
+                currRyPrin += dx * 0.5;
+                currRxPrin -= dy * 0.5;
+                currRxPrin = Math.max(-80, Math.min(80, currRxPrin));
+                wrapper.style.setProperty('--rx', `${currRxPrin}deg`);
+                wrapper.style.setProperty('--ry', `${currRyPrin}deg`);
+            };
+            window.onmouseup = () => { isDraggingPrin = false; scene.style.cursor = 'grab'; };
+            
+            // Touch
+            scene.ontouchstart = (e) => { isDraggingPrin = true; prevXPrin = e.touches[0].clientX; prevYPrin = e.touches[0].clientY; };
+            window.ontouchmove = (e) => {
+                if(!isDraggingPrin) return;
+                const dx = e.touches[0].clientX - prevXPrin;
+                const dy = e.touches[0].clientY - prevYPrin;
+                prevXPrin = e.touches[0].clientX; prevYPrin = e.touches[0].clientY;
+                currRyPrin += dx * 0.5; currRxPrin -= dy * 0.5;
+                currRxPrin = Math.max(-80, Math.min(80, currRxPrin));
+                wrapper.style.setProperty('--rx', `${currRxPrin}deg`);
+                wrapper.style.setProperty('--ry', `${currRyPrin}deg`);
+            };
+            window.ontouchend = () => { isDraggingPrin = false; };
         }
 
         function redesenharCubo() {
-            if(!cubo) return;
+            const wrapper = document.getElementById('cube-wrapper-principal');
+            if(!wrapper) return;
+            
             const w = parseFloat(document.getElementById('input_comp').value) || 0.1;
             const h = parseFloat(document.getElementById('input_alt').value) || 0.1;
-            const d_depth = parseFloat(document.getElementById('input_larg').value) || 0.1;
-            cubo.geometry.dispose();
-            cubo.geometry = new THREE.BoxGeometry(w, h, d_depth);
-            edges.geometry.dispose();
-            edges.geometry = new THREE.EdgesGeometry(cubo.geometry);
-            cubo.position.y = h/2; 
-            edges.position.y = h/2;
-            const maiorMedida = Math.max(w, h, d_depth);
-            // ZOOM AJUSTADO: 1.15 para aproximar o cubo e deixá-lo mais visível
-            const novoD = Math.max(maiorMedida * 1.15, 2.0); 
-            const container = document.getElementById('canvas-container');
-            if(container) {
-                const aspect = container.clientWidth / container.clientHeight;
-                camera.left = -novoD * aspect; camera.right = novoD * aspect; camera.top = novoD; camera.bottom = -novoD;
-                camera.position.set(20, 20 + h/2, 20);
-                camera.lookAt(new THREE.Vector3(0, h/2, 0));
-                camera.updateProjectionMatrix();
-            }
-            scene.children.forEach(child => { if (child.type === "GridHelper") scene.remove(child); });
-            const novoTamanhoGrid = Math.ceil(Math.max(20, maiorMedida * 2));
-            const gridHelper = new THREE.GridHelper(novoTamanhoGrid, novoTamanhoGrid, 0x94a3b8, 0xcbd5e1);
-            gridHelper.position.y = 0;
-            scene.add(gridHelper);
+            const d = parseFloat(document.getElementById('input_larg').value) || 0.1;
+
+            wrapper.innerHTML = '';
+            const maxDim = Math.max(w, h, d);
+            const scale = 220 / maxDim; 
+            const pw = w * scale; const ph = h * scale; const pd = d * scale;
+
+            const createFace = (cls, width, height, transform) => {
+                const div = document.createElement('div');
+                div.className = `face-aux ${cls}`;
+                div.style.width = `${width}px`; div.style.height = `${height}px`;
+                div.style.marginLeft = `${-width/2}px`; div.style.marginTop = `${-height/2}px`;
+                div.style.transform = transform;
+                // Estilo específico do Gabinete Externo (Vidro Azulado)
+                div.style.background = "rgba(79, 172, 254, 0.15)";
+                div.style.border = "1.5px solid rgba(79, 172, 254, 0.6)";
+                return div;
+            };
+
+            // Faces do Gabinete
+            wrapper.appendChild(createFace('', pw, ph, `translateZ(${pd/2}px)`));
+            wrapper.appendChild(createFace('', pw, ph, `rotateY(180deg) translateZ(${pd/2}px)`));
+            wrapper.appendChild(createFace('', pd, ph, `rotateY(90deg) translateZ(${pw/2}px)`));
+            wrapper.appendChild(createFace('', pd, ph, `rotateY(-90deg) translateZ(${pw/2}px)`));
+            wrapper.appendChild(createFace('', pw, pd, `rotateX(90deg) translateZ(${ph/2}px)`));
+            wrapper.appendChild(createFace('', pw, pd, `rotateX(-90deg) translateZ(${ph/2}px)`));
+
+            // Etiquetas de Medida
+            const createLbl = (txt, tr) => {
+                const l = document.createElement('div'); l.className = 'label3d-aux';
+                l.style.transform = `translate(-50%, -50%) ${tr} rotateY(calc(-1 * var(--ry))) rotateX(calc(-1 * var(--rx)))`;
+                l.innerText = txt; wrapper.appendChild(l);
+            };
+            createLbl(`C: ${w.toFixed(2)}m`, `translate3d(0, ${ph/2+35}px, ${pd/2+10}px)`);
+            createLbl(`L: ${d.toFixed(2)}m`, `translate3d(${pw/2+40}px, ${ph/2}px, 0)`);
+            createLbl(`A: ${h.toFixed(2)}m`, `translate3d(${pw/2+25}px, 0, ${pd/2+25}px)`);
         }
 
-        function atualizarEtiquetas() {
-            if(!camera || !cubo) return;
-            const w = parseFloat(document.getElementById('input_comp').value) || 0.1;
-            const h = parseFloat(document.getElementById('input_alt').value) || 0.1;
-            const d_depth = parseFloat(document.getElementById('input_larg').value) || 0.1;
-            const offset = Math.max(w, h, d_depth) * 0.12; 
-            const posComp = new THREE.Vector3(0, 0, d_depth/2 + offset); 
-            const posLarg = new THREE.Vector3(w/2 + offset, 0, 0);       
-            const posAlt = new THREE.Vector3(-w/2 - offset, h/2, d_depth/2 + offset); 
-            const container = document.getElementById('canvas-container');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            function moverEtiqueta(id, vetor3D, texto) {
-                const label = document.getElementById(id);
-                const vetorCopia = vetor3D.clone(); 
-                vetorCopia.project(camera);
-                const x = (vetorCopia.x * 0.5 + 0.5) * width;
-                const y = (vetorCopia.y * -0.5 + 0.5) * height;
-                label.style.left = `${x}px`;
-                label.style.top = `${y}px`;
-                label.innerText = `${texto} m`;
-            }
-            moverEtiqueta('lbl-comp', posComp, w);
-            moverEtiqueta('lbl-larg', posLarg, d_depth);
-            moverEtiqueta('lbl-alt', posAlt, h);
+        function resetarValores() {
+            document.getElementById('range_comp').value = 2.5; document.getElementById('input_comp').value = 2.5;
+            document.getElementById('range_larg').value = 2.0; document.getElementById('input_larg').value = 2.0;
+            document.getElementById('range_alt').value = 2.4; document.getElementById('input_alt').value = 2.4;
+            redesenharCubo();
         }
 
         function atualizarInput(tipo) {
