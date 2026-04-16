@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Checklist Resfriados e Congelados - Dufrio</title>
+    <title>Orçamento Câmara Fria - Dufrio</title>
     <!-- REMOVIDO THREE.JS PARA DEIXAR O PROJETO MAIS LEVE E UNIFICAR O ESTILO 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -567,15 +567,43 @@
             font-weight: 900;
         }
 
+        /* Wrapper para Tabelas Responsivas no Mobile */
+        .table-responsive-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 5px;
+        }
+
         @media (max-width: 768px) {
-            h1 { color: var(--text-main);  font-size: 24px; }
-            .simulador-wrapper { flex-direction: column; }
+            h1 { font-size: 24px; }
+            .simulador-wrapper { flex-direction: column; gap: 15px; }
             .controles-3d { width: 100%; }
-            #canvas-container { min-height: 300px; }
-            .linha-porta { flex-direction: column; align-items: stretch; }
+            #canvas-container { min-height: 250px; }
+            
+            /* Portas (Convencional) */
+            .linha-porta { flex-direction: column; align-items: stretch; gap: 10px; }
             .porta-titulo, .porta-btn-container { margin-top: 0; }
-            input[type="text"], input[type="number"], select { max-width: 100%; }
-            .pergunta-container { padding: 20px; }
+            
+            /* Portas (Walking Cooler) */
+            .card-frame { grid-template-columns: 1fr !important; }
+            .btn-remover-frame { width: 100%; margin-top: 10px; text-align: center; justify-content: center; }
+            
+            /* UI Geral Form */
+            input[type="text"], input[type="number"], select { max-width: 100%; padding: 12px; }
+            .pergunta-container { padding: 18px; border-radius: 12px; }
+            
+            /* Radio Buttons no Mobile (Facilitar Touch) */
+            .radio-group { flex-direction: column; gap: 8px; }
+            .radio-option { width: 100%; padding: 14px; justify-content: flex-start; }
+            
+            /* Botoes com area de clique maxima */
+            .btn-prox-etapa, .btn-calc-ajuda, .btn-confirmar-porta { width: 100%; text-align: center; margin-top: 16px; }
+            
+            /* Calculadora Auxiliar */
+            .aux-stats-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .controls-grid { grid-template-columns: 1fr !important; gap: 10px; }
+            .visualizer-auxiliar { height: 260px !important; }
         }
 
         /* ESTILOS WALKING COOLER */
@@ -936,31 +964,33 @@
             
             <div class="info-box" style="margin-top: 25px;">
                 <p style="margin-top: 0; color: #ea580c; font-weight: bold; margin-bottom: 5px;">Tabela de Referência Padrão:</p>
-                <table class="tabela-referencia">
-                    <thead>
-                        <tr>
-                            <th>Produto</th>
-                            <th>Segmento</th>
-                            <th>Resf.</th>
-                            <th>Cong.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Carnes</td><td>Mercados/Açougues</td><td>+10°C</td><td>-15°C</td></tr>
-                        <tr><td>Carnes</td><td>Frigoríficos/Abatedouros</td><td>+38°C</td><td>-18°C</td></tr>
-                        <tr><td>Massa/Pão</td><td>Panificadoras/Padarias</td><td>+24°C</td><td>-18°C</td></tr>
-                        <tr><td>Peixe</td><td>Frigoríficos/Abatedouros</td><td>+10°C</td><td>0°C</td></tr>
-                        <tr><td>Peixe</td><td>Distribuidora/Mercados</td><td>-</td><td>-15°C</td></tr>
-                        <tr><td>Sorvete</td><td>Fabricante</td><td>-</td><td>+1°C</td></tr>
-                        <tr><td>Sorvete</td><td>Distribuidora/Mercados</td><td>-</td><td>-15°C</td></tr>
-                        <tr><td>Bebidas</td><td>Distribuidoras/Mercados</td><td>+28°C</td><td>-</td></tr>
-                        <tr><td>Vegetais</td><td>Agricultor/Peq. Mercados</td><td>+24°C</td><td>-</td></tr>
-                        <tr><td>Vegetais</td><td>Grandes Mercados</td><td>+10°C</td><td>-</td></tr>
-                        <tr><td>Frutas</td><td>Agricultor/Peq. Mercados</td><td>+24°C</td><td>-</td></tr>
-                        <tr><td>Frutas</td><td>Grandes Mercados</td><td>+10°C</td><td>-</td></tr>
-                        <tr><td>Laticínios</td><td>Distribuidoras</td><td>+10°C</td><td>-</td></tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive-wrapper">
+                    <table class="tabela-referencia">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Segmento</th>
+                                <th>Resf.</th>
+                                <th>Cong.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Carnes</td><td>Mercados/Açougues</td><td>+10°C</td><td>-15°C</td></tr>
+                            <tr><td>Carnes</td><td>Frigoríficos/Abatedouros</td><td>+38°C</td><td>-18°C</td></tr>
+                            <tr><td>Massa/Pão</td><td>Panificadoras/Padarias</td><td>+24°C</td><td>-18°C</td></tr>
+                            <tr><td>Peixe</td><td>Frigoríficos/Abatedouros</td><td>+10°C</td><td>0°C</td></tr>
+                            <tr><td>Peixe</td><td>Distribuidora/Mercados</td><td>-</td><td>-15°C</td></tr>
+                            <tr><td>Sorvete</td><td>Fabricante</td><td>-</td><td>+1°C</td></tr>
+                            <tr><td>Sorvete</td><td>Distribuidora/Mercados</td><td>-</td><td>-15°C</td></tr>
+                            <tr><td>Bebidas</td><td>Distribuidoras/Mercados</td><td>+28°C</td><td>-</td></tr>
+                            <tr><td>Vegetais</td><td>Agricultor/Peq. Mercados</td><td>+24°C</td><td>-</td></tr>
+                            <tr><td>Vegetais</td><td>Grandes Mercados</td><td>+10°C</td><td>-</td></tr>
+                            <tr><td>Frutas</td><td>Agricultor/Peq. Mercados</td><td>+24°C</td><td>-</td></tr>
+                            <tr><td>Frutas</td><td>Grandes Mercados</td><td>+10°C</td><td>-</td></tr>
+                            <tr><td>Laticínios</td><td>Distribuidoras</td><td>+10°C</td><td>-</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <br>
@@ -977,45 +1007,49 @@
                 <p style="margin-top: 0; color: #ea580c; font-weight: bold; margin-bottom: 10px;">Tabela de Referência Padrão (Temp. Interna Final):</p>
                 
                 <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                    <table class="tabela-referencia" style="flex: 1; min-width: 250px;">
-                        <thead>
-                            <tr>
-                                <th>Produto</th>
-                                <th>Resfriado</th>
-                                <th>Congelado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Gelo</td><td>-</td><td>-18°C</td></tr>
-                            <tr><td>Sorvete</td><td>-</td><td>-24°C</td></tr>
-                            <tr><td>Massa/Pão</td><td>+2°C</td><td>-18°C</td></tr>
-                            <tr><td>Carne/Peixe</td><td>0°C</td><td>-18°C</td></tr>
-                            <tr><td>Fruta</td><td>+2°C</td><td>-10°C</td></tr>
-                            <tr><td>Cerveja</td><td>-2,0°C</td><td>-</td></tr>
-                            <tr><td>Bebidas</td><td>0°C</td><td>-</td></tr>
-                            <tr><td>Laticínios</td><td>+2°C</td><td>-</td></tr>
-                            <tr><td>Vegetais</td><td>+6°C</td><td>-</td></tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive-wrapper" style="flex: 1; min-width: 250px;">
+                        <table class="tabela-referencia">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Resfriado</th>
+                                    <th>Congelado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Gelo</td><td>-</td><td>-18°C</td></tr>
+                                <tr><td>Sorvete</td><td>-</td><td>-24°C</td></tr>
+                                <tr><td>Massa/Pão</td><td>+2°C</td><td>-18°C</td></tr>
+                                <tr><td>Carne/Peixe</td><td>0°C</td><td>-18°C</td></tr>
+                                <tr><td>Fruta</td><td>+2°C</td><td>-10°C</td></tr>
+                                <tr><td>Cerveja</td><td>-2,0°C</td><td>-</td></tr>
+                                <tr><td>Bebidas</td><td>0°C</td><td>-</td></tr>
+                                <tr><td>Laticínios</td><td>+2°C</td><td>-</td></tr>
+                                <tr><td>Vegetais</td><td>+6°C</td><td>-</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                    <table class="tabela-referencia" style="flex: 1; min-width: 200px;">
-                        <thead>
-                            <tr>
-                                <th colspan="2">Ponto de Congelamento</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Gelo</td><td>0°C</td></tr>
-                            <tr><td>Massa/Pão</td><td>0°C</td></tr>
-                            <tr><td>Carne</td><td>-2,2°C</td></tr>
-                            <tr><td>Peixe</td><td>-2,2°C</td></tr>
-                            <tr><td>Sorvete</td><td>-5,5°C</td></tr>
-                            <tr><td>Vegetais</td><td>-0,5°C</td></tr>
-                            <tr><td>Frutas</td><td>-1°C</td></tr>
-                            <tr><td>Laticínios</td><td>-6,5°C</td></tr>
-                            <tr><td>Bebidas</td><td>-2,2°C</td></tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive-wrapper" style="flex: 1; min-width: 200px;">
+                        <table class="tabela-referencia">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">Ponto de Congelamento</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Gelo</td><td>0°C</td></tr>
+                                <tr><td>Massa/Pão</td><td>0°C</td></tr>
+                                <tr><td>Carne</td><td>-2,2°C</td></tr>
+                                <tr><td>Peixe</td><td>-2,2°C</td></tr>
+                                <tr><td>Sorvete</td><td>-5,5°C</td></tr>
+                                <tr><td>Vegetais</td><td>-0,5°C</td></tr>
+                                <tr><td>Frutas</td><td>-1°C</td></tr>
+                                <tr><td>Laticínios</td><td>-6,5°C</td></tr>
+                                <tr><td>Bebidas</td><td>-2,2°C</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -1507,7 +1541,9 @@
             wrapper.innerHTML = '';
             if (w === 0 || h === 0 || d === 0) return;
             const maxDim = Math.max(w, h, d);
-            const scale = 180 / maxDim; 
+            let baseSize = 180;
+            if (window.innerWidth < 600) { baseSize = 120; }
+            const scale = baseSize / maxDim; 
             const pw = w * scale; const ph = h * scale; const pd = d * scale;
             const ih = ph * 0.70;
 
@@ -2204,7 +2240,9 @@
 
             wrapper.innerHTML = '';
             const maxDim = Math.max(w, h, d);
-            const scale = 220 / maxDim; 
+            let baseSize = 220;
+            if (window.innerWidth < 600) { baseSize = 140; }
+            const scale = baseSize / maxDim; 
             const pw = w * scale; const ph = h * scale; const pd = d * scale;
 
             const createFace = (cls, width, height, transform) => {

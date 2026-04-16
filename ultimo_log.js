@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Ajuste técnico final: etiquetas C, L e A reposicionadas nas arestas frontais do 3D para clareza total no PDF.', date: '16/04/2026', time: 'eb856e295a5c6b320e1f112548c450cfc3b68aff:%M' };
+const LATEST_LOG = { message: 'UX Mobile: Layout 100% responsivo, tabelas com scroll lateral, adequação de escala no 3D e botões empilhados (Touch).', date: '16/04/2026', time: '09:15' };
