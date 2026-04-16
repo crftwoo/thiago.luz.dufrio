@@ -1,1 +1,1 @@
-🚀 Teste de integração (Primeiro Acesso): Verificando as edições no código e a conexão do log automatizado da IA!
+📝 Documentação: Criação do arquivo LEIA-ME (README.md) detalhando regras do projeto e arquitetura do CI/CD para context agents.
