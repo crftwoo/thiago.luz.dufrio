@@ -884,8 +884,8 @@
                         </select>
                     </div>
                     <div class="campo-linha">
-                        <label>Tamanho</label>
-                        <select id="wc_tamanho">
+                        <label>Tamanho (Porta)</label>
+                        <select id="wc_tamanho" onchange="atualizarTextoTamanhosWalking()">
                             <option value="600x1600">600mm x 1600mm</option>
                             <option value="700x1700">700mm x 1700mm</option>
                         </select>
@@ -899,6 +899,10 @@
                     </div>
                     <div class="porta-btn-container">
                         <button type="button" id="btn_ok_walking" class="btn-confirmar-porta" onclick="confirmarWalkingCooler()">OK</button>
+                    </div>
+                    
+                    <div style="grid-column: 1 / -1; background: rgba(59, 130, 246, 0.1); border: 1px dashed rgba(59, 130, 246, 0.4); padding: 10px; border-radius: 8px; margin-top: 5px; text-align: center;">
+                        <span id="wd_frame_total_text" style="color: #93c5fd; font-size: 13px; font-weight: 500;"></span>
                     </div>
                 </div>
             </div>
@@ -1380,18 +1384,19 @@
 
         function atualizarTextoTamanhosWalking() {
             const qtd = parseInt(document.getElementById('wc_qtd').value) || 1;
-            const selectTamanho = document.getElementById('wc_tamanho');
+            const tamanho = document.getElementById('wc_tamanho').value;
             
-            const desc600 = FRAMES_DB["600x1600"][qtd].desc;
-            const m600 = desc600.match(/IN (.*?) LED/);
-            const frame600 = m600 ? m600[1].trim() : "";
+            const desc = FRAMES_DB[tamanho][qtd].desc;
+            const matchFrame = desc.match(/IN (.*?) LED/);
             
-            const desc700 = FRAMES_DB["700x1700"][qtd].desc;
-            const m700 = desc700.match(/IN (.*?) LED/);
-            const frame700 = m700 ? m700[1].trim() : "";
-
-            selectTamanho.options[0].text = `Por. 60x160 (Tot: ${frame600})`;
-            selectTamanho.options[1].text = `Por. 70x170 (Tot: ${frame700})`;
+            if (matchFrame) {
+                const arr = matchFrame[1].toLowerCase().replace(/ /g, '').split('x');
+                if (arr.length === 2) {
+                    const l = (parseInt(arr[0]) / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    const a = (parseInt(arr[1]) / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    document.getElementById('wd_frame_total_text').innerHTML = `Medida Externa Total do Frame: <strong style="color: #fff;">${l}m (L)  x  ${a}m (A)</strong>`;
+                }
+            }
         }
 
         function toggleWalkingCooler(exibir) {
