@@ -493,7 +493,16 @@
     });
 
     // Renderização do Log (vindo de ultimo_log.js)
-    if (typeof LATEST_LOG !== 'undefined') {
+    if (typeof LATEST_LOG !== 'undefined' && LATEST_LOG.dateIso) {
+      const d = new Date(LATEST_LOG.dateIso);
+      const dia = String(d.getDate()).padStart(2, '0');
+      const mes = String(d.getMonth() + 1).padStart(2, '0');
+      const ano = d.getFullYear();
+      const hora = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      document.getElementById("updateText").innerHTML = `Última atualização: <strong>${dia}/${mes}/${ano}</strong> às <strong>${hora}:${min}</strong>`;
+      document.getElementById("updateMessage").textContent = `"${LATEST_LOG.message}"`;
+    } else if (typeof LATEST_LOG !== 'undefined' && LATEST_LOG.date) {
       document.getElementById("updateText").innerHTML = `Última atualização: <strong>${LATEST_LOG.date}</strong> às <strong>${LATEST_LOG.time}</strong>`;
       document.getElementById("updateMessage").textContent = `"${LATEST_LOG.message}"`;
     }
