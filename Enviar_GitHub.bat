@@ -36,7 +36,7 @@ git commit --amend --no-edit >nul 2>&1
 
 echo.
 echo 3. Sincronizando com a nuvem (Pull)...
-git pull origin main --no-rebase
+git pull origin main --no-rebase --no-edit
 if %errorlevel% neq 0 (
     echo.
     echo [ERRO] Falha ao sincronizar com o GitHub. 
