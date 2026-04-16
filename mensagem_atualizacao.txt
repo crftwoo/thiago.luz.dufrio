@@ -1,1 +1,1 @@
-📝 Documentação: Criação do arquivo LEIA-ME (README.md) detalhando regras do projeto e arquitetura do CI/CD para context agents.
+🧹 Layout: Limpeza da tag de teste visual do cabeçalho da página principal.
