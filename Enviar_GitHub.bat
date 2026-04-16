@@ -28,7 +28,7 @@ if %errorlevel% neq 0 (
 
 :: GERANDO LOG AUTOMATICO PARA O HUB (index.html)
 :: Usando t?cnica de embutir o JSON na data para capturar data e hora corretamente
-git log -1 --format="const LATEST_LOG = { message: '%%s', date: '%%ad' };" --date=format:"%%d/%%m/%%Y', time: '%%H:%%M" > ultimo_log.js
+git log -1 --format="const LATEST_LOG = { message: '%%s', dateIso: '%%aI' };" > ultimo_log.js
 
 :: ADICIONANDO O LOG AO MESMO COMMIT
 git add ultimo_log.js
