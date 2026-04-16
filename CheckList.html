@@ -875,7 +875,7 @@
                 <div class="card-frame" id="card_frame_walking" style="grid-template-columns: 1fr 1fr 1fr auto;">
                     <div class="campo-linha">
                         <label>Qtd Portas (Frame)</label>
-                        <select id="wc_qtd">
+                        <select id="wc_qtd" onchange="atualizarTextoTamanhosWalking()">
                             <option value="1">01 Porta</option>
                             <option value="2">02 Portas</option>
                             <option value="3">03 Portas</option>
@@ -1378,6 +1378,22 @@
             }
         };
 
+        function atualizarTextoTamanhosWalking() {
+            const qtd = parseInt(document.getElementById('wc_qtd').value) || 1;
+            const selectTamanho = document.getElementById('wc_tamanho');
+            
+            const desc600 = FRAMES_DB["600x1600"][qtd].desc;
+            const m600 = desc600.match(/IN (.*?) LED/);
+            const frame600 = m600 ? m600[1].trim() : "";
+            
+            const desc700 = FRAMES_DB["700x1700"][qtd].desc;
+            const m700 = desc700.match(/IN (.*?) LED/);
+            const frame700 = m700 ? m700[1].trim() : "";
+
+            selectTamanho.options[0].text = `Por. 60x160 (Tot: ${frame600})`;
+            selectTamanho.options[1].text = `Por. 70x170 (Tot: ${frame700})`;
+        }
+
         function toggleWalkingCooler(exibir) {
             const secao = document.getElementById('secao_walking');
             const setupPortas = document.getElementById('setup_qtd_portas');
@@ -1394,6 +1410,7 @@
                 document.getElementById('card_frame_walking').style.pointerEvents = 'auto';
                 document.getElementById('btn_ok_walking').innerText = "OK";
                 document.getElementById('btn_ok_walking').style.backgroundColor = "#059669";
+                atualizarTextoTamanhosWalking(); // Inicializa os textos pela primeira vez
             } else {
                 secao.classList.add('oculta');
                 setupPortas.classList.remove('oculta'); // Se não tem walking, mostra perguntas diretas
