@@ -1,1 +1,1 @@
-Scraper-ar: redesign completo dos cards com foto, precos, botao link e copia igual a extensao
+Ajuste final das strings de preço no Scraper e README.md concluído. Centralização e emojis aplicados.

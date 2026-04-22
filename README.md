@@ -50,9 +50,10 @@ Exemplo: _"Botão de orçamentos estilizado para amarelo no checkout"_.
 
 **Aqui está como a arquitetura do Thiago se comporta e como seu resumo será consumido:**
 1. A IA sobreescreve o texto de `mensagem_atualizacao.txt`.
-2. O Thiago, a qualquer momento posterior, dará duplo clique em `Enviar_GitHub.bat` no desktop dele (nenhuma ação de deploy de sua parte como IA via shell script de terminal faz-se necessária).
-3. O `.bat` consome o `mensagem_atualizacao.txt` e usa-o como `git commit -F`.
-4. O `.bat` roda o `git log` na última thread do commit para exportar internamente ao computador o histórico daquele timestamp injetado numa variável literal ES6 e grava tudo dentro do arquivo `ultimo_log.js`. 
-5. Em seguida se comunica automaticamente com a origin/main (Push & Pulls). 
+2. **REGRA CRÍTICA:** A IA **não deve** tentar rodar comandos git ou de terminal. Ao terminar, ela apenas avisa o Thiago e pede para ele clicar no arquivo `Enviar_GitHub.bat`.
+3. O Thiago dará duplo clique em `Enviar_GitHub.bat` no desktop dele.
+4. O `.bat` consome o `mensagem_atualizacao.txt` e usa-o como `git commit -F`.
+5. O `.bat` roda o `git log` e gera o `ultimo_log.js`.
+6. Em seguida realiza o Push & Pull automaticamente.
 
-Se você apagar os blocos de importação do `ultimo_log.js` que interagem no "tooltip do rodapé" no arquivo `index.html`, ou esquecer de preencher o arquivo `.txt`, a cascata de notificações do usuário quebrará e as versões deixarão de mostrar rastreabilidade pro usuário final. NUNCA DEIXE DE EDITAR O `.txt`.
+Se você apagar os blocos de importação do `ultimo_log.js` que interagem no "tooltip do rodapé" no arquivo `index.html`, ou esquecer de preencher o arquivo `.txt`, a cascata de notificações do usuário quebrará. NUNCA DEIXE DE EDITAR O `.txt`.

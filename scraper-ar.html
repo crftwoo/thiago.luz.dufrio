@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -60,17 +60,19 @@
     .img-overlay.copied span { background: rgba(0,230,118,0.3); border-color: rgba(0,230,118,0.5); color: var(--green); }
 
     /* INFO AREA */
-    .product-info { padding: 18px 14px 10px; cursor: pointer; position: relative; flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .product-info { padding: 18px 14px 10px; cursor: pointer; position: relative; flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; }
     .product-info:hover { background: rgba(255,255,255,0.02); }
     .copy-hint { position: absolute; top: 10px; right: 10px; font-size: 8px; font-weight: 900; color: rgba(79,172,254,0.6); letter-spacing: 1px; text-transform: uppercase; opacity: 0; transition: 0.2s; z-index: 5; }
     .product-info:hover .copy-hint { opacity: 1; }
     .product-info.copied .copy-hint { opacity: 1; color: var(--green); content: "COPIADO!"; }
 
-    .product-title { font-size: 11px; font-weight: 700; color: #cdd6f4; line-height: 1.5; margin-bottom: 14px; }
-    .prices-wrap { display: flex; flex-direction: column; gap: 6px; align-items: center; }
-    .price-vista { font-size: 22px; font-weight: 900; background: linear-gradient(135deg, #4facfe, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: baseline; justify-content: center; gap: 4px; }
-    .price-vista-label { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); -webkit-text-fill-color: var(--muted); }
-    .price-install { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+    .product-title { font-size: 12px; font-weight: 700; color: #cdd6f4; line-height: 1.4; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+    .prices-wrap { display: flex; flex-direction: column; gap: 8px; align-items: center; width: 100%; text-align: center; }
+    
+    .price-vista { font-size: 17px; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; text-align: center; }
+    .price-vista span:nth-child(2) { color: #fff; }
+    
+    .price-install { font-size: 10px; color: var(--muted); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 5px; text-align: center; opacity: 0.8; }
 
     /* BOTAO LINK */
     .card-footer { padding: 10px 14px 14px; }
@@ -155,11 +157,11 @@
     }
     function getCycleEmoji(title) {
       const t = title.toLowerCase();
-      if (t.includes("quente/frio")||t.includes("quente e frio")||t.includes("quente frio")||t.includes("q/f")) return "ðŸ”¥â„ï¸";
-      return "â„ï¸";
+      if (t.includes("quente/frio")||t.includes("quente e frio")||t.includes("quente frio")||t.includes("q/f")) return "🔥❄️";
+      return "❄️";
     }
     function formatCopyText(title,spot,install) {
-      return getCycleEmoji(title)+" "+boldBrand(title)+"\nðŸ’° "+spot+"\nðŸ’³ "+install;
+      return getCycleEmoji(title)+" "+boldBrand(title)+"\n💰 "+spot+"\n💳 "+install;
     }
 
     // --- SCRAPING DUFRIO ---
@@ -185,17 +187,14 @@
         const resp = await fetch(proxyUrl, { method:"POST", headers:{"Content-Type":"application/json","x-requested-with":"XMLHttpRequest"}, body:JSON.stringify({query}) });
         const json = await resp.json();
         const items = (json.data&&json.data.products&&json.data.products.items)||[];
-        console.log("Dufrio items:", items.length, items[0]);
         return items.map(item => {
           const finalPrice = item.price_range.minimum_price.final_price.value;
-          const spotPrice = finalPrice * 0.9; // 10% de desconto Ã  vista
-          const discount = item.price_range.minimum_price.discount.percent_off;
-          
+          const spotPrice = finalPrice * 0.9;
           const spotValStr = spotPrice.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
-          const spotStr = "R$ " + spotValStr + " 10% de Desconto Ã  Vista";
+          const spotStr = "R$ " + spotValStr + " 10% de Desconto à Vista";
           
           const installVal = finalPrice / 8;
-          const installStr = "ou R$ "+finalPrice.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2})+" em 8x de R$ "+installVal.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2})+" sem juros";
+          const installStr = "ou R$ " + finalPrice.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}) + " em 8x de R$ " + installVal.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}) + " sem juros";
           
           return { title: item.name, image: item.image ? item.image.url : "", spot: spotStr, install: installStr, link: "https://www.dufrio.com.br/"+item.url_key+".html", discount: 10 };
         });
@@ -220,21 +219,18 @@
     function createCard(p, store) {
       const card = document.createElement("div"); card.className = "product-card";
 
-      // Badge loja
       const badge = document.createElement("div"); badge.className = "store-badge"; badge.textContent = store;
 
-      // Imagem (copia imagem ou URL)
       const imgWrap = document.createElement("div"); imgWrap.className = "product-img-wrap";
       const img = document.createElement("img");
       img.src = p.image; img.alt = p.title;
       img.onerror = () => img.src = "https://placehold.co/260x260/111/333?text="+store;
       const overlay = document.createElement("div"); overlay.className = "img-overlay";
-      const overlaySpan = document.createElement("span"); overlaySpan.textContent = "ðŸ“· Copiar Foto";
+      const overlaySpan = document.createElement("span"); overlaySpan.textContent = "📷 Copiar Foto";
       overlay.appendChild(overlaySpan);
       imgWrap.appendChild(img); imgWrap.appendChild(overlay);
       imgWrap.onclick = async () => {
         try {
-          // Tenta copiar a imagem de fato via canvas
           const tempImg = new Image(); tempImg.crossOrigin = "anonymous"; tempImg.src = p.image;
           await new Promise((res,rej)=>{tempImg.onload=res;tempImg.onerror=rej;});
           const canvas = document.createElement("canvas");
@@ -243,50 +239,43 @@
           canvas.toBlob(async blob => {
             if(!blob) throw new Error("blob null");
             await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
-            overlay.classList.add("copied"); overlaySpan.textContent = "âœ… Copiado!";
-            setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="ðŸ“· Copiar Foto";},1800);
+            overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
+            setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
           },"image/png");
         } catch(e) {
-          // Fallback: copia URL da imagem
           await navigator.clipboard.writeText(p.image);
-          overlay.classList.add("copied"); overlaySpan.textContent = "ðŸ”— URL Copiada!";
-          setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="ðŸ“· Copiar Foto";},1800);
+          overlay.classList.add("copied"); overlaySpan.textContent = "🔗 URL Copiada!";
+          setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
         }
       };
 
-      // Info (copia texto)
       const info = document.createElement("div"); info.className = "product-info";
       const hint = document.createElement("div"); hint.className = "copy-hint"; hint.textContent = "COPIAR";
-      const titleDiv = document.createElement("div"); titleDiv.className = "product-title"; titleDiv.textContent = p.title;
+      
+      const titleDiv = document.createElement("div"); titleDiv.className = "product-title"; 
+      titleDiv.innerHTML = "<span>" + getCycleEmoji(p.title) + "</span> <span>" + boldBrand(p.title) + "</span>";
+      
       const pricesWrap = document.createElement("div"); pricesWrap.className = "prices-wrap";
       
-      const spotMatch = p.spot.match(/R\$\s*[\d.,]+/);
-      const spotValOnly = spotMatch ? spotMatch[0].replace("R$ ","") : p.spot;
-      const spotRest = spotMatch ? p.spot.replace(spotMatch[0], "").trim() : "";
-
       const priceVista = document.createElement("div"); priceVista.className = "price-vista";
-      priceVista.innerHTML = "<span style='font-size:12px;font-weight:600;-webkit-text-fill-color:var(--muted);color:var(--muted);'>R$</span><span>"+spotValOnly+"</span>";
+      priceVista.innerHTML = "<span>💰</span> <span>" + p.spot + "</span>";
       
-      const priceVistaLabel = document.createElement("div"); priceVistaLabel.className = "price-vista-label"; 
-      priceVistaLabel.innerHTML = "<span style='font-size:10px;font-weight:900;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.3);padding:3px 8px;border-radius:6px;-webkit-text-fill-color:#00e676;color:#00e676;'>"+spotRest+"</span>";
-      
-      const priceInstall = document.createElement("div"); priceInstall.className = "price-install"; priceInstall.textContent = p.install;
+      const priceInstall = document.createElement("div"); priceInstall.className = "price-install"; 
+      priceInstall.innerHTML = "<span>💳</span> <span>" + p.install + "</span>";
       
       pricesWrap.appendChild(priceVista); 
-      if (spotRest) pricesWrap.appendChild(priceVistaLabel);
       pricesWrap.appendChild(priceInstall);
       
       info.appendChild(hint); info.appendChild(titleDiv); info.appendChild(pricesWrap);
       info.onclick = () => {
         const txt = formatCopyText(p.title, p.spot, p.install);
         navigator.clipboard.writeText(txt);
-        hint.textContent = "âœ… COPIADO!"; info.classList.add("copied");
+        hint.textContent = "✅ COPIADO!"; info.classList.add("copied");
         setTimeout(()=>{hint.textContent="COPIAR";info.classList.remove("copied");},1800);
       };
 
-      // Botao link
       const footer = document.createElement("div"); footer.className = "card-footer";
-      const btnLink = document.createElement("button"); btnLink.className = "btn-link"; btnLink.textContent = "ðŸ”— Abrir na Loja";
+      const btnLink = document.createElement("button"); btnLink.className = "btn-link"; btnLink.textContent = "🔗 Abrir na Loja";
       btnLink.onclick = () => window.open(p.link,"_blank");
       footer.appendChild(btnLink);
 
