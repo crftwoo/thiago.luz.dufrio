@@ -216,6 +216,8 @@
     [data-id="comparador"] { grid-column: span 2; }
     [data-id="precos-vivo"] { grid-column: span 2; }
     [data-id="precificacao"] { grid-column: span 2; }
+    [data-id="scraper"] { grid-column: span 2; }
+    [data-id="scraper"] { grid-column: span 2; }
 
     [data-id="cotacao"] { grid-column: span 1; }
     [data-id="extracao"] { grid-column: span 2; }
@@ -225,11 +227,11 @@
     @media (max-width: 1200px) {
       .bento-grid { grid-template-columns: repeat(2, 1fr); }
       [data-id="gabinete"] { grid-column: span 2; grid-row: span 1; }
-      [data-id="checklist"], [data-id="corte"], [data-id="comparador"], [data-id="precos-vivo"], [data-id="precificacao"], [data-id="extracao"] { grid-column: span 1; }
+      [data-id="checklist"], [data-id="corte"], [data-id="comparador"], [data-id="precos-vivo"], [data-id="precificacao"], [data-id="scraper"], [data-id="extracao"] { grid-column: span 1; }
     }
     @media (max-width: 700px) {
       .bento-grid { grid-template-columns: 1fr; }
-      [data-id="gabinete"], [data-id="checklist"], [data-id="corte"], [data-id="comparador"], [data-id="precos-vivo"], [data-id="precificacao"], [data-id="extracao"], [data-id="cotacao"], [data-id="download"] { grid-column: span 1; }
+      [data-id="gabinete"], [data-id="checklist"], [data-id="corte"], [data-id="comparador"], [data-id="precos-vivo"], [data-id="precificacao"], [data-id="scraper"], [data-id="extracao"], [data-id="cotacao"], [data-id="download"] { grid-column: span 1; }
       .container { padding: 40px 20px; }
       .header h1 { font-size: 38px; }
     }
@@ -446,6 +448,7 @@
       { nome: "COMPARADOR DE AR-CONDICIONADO", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#6366f1", slug: "comparador", category: "ar" },
       { nome: "PREÇOS AO VIVO", desc: "Visualiza em cards os produtos raspados pela extensão das abas abertas nas lojas.", arquivo: "precos-ao-vivo.html", icone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`, color: "#00e676", slug: "precos-vivo", category: "ar" },
       { nome: "PRECIFICAÇÃO SKU'S (SITE)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#0ea5e9", slug: "precificacao", category: "ar" },
+      { nome: "SCRAPER DE AR CONDICIONADO", desc: "Varredura automática e direta em sites concorrentes via proxy.", arquivo: "scraper-ar.html", icone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>`, color: "#f59e0b", slug: "scraper", category: "ar" },
       
       // Outras
       { nome: "COTAÇÃO EXPRESS", desc: "Orçamento rápido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#8b5cf6", slug: "cotacao", category: "outros" },
