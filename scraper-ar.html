@@ -257,14 +257,14 @@
         const items = (json.data&&json.data.products&&json.data.products.items)||[];
         return items.map(item => {
           const finalPrice = item.price_range.minimum_price.final_price.value;
-          const spotPrice = finalPrice * 0.9;
+          const spotPrice = finalPrice * 0.95;
           const spotValStr = spotPrice.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
-          const spotStr = "R$ " + spotValStr + " 10% de Desconto à Vista";
+          const spotStr = "R$ " + spotValStr + " 5% de Desconto à Vista";
           
           const installVal = finalPrice / 8;
           const installStr = "ou R$ " + finalPrice.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}) + " em 8x de R$ " + installVal.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}) + " sem juros";
           
-          return { title: item.name, image: item.image ? item.image.url : "", spot: spotStr, install: installStr, link: "https://www.dufrio.com.br/"+item.url_key+".html", discount: 10 };
+          return { title: item.name, image: item.image ? item.image.url : "", spot: spotStr, install: installStr, link: "https://www.dufrio.com.br/"+item.url_key+".html", discount: 5 };
         });
       } catch(e) { console.error("Dufrio erro:", e); return []; }
     }
