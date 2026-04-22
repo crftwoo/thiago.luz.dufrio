@@ -1,1 +1,1 @@
-Scraper-ar: migrado para API GraphQL da Dufrio (sem proxy HTML)
+Scraper-ar Dufrio: fix CORS usando proxy para chamada GraphQL

@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Scraper-ar: migrado para API GraphQL da Dufrio (sem proxy HTML)', dateIso: '2026-04-22T15:42:02-03:00' };
+const LATEST_LOG = { message: 'Scraper-ar Dufrio: fix CORS usando proxy para chamada GraphQL', dateIso: '2026-04-22T15:55:54-03:00' };
