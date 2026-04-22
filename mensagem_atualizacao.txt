@@ -1,1 +1,1 @@
-Scraper Dufrio: corrigido link dos produtos (adiciona .html ao url_key)
+Scraper-ar: redesign completo dos cards com foto, precos, botao link e copia igual a extensao
