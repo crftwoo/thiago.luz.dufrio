@@ -51,8 +51,8 @@
     .store-badge { position: absolute; top: 12px; left: 12px; z-index: 3; background: linear-gradient(135deg, rgba(16,30,100,0.95), rgba(79,172,254,0.2)); border: 1px solid rgba(79,172,254,0.3); padding: 3px 10px; border-radius: 20px; font-size: 9px; font-weight: 900; color: white; letter-spacing: 1.5px; text-transform: uppercase; backdrop-filter: blur(8px); }
 
     /* FOTO */
-    .product-img-wrap { width: 100%; aspect-ratio: 1/1; background: rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; border-bottom: 1px solid var(--card-border); }
-    .product-img-wrap img { width: 85%; height: 85%; object-fit: contain; transition: transform 0.3s; }
+    .product-img-wrap { width: 100%; aspect-ratio: 1.1/1; background: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; border-bottom: 1px solid var(--card-border); }
+    .product-img-wrap img { width: 90%; height: 90%; object-fit: contain; transition: transform 0.3s; }
     .product-img-wrap:hover img { transform: scale(1.08); }
     .img-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; }
     .img-overlay span { font-size: 10px; font-weight: 900; letter-spacing: 2px; color: white; text-transform: uppercase; background: rgba(79,172,254,0.3); border: 1px solid rgba(79,172,254,0.5); padding: 8px 16px; border-radius: 8px; }
@@ -60,17 +60,17 @@
     .img-overlay.copied span { background: rgba(0,230,118,0.3); border-color: rgba(0,230,118,0.5); color: var(--green); }
 
     /* INFO AREA */
-    .product-info { padding: 14px 14px 6px; cursor: pointer; position: relative; flex: 1; }
+    .product-info { padding: 18px 14px 10px; cursor: pointer; position: relative; flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; }
     .product-info:hover { background: rgba(255,255,255,0.02); }
-    .copy-hint { position: absolute; top: 10px; right: 10px; font-size: 8px; font-weight: 900; color: rgba(79,172,254,0.6); letter-spacing: 1px; text-transform: uppercase; opacity: 0; transition: 0.2s; }
+    .copy-hint { position: absolute; top: 10px; right: 10px; font-size: 8px; font-weight: 900; color: rgba(79,172,254,0.6); letter-spacing: 1px; text-transform: uppercase; opacity: 0; transition: 0.2s; z-index: 5; }
     .product-info:hover .copy-hint { opacity: 1; }
     .product-info.copied .copy-hint { opacity: 1; color: var(--green); content: "COPIADO!"; }
 
-    .product-title { font-size: 11px; font-weight: 700; color: #cdd6f4; line-height: 1.5; margin-bottom: 12px; padding-right: 40px; }
-    .prices-wrap { display: flex; flex-direction: column; gap: 4px; }
-    .price-vista { font-size: 20px; font-weight: 900; background: linear-gradient(135deg, #4facfe, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: baseline; gap: 4px; }
+    .product-title { font-size: 11px; font-weight: 700; color: #cdd6f4; line-height: 1.5; margin-bottom: 14px; }
+    .prices-wrap { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+    .price-vista { font-size: 22px; font-weight: 900; background: linear-gradient(135deg, #4facfe, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: baseline; justify-content: center; gap: 4px; }
     .price-vista-label { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); -webkit-text-fill-color: var(--muted); }
-    .price-install { font-size: 11px; color: var(--muted); font-weight: 600; }
+    .price-install { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 4px; }
 
     /* BOTAO LINK */
     .card-footer { padding: 10px 14px 14px; }
@@ -155,11 +155,11 @@
     }
     function getCycleEmoji(title) {
       const t = title.toLowerCase();
-      if (t.includes("quente/frio")||t.includes("quente e frio")||t.includes("quente frio")||t.includes("q/f")) return "🔥❄️";
-      return "❄️";
+      if (t.includes("quente/frio")||t.includes("quente e frio")||t.includes("quente frio")||t.includes("q/f")) return "ðŸ”¥â„ï¸";
+      return "â„ï¸";
     }
     function formatCopyText(title,spot,install) {
-      return getCycleEmoji(title)+" "+boldBrand(title)+"\n💰 "+spot+"\n💳 "+install;
+      return getCycleEmoji(title)+" "+boldBrand(title)+"\nðŸ’° "+spot+"\nðŸ’³ "+install;
     }
 
     // --- SCRAPING DUFRIO ---
@@ -188,13 +188,16 @@
         console.log("Dufrio items:", items.length, items[0]);
         return items.map(item => {
           const finalPrice = item.price_range.minimum_price.final_price.value;
-          const regularPrice = item.price_range.minimum_price.regular_price.value;
+          const spotPrice = finalPrice * 0.9; // 10% de desconto Ã  vista
           const discount = item.price_range.minimum_price.discount.percent_off;
-          const spotStr = "R$ " + finalPrice.toLocaleString("pt-BR",{minimumFractionDigits:2});
-          // Calcula parcelamento em 8x (padrao Dufrio sem juros)
+          
+          const spotValStr = spotPrice.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
+          const spotStr = "R$ " + spotValStr + " 10% de Desconto Ã  Vista";
+          
           const installVal = finalPrice / 8;
-          const installStr = "ou R$ "+finalPrice.toLocaleString("pt-BR",{minimumFractionDigits:2})+" em 8x de R$ "+installVal.toLocaleString("pt-BR",{minimumFractionDigits:2})+" sem juros";
-          return { title: item.name, image: item.image ? item.image.url : "", spot: spotStr, install: installStr, link: "https://www.dufrio.com.br/"+item.url_key+".html", discount: Math.round(discount) };
+          const installStr = "ou R$ "+finalPrice.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2})+" em 8x de R$ "+installVal.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2})+" sem juros";
+          
+          return { title: item.name, image: item.image ? item.image.url : "", spot: spotStr, install: installStr, link: "https://www.dufrio.com.br/"+item.url_key+".html", discount: 10 };
         });
       } catch(e) { console.error("Dufrio erro:", e); return []; }
     }
@@ -226,7 +229,7 @@
       img.src = p.image; img.alt = p.title;
       img.onerror = () => img.src = "https://placehold.co/260x260/111/333?text="+store;
       const overlay = document.createElement("div"); overlay.className = "img-overlay";
-      const overlaySpan = document.createElement("span"); overlaySpan.textContent = "📷 Copiar Foto";
+      const overlaySpan = document.createElement("span"); overlaySpan.textContent = "ðŸ“· Copiar Foto";
       overlay.appendChild(overlaySpan);
       imgWrap.appendChild(img); imgWrap.appendChild(overlay);
       imgWrap.onclick = async () => {
@@ -240,14 +243,14 @@
           canvas.toBlob(async blob => {
             if(!blob) throw new Error("blob null");
             await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
-            overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
-            setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
+            overlay.classList.add("copied"); overlaySpan.textContent = "âœ… Copiado!";
+            setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="ðŸ“· Copiar Foto";},1800);
           },"image/png");
         } catch(e) {
           // Fallback: copia URL da imagem
           await navigator.clipboard.writeText(p.image);
-          overlay.classList.add("copied"); overlaySpan.textContent = "🔗 URL Copiada!";
-          setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
+          overlay.classList.add("copied"); overlaySpan.textContent = "ðŸ”— URL Copiada!";
+          setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="ðŸ“· Copiar Foto";},1800);
         }
       };
 
@@ -256,22 +259,34 @@
       const hint = document.createElement("div"); hint.className = "copy-hint"; hint.textContent = "COPIAR";
       const titleDiv = document.createElement("div"); titleDiv.className = "product-title"; titleDiv.textContent = p.title;
       const pricesWrap = document.createElement("div"); pricesWrap.className = "prices-wrap";
+      
+      const spotMatch = p.spot.match(/R\$\s*[\d.,]+/);
+      const spotValOnly = spotMatch ? spotMatch[0].replace("R$ ","") : p.spot;
+      const spotRest = spotMatch ? p.spot.replace(spotMatch[0], "").trim() : "";
+
       const priceVista = document.createElement("div"); priceVista.className = "price-vista";
-      priceVista.innerHTML = "<span style='font-size:11px;font-weight:600;-webkit-text-fill-color:var(--muted);color:var(--muted);'>R$</span><span>"+p.spot.replace("R$ ","")+"</span>"+(p.discount>0?"<span style='font-size:9px;font-weight:900;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.3);padding:2px 6px;border-radius:6px;-webkit-text-fill-color:#00e676;color:#00e676;'>-"+p.discount+"%</span>":"");
-      const priceVistaLabel = document.createElement("div"); priceVistaLabel.className = "price-vista-label"; priceVistaLabel.textContent = "À Vista";
+      priceVista.innerHTML = "<span style='font-size:12px;font-weight:600;-webkit-text-fill-color:var(--muted);color:var(--muted);'>R$</span><span>"+spotValOnly+"</span>";
+      
+      const priceVistaLabel = document.createElement("div"); priceVistaLabel.className = "price-vista-label"; 
+      priceVistaLabel.innerHTML = "<span style='font-size:10px;font-weight:900;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.3);padding:3px 8px;border-radius:6px;-webkit-text-fill-color:#00e676;color:#00e676;'>"+spotRest+"</span>";
+      
       const priceInstall = document.createElement("div"); priceInstall.className = "price-install"; priceInstall.textContent = p.install;
-      pricesWrap.appendChild(priceVista); pricesWrap.appendChild(priceVistaLabel); pricesWrap.appendChild(priceInstall);
+      
+      pricesWrap.appendChild(priceVista); 
+      if (spotRest) pricesWrap.appendChild(priceVistaLabel);
+      pricesWrap.appendChild(priceInstall);
+      
       info.appendChild(hint); info.appendChild(titleDiv); info.appendChild(pricesWrap);
       info.onclick = () => {
         const txt = formatCopyText(p.title, p.spot, p.install);
         navigator.clipboard.writeText(txt);
-        hint.textContent = "✅ COPIADO!"; info.classList.add("copied");
+        hint.textContent = "âœ… COPIADO!"; info.classList.add("copied");
         setTimeout(()=>{hint.textContent="COPIAR";info.classList.remove("copied");},1800);
       };
 
       // Botao link
       const footer = document.createElement("div"); footer.className = "card-footer";
-      const btnLink = document.createElement("button"); btnLink.className = "btn-link"; btnLink.textContent = "🔗 Abrir na Loja";
+      const btnLink = document.createElement("button"); btnLink.className = "btn-link"; btnLink.textContent = "ðŸ”— Abrir na Loja";
       btnLink.onclick = () => window.open(p.link,"_blank");
       footer.appendChild(btnLink);
 
