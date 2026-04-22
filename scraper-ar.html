@@ -54,7 +54,7 @@
 
     /* FOTO */
     .product-img-wrap { width: 100%; aspect-ratio: 1.1/1; background: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; border-bottom: 1px solid var(--card-border); }
-    .product-img-wrap img { width: 90%; height: 90%; object-fit: contain; transition: transform 0.3s; }
+    .product-img-wrap img { width: 95%; height: 95%; object-fit: contain; transition: transform 0.3s; }
     .product-img-wrap:hover img { transform: scale(1.08); }
     .img-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; }
     .img-overlay span { font-size: 10px; font-weight: 900; letter-spacing: 2px; color: white; text-transform: uppercase; background: rgba(79,172,254,0.3); border: 1px solid rgba(79,172,254,0.5); padding: 8px 16px; border-radius: 8px; }
@@ -68,13 +68,12 @@
     .product-info:hover .copy-hint { opacity: 1; }
     .product-info.copied .copy-hint { opacity: 1; color: var(--green); content: "COPIADO!"; }
 
-    .product-title { font-size: 12px; font-weight: 700; color: #cdd6f4; line-height: 1.4; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
-    .prices-wrap { display: flex; flex-direction: column; gap: 8px; align-items: center; width: 100%; text-align: center; }
+    .product-title { font-size: 15px; font-weight: 800; color: #ffffff; line-height: 1.3; margin-bottom: 14px; text-align: center; display: flex; align-items: center; justify-content: center; }
+    .prices-wrap { display: flex; flex-direction: column; gap: 6px; align-items: center; width: 100%; text-align: center; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); }
     
-    .price-vista { font-size: 17px; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; text-align: center; }
-    .price-vista span:nth-child(2) { color: #fff; }
+    .price-vista { font-size: 18px; font-weight: 900; color: #00e676; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; text-align: center; text-shadow: 0 0 12px rgba(0,230,118,0.2); }
     
-    .price-install { font-size: 10px; color: var(--muted); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 5px; text-align: center; opacity: 0.8; }
+    .price-install { font-size: 13px; color: #a1a1aa; font-weight: 600; display: flex; align-items: center; justify-content: center; text-align: center; }
 
     /* BOTAO LINK */
     .card-footer { padding: 10px 14px 14px; }
@@ -284,15 +283,15 @@
       const hint = document.createElement("div"); hint.className = "copy-hint"; hint.textContent = "COPIAR";
       
       const titleDiv = document.createElement("div"); titleDiv.className = "product-title"; 
-      titleDiv.innerHTML = "<span>" + getCycleEmoji(p.title) + "</span> <span>" + boldBrand(p.title) + "</span>";
+      titleDiv.innerHTML = "<span>" + p.title + "</span>";
       
       const pricesWrap = document.createElement("div"); pricesWrap.className = "prices-wrap";
       
       const priceVista = document.createElement("div"); priceVista.className = "price-vista";
-      priceVista.innerHTML = "<span>💰</span> <span>" + p.spot + "</span>";
+      priceVista.innerHTML = "<span>" + p.spot + "</span>";
       
       const priceInstall = document.createElement("div"); priceInstall.className = "price-install"; 
-      priceInstall.innerHTML = "<span>💳</span> <span>" + p.install + "</span>";
+      priceInstall.innerHTML = "<span>" + p.install + "</span>";
       
       pricesWrap.appendChild(priceVista); 
       pricesWrap.appendChild(priceInstall);

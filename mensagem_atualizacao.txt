@@ -1,1 +1,1 @@
-Otimização do scraper-ar.html: Implementado sistema de cache local (localStorage) para leitura instantânea dos dados da planilha.
+Ajuste no layout dos cards do scraper: titulo e parcelas maiores, remocao de emojis na tela e precos em destaque.
