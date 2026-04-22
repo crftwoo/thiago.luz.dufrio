@@ -159,7 +159,7 @@
           image: item.image ? item.image.url : "",
           spot: "R$ " + item.price_range.minimum_price.final_price.value.toLocaleString("pt-BR",{minimumFractionDigits:2}),
           install: "—",
-          link: "https://www.dufrio.com.br/" + item.url_key
+          link: "https://www.dufrio.com.br/" + item.url_key + ".html"
         }));
       } catch(e) { console.error("Dufrio GraphQL erro:", e); return []; }
     }

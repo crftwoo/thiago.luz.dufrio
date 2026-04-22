@@ -1,1 +1,1 @@
-Scraper-ar Dufrio: fix CORS usando proxy para chamada GraphQL
+Scraper Dufrio: corrigido link dos produtos (adiciona .html ao url_key)
