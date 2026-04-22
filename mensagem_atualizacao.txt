@@ -1,1 +1,1 @@
-Nova ferramenta Scraper de Ar Condicionado com varredura automatica via proxy na Dufrio
+Scraper-ar: migrado para API GraphQL da Dufrio (sem proxy HTML)

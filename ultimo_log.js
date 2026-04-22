@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Nova ferramenta Scraper de Ar Condicionado com varredura automatica via proxy na Dufrio', dateIso: '2026-04-22T15:23:23-03:00' };
+const LATEST_LOG = { message: 'Scraper-ar: migrado para API GraphQL da Dufrio (sem proxy HTML)', dateIso: '2026-04-22T15:42:02-03:00' };
