@@ -1,1 +1,1 @@
-Ajuste final das strings de preço no Scraper e README.md concluído. Centralização e emojis aplicados.
+Otimização do scraper-ar.html: Implementado sistema de cache local (localStorage) para leitura instantânea dos dados da planilha.
