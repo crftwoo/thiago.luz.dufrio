@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Ajuste no layout dos cards do scraper: titulo e parcelas maiores, remocao de emojis na tela e precos em destaque.', dateIso: '2026-04-22T17:27:52-03:00' };
+const LATEST_LOG = { message: 'Adicionado sistema de filtros dinâmicos de marcas, btus e ciclos no scraper, além de botão para refazer a busca.', dateIso: '2026-04-22T18:03:54-03:00' };
