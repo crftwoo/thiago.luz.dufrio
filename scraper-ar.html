@@ -224,7 +224,8 @@
 
     function renderTipos() {
       const c = document.getElementById("tipo-options"); c.innerHTML = "";
-      TIPOS_PADRAO.forEach(t => {
+      const tipos = sheetData && sheetData.length > 0 ? [...new Set(sheetData.map(i=>i.Tipo))] : ["Hi Wall", "Piso Teto", "Cassete"];
+      tipos.forEach(t => {
         const b = document.createElement("button"); 
         b.className = "option-btn tipo-btn" + (selection.tipo === t ? " selected" : "");
         b.innerHTML = "<img src='"+(IMAGES[t]||"img/hi_wall.png")+"' onerror=\"this.src='https://placehold.co/80';\"><span>"+t+"</span>";
@@ -232,8 +233,13 @@
       });
     }
 
-    function formatBTU(btu) { return btu.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
-    function formatCiclo(ciclo) { return ciclo.toLowerCase() === "frio" ? "Só Frio" : ciclo; }
+    function formatBTU(btu) { 
+      return String(btu).replace(/\b(\d+)\b/g, (match) => {
+        if(match.length >= 4) return match.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        return match;
+      }); 
+    }
+    function formatCiclo(ciclo) { return String(ciclo).toLowerCase().trim() === "frio" ? "Só Frio" : ciclo; }
 
     function selectTipo(t) { 
       selection.tipo = t; 
@@ -245,7 +251,8 @@
       document.getElementById("step-resultados").classList.remove("active");
       document.getElementById("loading-results").style.display = "none";
       
-      renderOptions("btu-options", BTUS_PADRAO, selectBTU, selection.btu, formatBTU); 
+      const btus = [...new Set(sheetData.filter(i=>i.Tipo===t).map(i=>i.BTUs))].sort((a,b)=>parseInt(String(a).replace(/\D/g,"")) - parseInt(String(b).replace(/\D/g,"")));
+      renderOptions("btu-options", btus, selectBTU, selection.btu, formatBTU); 
       document.getElementById("step-btus").classList.add("active");
       
       setTimeout(() => document.getElementById("step-btus").scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
@@ -254,12 +261,15 @@
     function selectBTU(b) { 
       selection.btu = b; 
       selection.ciclo = "";
-      renderOptions("btu-options", BTUS_PADRAO, selectBTU, selection.btu, formatBTU);
+      
+      const btus = [...new Set(sheetData.filter(i=>i.Tipo===selection.tipo).map(i=>i.BTUs))].sort((a,b)=>parseInt(String(a).replace(/\D/g,"")) - parseInt(String(b).replace(/\D/g,"")));
+      renderOptions("btu-options", btus, selectBTU, selection.btu, formatBTU);
       
       document.getElementById("step-resultados").classList.remove("active");
       document.getElementById("loading-results").style.display = "none";
       
-      renderOptions("ciclo-options", CICLOS_PADRAO, selectCiclo, selection.ciclo, formatCiclo); 
+      const ciclos = [...new Set(sheetData.filter(i=>i.Tipo===selection.tipo&&i.BTUs===selection.btu).map(i=>i.Ciclo))];
+      renderOptions("ciclo-options", ciclos, selectCiclo, selection.ciclo, formatCiclo); 
       document.getElementById("step-ciclo").classList.add("active");
       
       setTimeout(() => document.getElementById("step-ciclo").scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
@@ -267,7 +277,8 @@
 
     function selectCiclo(c) { 
       selection.ciclo = c; 
-      renderOptions("ciclo-options", CICLOS_PADRAO, selectCiclo, selection.ciclo, formatCiclo);
+      const ciclos = [...new Set(sheetData.filter(i=>i.Tipo===selection.tipo&&i.BTUs===selection.btu).map(i=>i.Ciclo))];
+      renderOptions("ciclo-options", ciclos, selectCiclo, selection.ciclo, formatCiclo);
       
       document.getElementById("loading-results").style.display = "flex";
       document.getElementById("step-resultados").classList.add("active");
@@ -404,23 +415,13 @@
           await sheetLoadPromise;
         }
         
-        function normalizeStr(s) {
-          if (!s) return "";
-          return String(s).toLowerCase()
-                       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                       .replace(/[-.\s]/g, "");
-        }
+        const links = sheetData.filter(i => 
+          i.Tipo === selection.tipo && 
+          i.BTUs === selection.btu && 
+          i.Ciclo === selection.ciclo
+        );
         
-        const links = sheetData.filter(i => {
-          const matchTipo = normalizeStr(i.Tipo) === normalizeStr(selection.tipo);
-          const matchBtu = normalizeStr(i.BTUs) === normalizeStr(selection.btu);
-          const valCiclo = normalizeStr(i.Ciclo);
-          const selCiclo = normalizeStr(selection.ciclo);
-          const matchCiclo = valCiclo === selCiclo || (selCiclo === "frio" && valCiclo === "sofrio");
-          return matchTipo && matchBtu && matchCiclo;
-        });
-        
-        const dufrioLink = links.find(l => l.Site && normalizeStr(l.Site) === "dufrio");
+        const dufrioLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "dufrio");
         
         if (dufrioLink && dufrioLink.Link) {
           document.getElementById("loading-msg").innerText = "BUSCANDO DUFRIO...";

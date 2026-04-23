@@ -1,1 +1,1 @@
-Correção crítica de caracteres: Adicionado removedor de acentos no Filtro Inteligente. A acentuação em palavras como 'Só Frio' na planilha estava causando falha na busca e retornando falso negativo de produtos encontrados.
+Revertida geração estática de botões para dinâmica (baseado no que existe na planilha), garantindo suporte completo para gamas de BTUs combinadas (ex: 22.000 a 24.000) mantendo a formatação visual com pontos solicitada pelo usuário.
