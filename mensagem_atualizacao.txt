@@ -1,1 +1,1 @@
-Implementado layout de "Disclosure Progressivo" mantendo as escolhas na tela e texto de status alterado para Conectando/Conectado.
+Adicionada formatação visual: BTUs agora mostram separador de milhar (ex: 9.000) e Ciclo 'Frio' exibe 'Só Frio'.

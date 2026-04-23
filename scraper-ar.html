@@ -232,6 +232,9 @@
       });
     }
 
+    function formatBTU(btu) { return btu.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+    function formatCiclo(ciclo) { return ciclo.toLowerCase() === "frio" ? "Só Frio" : ciclo; }
+
     function selectTipo(t) { 
       selection.tipo = t; 
       selection.btu = ""; 
@@ -242,7 +245,7 @@
       document.getElementById("step-resultados").classList.remove("active");
       document.getElementById("loading-results").style.display = "none";
       
-      renderOptions("btu-options", BTUS_PADRAO, selectBTU, selection.btu); 
+      renderOptions("btu-options", BTUS_PADRAO, selectBTU, selection.btu, formatBTU); 
       document.getElementById("step-btus").classList.add("active");
       
       setTimeout(() => document.getElementById("step-btus").scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
@@ -251,12 +254,12 @@
     function selectBTU(b) { 
       selection.btu = b; 
       selection.ciclo = "";
-      renderOptions("btu-options", BTUS_PADRAO, selectBTU, selection.btu);
+      renderOptions("btu-options", BTUS_PADRAO, selectBTU, selection.btu, formatBTU);
       
       document.getElementById("step-resultados").classList.remove("active");
       document.getElementById("loading-results").style.display = "none";
       
-      renderOptions("ciclo-options", CICLOS_PADRAO, selectCiclo, selection.ciclo); 
+      renderOptions("ciclo-options", CICLOS_PADRAO, selectCiclo, selection.ciclo, formatCiclo); 
       document.getElementById("step-ciclo").classList.add("active");
       
       setTimeout(() => document.getElementById("step-ciclo").scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
@@ -264,7 +267,7 @@
 
     function selectCiclo(c) { 
       selection.ciclo = c; 
-      renderOptions("ciclo-options", CICLOS_PADRAO, selectCiclo, selection.ciclo);
+      renderOptions("ciclo-options", CICLOS_PADRAO, selectCiclo, selection.ciclo, formatCiclo);
       
       document.getElementById("step-tipo").classList.remove("active");
       document.getElementById("step-btus").classList.remove("active");
@@ -277,12 +280,12 @@
       startScraping(); 
     }
 
-    function renderOptions(id, opts, cb, currentSelection) { 
+    function renderOptions(id, opts, cb, currentSelection, formatter) { 
       const c = document.getElementById(id); c.innerHTML=""; 
       opts.forEach(o => {
         const b = document.createElement("button");
         b.className = "option-btn" + (currentSelection === o ? " selected" : "");
-        b.innerText = o;
+        b.innerText = formatter ? formatter(o) : o;
         b.onclick = () => cb(o);
         c.appendChild(b);
       }); 
@@ -393,7 +396,7 @@
     async function startScraping() {
       showStep("results");
       document.getElementById("selection-summary").style.display = "flex";
-      document.getElementById("summary-text").innerHTML = "<span>"+selection.tipo+"</span><span>"+selection.btu+"</span><span>"+selection.ciclo+"</span>";
+      document.getElementById("summary-text").innerHTML = "<span>"+selection.tipo+"</span><span>"+formatBTU(selection.btu)+"</span><span>"+formatCiclo(selection.ciclo)+"</span>";
       document.getElementById("filters-section").style.display = "none";
       
       allFetchedProducts = [];
@@ -435,8 +438,11 @@
       }
       let btu = "Outros";
       const btuMatch = p.title.match(/\b(\d{4,5})\s*BTU/i) || p.title.match(/\b(\d{4,5})\b/);
-      if (btuMatch) btu = btuMatch[1] + " BTUs";
-      let ciclo = "Frio";
+      if (btuMatch) {
+        let bNum = btuMatch[1];
+        btu = bNum.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " BTUs";
+      }
+      let ciclo = "Só Frio";
       if (p.title.toLowerCase().includes("quente")) ciclo = "Quente/Frio";
       p.marca = marca; p.btu = btu; p.ciclo = ciclo;
       return p;

@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Implementado layout de "Disclosure Progressivo" mantendo as escolhas na tela e texto de status alterado para Conectando/Conectado.', dateIso: '2026-04-23T15:34:50-03:00' };
+const LATEST_LOG = { message: 'Adicionada formatação visual: BTUs agora mostram separador de milhar (ex: 9.000) e Ciclo 'Frio' exibe 'Só Frio'.', dateIso: '2026-04-23T15:40:37-03:00' };
