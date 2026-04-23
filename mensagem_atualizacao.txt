@@ -1,1 +1,1 @@
-Adicionado sistema de filtros dinâmicos de marcas, btus e ciclos no scraper, além de botão para refazer a busca.
+Ajuste no Scraper para capturar os valores do site com exatidão, adição de filtro que remove produtos esgotados da tela, e reorganização do painel (Hub).
