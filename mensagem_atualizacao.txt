@@ -1,1 +1,1 @@
-Adicionada formatação visual: BTUs agora mostram separador de milhar (ex: 9.000) e Ciclo 'Frio' exibe 'Só Frio'.
+Removida barra de resumo redundante e alterado comportamento de seleção para manter todas as flags clicadas fixas na tela permanentemente.

@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Adicionada formatação visual: BTUs agora mostram separador de milhar (ex: 9.000) e Ciclo 'Frio' exibe 'Só Frio'.', dateIso: '2026-04-23T15:40:37-03:00' };
+const LATEST_LOG = { message: 'Removida barra de resumo redundante e alterado comportamento de seleção para manter todas as flags clicadas fixas na tela permanentemente.', dateIso: '2026-04-23T15:42:09-03:00' };

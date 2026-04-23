@@ -269,13 +269,11 @@
       selection.ciclo = c; 
       renderOptions("ciclo-options", CICLOS_PADRAO, selectCiclo, selection.ciclo, formatCiclo);
       
-      document.getElementById("step-tipo").classList.remove("active");
-      document.getElementById("step-btus").classList.remove("active");
-      document.getElementById("step-ciclo").classList.remove("active");
-      
       document.getElementById("loading-results").style.display = "flex";
       document.getElementById("step-resultados").classList.add("active");
       document.getElementById("results-grid").innerHTML = "";
+      
+      setTimeout(() => document.getElementById("step-resultados").scrollIntoView({behavior: 'smooth', block: 'start'}), 100);
       
       startScraping(); 
     }
@@ -394,9 +392,7 @@
     }
 
     async function startScraping() {
-      showStep("results");
-      document.getElementById("selection-summary").style.display = "flex";
-      document.getElementById("summary-text").innerHTML = "<span>"+selection.tipo+"</span><span>"+formatBTU(selection.btu)+"</span><span>"+formatCiclo(selection.ciclo)+"</span>";
+      document.getElementById("selection-summary").style.display = "none";
       document.getElementById("filters-section").style.display = "none";
       
       allFetchedProducts = [];
