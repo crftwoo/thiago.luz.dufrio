@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Ajuste no Scraper para capturar os valores do site com exatidão, adição de filtro que remove produtos esgotados da tela, e reorganização do painel (Hub).', dateIso: '2026-04-22T22:53:20-03:00' };
+const LATEST_LOG = { message: 'Limpando arquivos de teste esquecidos', dateIso: '2026-04-22T22:57:40-03:00' };
