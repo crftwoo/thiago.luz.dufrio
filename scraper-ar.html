@@ -247,38 +247,70 @@
     async function scrapeDufrio(url) {
       try {
         const f = parseDufrioFilters(url);
-        let capFilter = f.capacidades.length > 0 ? "ec_capacidade: { in: ["+f.capacidades.map(c=>"\""+c+"\"").join(",")+"] }," : "";
-        let cicloFilter = f.ciclo ? "ec_ciclo: { eq: \""+f.ciclo+"\" }," : "";
-        let catFilter = "category_url_path: { eq: \"ar-condicionado/"+f.categoria+"\" },";
-        const query = "{ products( filter: {"+catFilter+capFilter+cicloFilter+"}, pageSize: 24, sort: { price: ASC } ) { items { name url_key image { url } price_range { minimum_price { final_price { value } regular_price { value } discount { percent_off } } } } } }";
-        const proxyUrl = "https://corsproxy.io/?"+encodeURIComponent("https://www.dufrio.com.br/graphql");
-        const resp = await fetch(proxyUrl, { method:"POST", headers:{"Content-Type":"application/json","x-requested-with":"XMLHttpRequest"}, body:JSON.stringify({query}) });
-        const json = await resp.json();
-        const items = (json.data&&json.data.products&&json.data.products.items)||[];
-        return items.map(item => {
-          const finalPrice = item.price_range.minimum_price.final_price.value;
-          
-          // Lógica dinâmica baseada na campanha atual da Dufrio
-          let discountPercent = 5;
-          const nameLower = item.name.toLowerCase();
-          
-          if (nameLower.includes('tcl') || 
-              (nameLower.includes('agratto zen') && nameLower.includes('frio') && !nameLower.includes('quente')) || 
-              nameLower.includes('hisense eco plus') ||
-              nameLower.includes('philco') ||
-              nameLower.includes('midea ia ecomaster')) {
-              discountPercent = 10;
-          }
-          
-          const spotPrice = finalPrice * (1 - (discountPercent / 100));
-          const spotValStr = spotPrice.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
-          const spotStr = "R$ " + spotValStr + " " + discountPercent + "% de Desconto à Vista";
-          
-          const installVal = finalPrice / 8;
-          const installStr = "ou R$ " + finalPrice.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}) + " em 8x de R$ " + installVal.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}) + " sem juros";
-          
-          return { title: item.name, image: item.image ? item.image.url : "", spot: spotStr, install: installStr, link: "https://www.dufrio.com.br/"+item.url_key+".html", discount: discountPercent };
-        });
+        let categoryUrl = "https://www.dufrio.com.br/ar-condicionado/" + f.categoria;
+        let queryParams = [];
+        if (f.capacidades.length > 0) {
+            f.capacidades.forEach((c, idx) => queryParams.push(`ec_capacidade[${idx}]=${encodeURIComponent(c)}`));
+        }
+        if (f.ciclo) queryParams.push(`ec_ciclo=${encodeURIComponent(f.ciclo)}`);
+        queryParams.push('product_list_dir=asc');
+        queryParams.push('product_list_order=price');
+        
+        const fullUrl = categoryUrl + "?" + queryParams.join("&");
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl);
+        
+        const resp = await fetch(proxyUrl);
+        const html = await resp.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        
+        const items = Array.from(doc.querySelectorAll('.product-item'));
+        return items.map(card => {
+           const titleEl = card.querySelector('a.product-item-link');
+           if (!titleEl) return null;
+           const title = titleEl.innerText.trim();
+           
+           const imgEl = card.querySelector('img.product-image-photo, img.product-image');
+           let image = "";
+           if (imgEl) {
+               image = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || "";
+               if (image.includes('data:image')) {
+                   const sourceEl = card.querySelector('source');
+                   if (sourceEl && sourceEl.srcset) image = sourceEl.srcset.split(',')[0].split(' ')[0];
+               }
+           }
+           
+           let spotLine = "";
+           const spotPriceEl = card.querySelector('.spot-price');
+           if (spotPriceEl) spotLine = spotPriceEl.innerText.replace(/\s+/g, ' ').trim();
+           if (!spotLine) {
+               let realPriceEl = card.querySelector('#cash_down');
+               if (!realPriceEl) {
+                   const allWrappers = card.querySelectorAll('.price-wrapper');
+                   if (allWrappers.length > 0) realPriceEl = allWrappers[allWrappers.length - 1];
+               }
+               if (realPriceEl) {
+                   spotLine = realPriceEl.innerText.replace(/\s+/g, ' ').trim();
+                   const labelToUse = (realPriceEl.parentElement && realPriceEl.parentElement.querySelector('.price-label')) || card.querySelector('.price-label');
+                   if (labelToUse) spotLine += ' ' + labelToUse.innerText.replace(/\s+/g, ' ').trim();
+               }
+           }
+           
+           let installLine = "";
+           const ps = card.querySelectorAll('p');
+           ps.forEach(p => {
+               const pText = p.innerText.toLowerCase();
+               if (pText.includes('ou r$') && (pText.includes('em') || pText.includes('x'))) {
+                   installLine = p.innerText.replace(/\s+/g, ' ').replace(/\u00A0/g, ' ').trim();
+               }
+           });
+           
+           let linkHref = titleEl.getAttribute('href');
+           if(!linkHref) linkHref = "";
+           const finalLink = linkHref.startsWith('http') ? linkHref : "https://www.dufrio.com.br" + linkHref;
+           
+           return { title, image, spot: spotLine, install: installLine, link: finalLink, discount: 0 };
+        }).filter(Boolean);
       } catch(e) { console.error("Dufrio erro:", e); return []; }
     }
 
