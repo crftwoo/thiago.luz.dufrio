@@ -160,52 +160,46 @@
     let allFetchedProducts = [];
     let activeFilters = { marcas: [], btus: [], ciclos: [] };
     const LISTA_MARCAS = ["Agratto", "Aiwa", "Aufit", "Britânia", "Carrier", "Comfee", "Consul", "Daikin", "Electrolux", "Elgin", "EOS", "Fujitsu", "Gree", "Hisense", "Hitachi", "HQ", "Komeco", "LG", "Midea", "Philco", "Samsung", "Springer Midea", "TCL", "Trane", "Vix", "York"];
+    
+    const TIPOS_PADRAO = ["Hi Wall", "Piso Teto", "Cassete"];
+    const BTUS_PADRAO = ["9000", "12000", "18000", "24000", "30000", "36000", "48000", "60000"];
+    const CICLOS_PADRAO = ["Frio", "Quente/Frio"];
+    let sheetLoadPromise = null;
 
     async function loadData() {
-      // 1. Tenta carregar do cache primeiro (instantâneo)
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        try {
-          sheetData = JSON.parse(cached);
-          renderTipos();
-        } catch(e) {}
-      } else {
-        // Mostra mensagem visual de carregamento apenas se não houver cache
-        document.getElementById("tipo-options").innerHTML = '<div class="loading-sheet">Conectando à Planilha...</div>';
-      }
+      // 1. Renderiza os botões imediatamente para o usuário não esperar
+      renderTipos();
 
-      // 2. Busca os dados mais recentes na rede silenciosamente (Stale-While-Revalidate)
-      try {
-        const r = await fetch("https://opensheet.elk.sh/1ml7XpwZfzM4ElRJb4G62b93VMqUw3jeprTtgxdigiD8/Sheet1");
-        const freshData = await r.json();
-        
-        // Só atualiza a tela se os dados novos forem diferentes do cache
-        if (JSON.stringify(sheetData) !== JSON.stringify(freshData)) {
-          sheetData = freshData;
-          localStorage.setItem(CACHE_KEY, JSON.stringify(sheetData));
-          
-          // Se o usuário ainda estiver na tela inicial, re-desenha os botões com as novidades
-          if (document.getElementById("step-tipo").classList.contains("active")) {
-            renderTipos();
-          }
+      // 2. Carrega a planilha em segundo plano
+      sheetLoadPromise = (async () => {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          try { sheetData = JSON.parse(cached); } catch(e) {}
         }
-      } catch(e) {
-        console.error("Erro ao carregar planilha", e);
-        if(!sheetData.length) document.getElementById("tipo-options").innerHTML = '<div class="loading-sheet" style="color: #ff5252;">Erro ao conectar. Atualize a página.</div>';
-      }
+
+        try {
+          const r = await fetch("https://opensheet.elk.sh/1ml7XpwZfzM4ElRJb4G62b93VMqUw3jeprTtgxdigiD8/Sheet1");
+          const freshData = await r.json();
+          if (JSON.stringify(sheetData) !== JSON.stringify(freshData)) {
+            sheetData = freshData;
+            localStorage.setItem(CACHE_KEY, JSON.stringify(sheetData));
+          }
+        } catch(e) {
+          console.error("Erro ao carregar planilha", e);
+        }
+      })();
     }
 
     function renderTipos() {
-      const tipos = [...new Set(sheetData.map(i=>i.Tipo))];
       const c = document.getElementById("tipo-options"); c.innerHTML = "";
-      tipos.forEach(t => {
+      TIPOS_PADRAO.forEach(t => {
         const b = document.createElement("button"); b.className = "option-btn tipo-btn";
         b.innerHTML = "<img src='"+(IMAGES[t]||"img/hi_wall.png")+"' onerror=\"this.src='https://placehold.co/80';\"><span>"+t+"</span>";
         b.onclick = () => selectTipo(t); c.appendChild(b);
       });
     }
-    function selectTipo(t) { selection.tipo=t; renderOptions("btu-options",[...new Set(sheetData.filter(i=>i.Tipo===t).map(i=>i.BTUs))],selectBTU); showStep("step-btus"); }
-    function selectBTU(b) { selection.btu=b; renderOptions("ciclo-options",[...new Set(sheetData.filter(i=>i.Tipo===selection.tipo&&i.BTUs===b).map(i=>i.Ciclo))],selectCiclo); showStep("step-ciclo"); }
+    function selectTipo(t) { selection.tipo=t; renderOptions("btu-options",BTUS_PADRAO,selectBTU); showStep("step-btus"); }
+    function selectBTU(b) { selection.btu=b; renderOptions("ciclo-options",CICLOS_PADRAO,selectCiclo); showStep("step-ciclo"); }
     function selectCiclo(c) { selection.ciclo=c; showStep("results"); startScraping(); }
     function renderOptions(id,opts,cb) { const c=document.getElementById(id); c.innerHTML=""; opts.forEach(o=>{const b=document.createElement("button");b.className="option-btn";b.innerText=o;b.onclick=()=>cb(o);c.appendChild(b);}); }
     function showStep(id) {
@@ -317,8 +311,6 @@
     }
 
     async function startScraping() {
-      const links = sheetData.filter(i=>i.Tipo===selection.tipo&&i.BTUs===selection.btu&&i.Ciclo===selection.ciclo);
-      
       showStep("results");
       document.getElementById("selection-summary").style.display = "flex";
       document.getElementById("summary-text").innerHTML = "<span>"+selection.tipo+"</span><span>"+selection.btu+"</span><span>"+selection.ciclo+"</span>";
@@ -326,8 +318,15 @@
       
       allFetchedProducts = [];
       activeFilters = { marcas: [], btus: [], ciclos: [] };
+
+      if (sheetLoadPromise) {
+        document.getElementById("loading-msg").innerText = "SINCRONIZANDO PLANILHA...";
+        await sheetLoadPromise;
+      }
       
+      const links = sheetData.filter(i=>i.Tipo===selection.tipo&&i.BTUs===selection.btu&&i.Ciclo===selection.ciclo);
       const dufrioLink = links.find(l=>l.Site.toLowerCase()==="dufrio");
+      
       if(dufrioLink) {
         document.getElementById("loading-msg").innerText = "BUSCANDO DUFRIO...";
         const products = await scrapeDufrio(dufrioLink.Link);
@@ -343,7 +342,7 @@
         generateFilters();
         applyFilters();
       } else {
-        document.getElementById("results-grid").innerHTML="<p style=\"grid-column:1/-1;color:var(--muted);font-size:13px;text-transform:uppercase;font-weight:800;text-align:center;padding:40px 0;\">Nenhum produto encontrado.</p>";
+        document.getElementById("results-grid").innerHTML="<p style=\"grid-column:1/-1;color:var(--muted);font-size:13px;text-transform:uppercase;font-weight:800;text-align:center;padding:40px 0;\">Nenhum produto encontrado para esta combinação.</p>";
       }
     }
 

@@ -1,1 +1,1 @@
-Adicionado selo "Em Produção" ao card da ferramenta Preços ao Vivo no painel inicial do Hub.
+Removida a tela de espera inicial: opções de filtro carregam instantaneamente enquanto a planilha sincroniza em background.
