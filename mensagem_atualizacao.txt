@@ -1,1 +1,1 @@
-Filtro inteligente implementado: agora o sistema ignora espaços extras, pontos ou traços na hora de cruzar os dados da planilha com os botões, resolvendo o problema de cards não renderizando por pequenas divergências de texto.
+Correção crítica de caracteres: Adicionado removedor de acentos no Filtro Inteligente. A acentuação em palavras como 'Só Frio' na planilha estava causando falha na busca e retornando falso negativo de produtos encontrados.

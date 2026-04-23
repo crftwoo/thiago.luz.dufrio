@@ -406,7 +406,9 @@
         
         function normalizeStr(s) {
           if (!s) return "";
-          return String(s).toLowerCase().replace(/[-.\s]/g, "");
+          return String(s).toLowerCase()
+                       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                       .replace(/[-.\s]/g, "");
         }
         
         const links = sheetData.filter(i => {
