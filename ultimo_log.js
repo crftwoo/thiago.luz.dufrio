@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Correção de bug: Tratamento de erros e conversão de tipos adicionados ao processo de filtragem da planilha para evitar que o spinner fique travado (Erro de tipos Número vs String nos BTUs).', dateIso: '2026-04-23T15:50:19-03:00' };
+const LATEST_LOG = { message: 'Filtro inteligente implementado: agora o sistema ignora espaços extras, pontos ou traços na hora de cruzar os dados da planilha com os botões, resolvendo o problema de cards não renderizando por pequenas divergências de texto.', dateIso: '2026-04-23T15:53:49-03:00' };

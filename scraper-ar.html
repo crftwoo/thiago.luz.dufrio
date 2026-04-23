@@ -404,13 +404,21 @@
           await sheetLoadPromise;
         }
         
-        const links = sheetData.filter(i => 
-          String(i.Tipo) === String(selection.tipo) && 
-          String(i.BTUs) === String(selection.btu) && 
-          String(i.Ciclo) === String(selection.ciclo)
-        );
+        function normalizeStr(s) {
+          if (!s) return "";
+          return String(s).toLowerCase().replace(/[-.\s]/g, "");
+        }
         
-        const dufrioLink = links.find(l => l.Site && l.Site.toLowerCase() === "dufrio");
+        const links = sheetData.filter(i => {
+          const matchTipo = normalizeStr(i.Tipo) === normalizeStr(selection.tipo);
+          const matchBtu = normalizeStr(i.BTUs) === normalizeStr(selection.btu);
+          const valCiclo = normalizeStr(i.Ciclo);
+          const selCiclo = normalizeStr(selection.ciclo);
+          const matchCiclo = valCiclo === selCiclo || (selCiclo === "frio" && valCiclo === "sofrio");
+          return matchTipo && matchBtu && matchCiclo;
+        });
+        
+        const dufrioLink = links.find(l => l.Site && normalizeStr(l.Site) === "dufrio");
         
         if (dufrioLink && dufrioLink.Link) {
           document.getElementById("loading-msg").innerText = "BUSCANDO DUFRIO...";
