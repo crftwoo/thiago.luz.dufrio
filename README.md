@@ -16,21 +16,22 @@ O repositório **NÃO possui backend ativo** (Node.js, PHP, Python), o que signi
 
 ## 2. Estrutura do Hub e Endpoints Frontend
 
-O Hub se ramifica em pequenas ferramentas e scripts contidos na mesma pasta:
+O Hub se ramifica em pequenas aplicações independentes (Single Page Applications) contidas na mesma pasta, cada uma focada em resolver um problema comercial ou logístico específico.
 
-### ⚙️ Câmara Fria
-* `simulador-gabinete.html` -> Visualizador 3D para montagem de layouts de painéis de Poliuretano/EPS e gabinetes.
-* `plano-corte.html` -> Otimizador matemático (plano de corte) de aproveitamento de chapas de 12 metros de isolamento.
-* `CheckList.html` -> Uma super-tela de formulário step-by-step para captação de necessidade do projeto com a promessa de compilar os dados em PDF para orçamento comercial.
+### ⚙️ Divisão de Câmaras Frias
+* **`CheckList.html`**: Formulário Step-by-Step avançado de captação de requisitos para projetos de refrigeração. Ao final, compila todos os dados coletados em um documento PDF profissional utilizado pela equipe comercial para emissão de orçamentos.
+* **`simulador-gabinete.html`**: Motor visual/3D projetado para a simulação interativa e montagem de layouts de painéis térmicos (Poliuretano/EPS) e gabinetes de câmaras frias.
+* **`plano-corte.html`**: Otimizador matemático inteligente. Focado em logística de fábrica, ele calcula o melhor aproveitamento de cortes para chapas de 12 metros de isolamento térmico, minimizando o desperdício de retalhos.
 
-### 💨 Ar Condicionado
-* `comparador-ar.html` -> Telinha/script focada na concorrência para comparação.
-* `precos-ao-vivo.html` -> Página consumidora que capta produtos (Skus/Preços) através de uma ponte com a extensão de navegador.
-* `precificacao-ar.html` -> Calculadora simples de composição paramétrica de preços dos itens focada no site principal/365.
+### 💨 Divisão de Ar Condicionado
+* **`scraper-ar.html`** (⚠️ **Crucial/Core**): Uma ferramenta avançada de Scraping Client-Side. Sincroniza dinamicamente dados de categorização via Google Sheets (`OpenSheet`), constrói uma UI interativa e de divulgação progressiva (Progressive Disclosure) para escolha de Tipo, BTUs e Ciclo. Em seguida, utiliza `corsproxy.io` e `DOMParser` para fazer raspagem (scraping) em tempo real dos sites concorrentes (ex: Dufrio), extraindo nome, imagem e preços (à vista e parcelado), plotando "Product Cards" amigáveis que permitem cópia com 1 clique.
+* **`comparador-ar.html`**: Painel focado em cruzar e alinhar as informações de concorrência extraídas contra o cenário local, ajudando em decisões de pricing.
+* **`precos-ao-vivo.html`**: Página consumidora e dashboard que faz ponte direta com a extensão de navegador do Chrome (Background Workers), recebendo Skus e Preços atualizados no momento exato da navegação do usuário nos sites das lojas.
+* **`precificacao-ar.html`**: Calculadora financeira paramétrica para formação e composição rápida de preços de itens voltados ao site principal/B2C (365).
 
-### 📦 Outros
-* `cotacoes.html` -> Orçamentador expresso focado em montar infraestrutura de Split.
-* `itens-quantidade.html` -> Filtro de códigos baseados em estoque disponível.
+### 📦 Utilitários Gerais
+* **`cotacoes.html`**: Orçamentador expresso e modular focado exclusivamente em levantar quantitativos e custos para a montagem e infraestrutura de instalação de aparelhos modelo Split.
+* **`itens-quantidade.html`**: Filtro tático de engenharia/vendas que faz triagem rápida de códigos e SKUs baseados puramente no estoque disponível atual.
 
 ---
 

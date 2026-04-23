@@ -251,7 +251,12 @@
       document.getElementById("step-resultados").classList.remove("active");
       document.getElementById("loading-results").style.display = "none";
       
-      const btus = [...new Set(sheetData.filter(i=>i.Tipo===t).map(i=>i.BTUs))].sort((a,b)=>parseInt(String(a).replace(/\D/g,"")) - parseInt(String(b).replace(/\D/g,"")));
+      const sortBTUs = (a, b) => {
+        const getVal = (s) => parseInt(String(s).replace(/[.,]/g, "").match(/\d+/) || [0], 10);
+        return getVal(a) - getVal(b);
+      };
+      
+      const btus = [...new Set(sheetData.filter(i=>i.Tipo===t).map(i=>i.BTUs))].sort(sortBTUs);
       renderOptions("btu-options", btus, selectBTU, selection.btu, formatBTU); 
       document.getElementById("step-btus").classList.add("active");
       
@@ -262,7 +267,12 @@
       selection.btu = b; 
       selection.ciclo = "";
       
-      const btus = [...new Set(sheetData.filter(i=>i.Tipo===selection.tipo).map(i=>i.BTUs))].sort((a,b)=>parseInt(String(a).replace(/\D/g,"")) - parseInt(String(b).replace(/\D/g,"")));
+      const sortBTUs = (a, b) => {
+        const getVal = (s) => parseInt(String(s).replace(/[.,]/g, "").match(/\d+/) || [0], 10);
+        return getVal(a) - getVal(b);
+      };
+      
+      const btus = [...new Set(sheetData.filter(i=>i.Tipo===selection.tipo).map(i=>i.BTUs))].sort(sortBTUs);
       renderOptions("btu-options", btus, selectBTU, selection.btu, formatBTU);
       
       document.getElementById("step-resultados").classList.remove("active");

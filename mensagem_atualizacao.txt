@@ -1,1 +1,1 @@
-Revertida geração estática de botões para dinâmica (baseado no que existe na planilha), garantindo suporte completo para gamas de BTUs combinadas (ex: 22.000 a 24.000) mantendo a formatação visual com pontos solicitada pelo usuário.
+Correção crítica de ordenação (sort): Corrigido o bug onde as gamas de BTUs (ex: 22.000 a 24.000) iam parar no final da lista por erro de cálculo. Agora o motor de ordenação extrai de forma inteligente apenas o primeiro valor da gama, colocando tudo em perfeita ordem crescente.
