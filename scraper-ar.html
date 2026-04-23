@@ -305,6 +305,8 @@
                }
            });
            
+           if (!spotLine) return null; // Filtra produtos esgotados (Avise-me)
+           
            let linkHref = titleEl.getAttribute('href');
            if(!linkHref) linkHref = "";
            const finalLink = linkHref.startsWith('http') ? linkHref : "https://www.dufrio.com.br" + linkHref;
