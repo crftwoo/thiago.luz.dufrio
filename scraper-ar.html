@@ -258,9 +258,12 @@
         return items.map(item => {
           const finalPrice = item.price_range.minimum_price.final_price.value;
           
-          // Lógica dinâmica de desconto baseada na promoção atual da Dufrio (TCL = 10%, resto = 5%)
+          // Lógica dinâmica de desconto baseada na promoção atual da Dufrio
           let discountPercent = 5;
-          if (item.name.toLowerCase().includes('tcl')) {
+          const nameLower = item.name.toLowerCase();
+          if (nameLower.includes('tcl') || 
+              nameLower.includes('agratto zen') || 
+              nameLower.includes('hisense eco plus')) {
               discountPercent = 10;
           }
           
