@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Removida barra de resumo redundante e alterado comportamento de seleção para manter todas as flags clicadas fixas na tela permanentemente.', dateIso: '2026-04-23T15:42:09-03:00' };
+const LATEST_LOG = { message: 'Correção de bug: Tratamento de erros e conversão de tipos adicionados ao processo de filtragem da planilha para evitar que o spinner fique travado (Erro de tipos Número vs String nos BTUs).', dateIso: '2026-04-23T15:50:19-03:00' };

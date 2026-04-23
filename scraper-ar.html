@@ -392,36 +392,47 @@
     }
 
     async function startScraping() {
-      document.getElementById("selection-summary").style.display = "none";
-      document.getElementById("filters-section").style.display = "none";
-      
-      allFetchedProducts = [];
-      activeFilters = { marcas: [], btus: [], ciclos: [] };
+      try {
+        document.getElementById("selection-summary").style.display = "none";
+        document.getElementById("filters-section").style.display = "none";
+        
+        allFetchedProducts = [];
+        activeFilters = { marcas: [], btus: [], ciclos: [] };
 
-      if (sheetLoadPromise) {
-        document.getElementById("loading-msg").innerText = "SINCRONIZANDO PLANILHA...";
-        await sheetLoadPromise;
-      }
-      
-      const links = sheetData.filter(i=>i.Tipo===selection.tipo&&i.BTUs===selection.btu&&i.Ciclo===selection.ciclo);
-      const dufrioLink = links.find(l=>l.Site.toLowerCase()==="dufrio");
-      
-      if(dufrioLink) {
-        document.getElementById("loading-msg").innerText = "BUSCANDO DUFRIO...";
-        const products = await scrapeDufrio(dufrioLink.Link);
-        products.forEach(p => {
-          p.storeName = "Dufrio";
-          allFetchedProducts.push(extractProductInfo(p));
-        });
-      }
-      
-      document.getElementById("loading-results").style.display="none";
-      
-      if(allFetchedProducts.length > 0) {
-        generateFilters();
-        applyFilters();
-      } else {
-        document.getElementById("results-grid").innerHTML="<p style=\"grid-column:1/-1;color:var(--muted);font-size:13px;text-transform:uppercase;font-weight:800;text-align:center;padding:40px 0;\">Nenhum produto encontrado para esta combinação.</p>";
+        if (sheetLoadPromise) {
+          document.getElementById("loading-msg").innerText = "SINCRONIZANDO PLANILHA...";
+          await sheetLoadPromise;
+        }
+        
+        const links = sheetData.filter(i => 
+          String(i.Tipo) === String(selection.tipo) && 
+          String(i.BTUs) === String(selection.btu) && 
+          String(i.Ciclo) === String(selection.ciclo)
+        );
+        
+        const dufrioLink = links.find(l => l.Site && l.Site.toLowerCase() === "dufrio");
+        
+        if (dufrioLink && dufrioLink.Link) {
+          document.getElementById("loading-msg").innerText = "BUSCANDO DUFRIO...";
+          const products = await scrapeDufrio(dufrioLink.Link);
+          products.forEach(p => {
+            p.storeName = "Dufrio";
+            allFetchedProducts.push(extractProductInfo(p));
+          });
+        }
+        
+        document.getElementById("loading-results").style.display = "none";
+        
+        if (allFetchedProducts.length > 0) {
+          generateFilters();
+          applyFilters();
+        } else {
+          document.getElementById("results-grid").innerHTML="<p style=\"grid-column:1/-1;color:var(--muted);font-size:13px;text-transform:uppercase;font-weight:800;text-align:center;padding:40px 0;\">Nenhum produto encontrado para esta combinação.</p>";
+        }
+      } catch (err) {
+        console.error("Erro no scraping:", err);
+        document.getElementById("loading-results").style.display = "none";
+        document.getElementById("results-grid").innerHTML="<p style=\"grid-column:1/-1;color:#ff5252;font-size:13px;text-transform:uppercase;font-weight:800;text-align:center;padding:40px 0;\">Erro ao processar dados. Verifique a planilha.</p>";
       }
     }
 

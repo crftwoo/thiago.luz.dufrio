@@ -1,1 +1,1 @@
-Removida barra de resumo redundante e alterado comportamento de seleção para manter todas as flags clicadas fixas na tela permanentemente.
+Correção de bug: Tratamento de erros e conversão de tipos adicionados ao processo de filtragem da planilha para evitar que o spinner fique travado (Erro de tipos Número vs String nos BTUs).
