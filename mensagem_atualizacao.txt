@@ -1,1 +1,1 @@
-Ajuste no Scraper para capturar os valores do site com exatidão, adição de filtro que remove produtos esgotados da tela, e reorganização do painel (Hub).
+Adicionado selo "Em Produção" ao card da ferramenta Preços ao Vivo no painel inicial do Hub.
