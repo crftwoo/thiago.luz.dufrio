@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Removida a tela de espera inicial: opções de filtro carregam instantaneamente enquanto a planilha sincroniza em background.', dateIso: '2026-04-23T15:26:56-03:00' };
+const LATEST_LOG = { message: 'Adicionado indicador visual flutuante (Sync Status) para informar ao usuário se a planilha ainda está carregando ou se já foi sincronizada.', dateIso: '2026-04-23T15:28:20-03:00' };
