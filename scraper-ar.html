@@ -258,12 +258,15 @@
         return items.map(item => {
           const finalPrice = item.price_range.minimum_price.final_price.value;
           
-          // Lógica dinâmica de desconto baseada na promoção atual da Dufrio
+          // Lógica dinâmica baseada na campanha atual da Dufrio
           let discountPercent = 5;
           const nameLower = item.name.toLowerCase();
+          
           if (nameLower.includes('tcl') || 
-              nameLower.includes('agratto zen') || 
-              nameLower.includes('hisense eco plus')) {
+              (nameLower.includes('agratto zen') && nameLower.includes('frio') && !nameLower.includes('quente')) || 
+              nameLower.includes('hisense eco plus') ||
+              nameLower.includes('philco') ||
+              nameLower.includes('midea ia ecomaster')) {
               discountPercent = 10;
           }
           
