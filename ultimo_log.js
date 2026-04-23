@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Adicionado sistema de filtros dinâmicos de marcas, btus e ciclos no scraper, além de botão para refazer a busca.', dateIso: '2026-04-22T21:45:53-03:00' };
+const LATEST_LOG = { message: 'Merge branch 'main' of https://github.com/crftwoo/thiago.luz.dufrio', dateIso: '2026-04-22T21:59:15-03:00' };
