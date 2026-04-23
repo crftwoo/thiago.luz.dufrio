@@ -1,1 +1,1 @@
-Adicionado indicador visual flutuante (Sync Status) para informar ao usuário se a planilha ainda está carregando ou se já foi sincronizada.
+Implementado layout de "Disclosure Progressivo" mantendo as escolhas na tela e texto de status alterado para Conectando/Conectado.

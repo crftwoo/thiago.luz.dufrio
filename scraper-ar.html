@@ -33,7 +33,10 @@
     .option-btn:hover { border-color: #4facfe55; background: rgba(79,172,254,0.08); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,172,254,0.1); }
     .tipo-btn { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 20px; width: 190px; }
     .tipo-btn img { width: 150px; transition: transform 0.3s; filter: drop-shadow(0 0 14px rgba(79,172,254,0.35)); mix-blend-mode: screen; }
-    .tipo-btn:hover img { transform: scale(1.06); }
+    .tipo-btn:hover img { transform: scale(1.06); filter: drop-shadow(0 0 20px rgba(79,172,254,0.6)); }
+
+    .option-btn.selected { background: rgba(79,172,254,0.15); border-color: rgba(79,172,254,0.6); box-shadow: 0 0 20px rgba(79,172,254,0.25); color: #fff; }
+    .tipo-btn.selected img { transform: scale(1.06); filter: drop-shadow(0 0 25px rgba(79,172,254,0.7)); }
 
     #loading-results { display: none; flex-direction: column; align-items: center; gap: 14px; padding: 50px; margin-top: 20px; }
     .spinner { width: 36px; height: 36px; border: 3px solid rgba(79,172,254,0.15); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.9s linear infinite; }
@@ -110,7 +113,7 @@
 <body>
   <div id="sync-status" class="sync-status loading">
     <div class="sync-dot"></div>
-    <span id="sync-text">Sincronizando</span>
+    <span id="sync-text">Conectando</span>
   </div>
   <div style="position:fixed;inset:0;background:#050505;z-index:-2;pointer-events:none;"></div>
   <div class="aurora a1"></div>
@@ -201,7 +204,7 @@
           }
           
           syncStatus.className = "sync-status success";
-          syncText.innerText = "Planilha Atualizada";
+          syncText.innerText = "Conectado";
           
           setTimeout(() => {
             syncStatus.style.opacity = "0.5";
@@ -222,19 +225,67 @@
     function renderTipos() {
       const c = document.getElementById("tipo-options"); c.innerHTML = "";
       TIPOS_PADRAO.forEach(t => {
-        const b = document.createElement("button"); b.className = "option-btn tipo-btn";
+        const b = document.createElement("button"); 
+        b.className = "option-btn tipo-btn" + (selection.tipo === t ? " selected" : "");
         b.innerHTML = "<img src='"+(IMAGES[t]||"img/hi_wall.png")+"' onerror=\"this.src='https://placehold.co/80';\"><span>"+t+"</span>";
         b.onclick = () => selectTipo(t); c.appendChild(b);
       });
     }
-    function selectTipo(t) { selection.tipo=t; renderOptions("btu-options",BTUS_PADRAO,selectBTU); showStep("step-btus"); }
-    function selectBTU(b) { selection.btu=b; renderOptions("ciclo-options",CICLOS_PADRAO,selectCiclo); showStep("step-ciclo"); }
-    function selectCiclo(c) { selection.ciclo=c; showStep("results"); startScraping(); }
-    function renderOptions(id,opts,cb) { const c=document.getElementById(id); c.innerHTML=""; opts.forEach(o=>{const b=document.createElement("button");b.className="option-btn";b.innerText=o;b.onclick=()=>cb(o);c.appendChild(b);}); }
-    function showStep(id) {
-      document.querySelectorAll(".step-section").forEach(s=>s.classList.remove("active"));
-      if(id==="results"){ document.getElementById("loading-results").style.display="flex"; document.getElementById("step-resultados").classList.add("active"); document.getElementById("results-grid").innerHTML=""; }
-      else { document.getElementById(id).classList.add("active"); document.getElementById("loading-results").style.display="none"; }
+
+    function selectTipo(t) { 
+      selection.tipo = t; 
+      selection.btu = ""; 
+      selection.ciclo = "";
+      renderTipos();
+      
+      document.getElementById("step-ciclo").classList.remove("active");
+      document.getElementById("step-resultados").classList.remove("active");
+      document.getElementById("loading-results").style.display = "none";
+      
+      renderOptions("btu-options", BTUS_PADRAO, selectBTU, selection.btu); 
+      document.getElementById("step-btus").classList.add("active");
+      
+      setTimeout(() => document.getElementById("step-btus").scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
+    }
+
+    function selectBTU(b) { 
+      selection.btu = b; 
+      selection.ciclo = "";
+      renderOptions("btu-options", BTUS_PADRAO, selectBTU, selection.btu);
+      
+      document.getElementById("step-resultados").classList.remove("active");
+      document.getElementById("loading-results").style.display = "none";
+      
+      renderOptions("ciclo-options", CICLOS_PADRAO, selectCiclo, selection.ciclo); 
+      document.getElementById("step-ciclo").classList.add("active");
+      
+      setTimeout(() => document.getElementById("step-ciclo").scrollIntoView({behavior: 'smooth', block: 'center'}), 100);
+    }
+
+    function selectCiclo(c) { 
+      selection.ciclo = c; 
+      renderOptions("ciclo-options", CICLOS_PADRAO, selectCiclo, selection.ciclo);
+      
+      document.getElementById("step-tipo").classList.remove("active");
+      document.getElementById("step-btus").classList.remove("active");
+      document.getElementById("step-ciclo").classList.remove("active");
+      
+      document.getElementById("loading-results").style.display = "flex";
+      document.getElementById("step-resultados").classList.add("active");
+      document.getElementById("results-grid").innerHTML = "";
+      
+      startScraping(); 
+    }
+
+    function renderOptions(id, opts, cb, currentSelection) { 
+      const c = document.getElementById(id); c.innerHTML=""; 
+      opts.forEach(o => {
+        const b = document.createElement("button");
+        b.className = "option-btn" + (currentSelection === o ? " selected" : "");
+        b.innerText = o;
+        b.onclick = () => cb(o);
+        c.appendChild(b);
+      }); 
     }
 
     // --- FORMATO DE COPIA (igual extensao) ---

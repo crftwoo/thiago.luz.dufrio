@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Adicionado indicador visual flutuante (Sync Status) para informar ao usuário se a planilha ainda está carregando ou se já foi sincronizada.', dateIso: '2026-04-23T15:28:20-03:00' };
+const LATEST_LOG = { message: 'Implementado layout de "Disclosure Progressivo" mantendo as escolhas na tela e texto de status alterado para Conectando/Conectado.', dateIso: '2026-04-23T15:34:50-03:00' };
