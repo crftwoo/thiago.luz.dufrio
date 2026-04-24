@@ -739,43 +739,52 @@
             }
           }
         } else {
-          // Desktop: copia imagem para clipboard (Dufrio e Frigelar via proxy)
-          const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+          // Desktop: copia imagem para clipboard
           overlaySpan.textContent = "⏳...";
           try {
-            const tempImg = new Image();
-            tempImg.crossOrigin = "anonymous";
-            // Usa o proxy para a imagem não vir "suja" (CORS) e permitir o canvas
-            tempImg.src = PROXY + encodeURIComponent(p.image);
-            
-            await new Promise((res, rej) => {
-              tempImg.onload = res;
-              tempImg.onerror = rej;
-            });
+            const isFrigelar = p.storeName.toLowerCase() === "frigelar";
+            let blob;
 
-            const canvas = document.createElement("canvas");
-            canvas.width = tempImg.naturalWidth;
-            canvas.height = tempImg.naturalHeight;
-            const ctx = canvas.getContext("2d");
-            ctx.fillStyle = "#FFFFFF";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(tempImg, 0, 0);
+            if (isFrigelar) {
+              // Frigelar sempre via Proxy para evitar Tainted Canvas
+              const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+              const resp = await fetch(PROXY + encodeURIComponent(p.image));
+              blob = await resp.blob();
+            } else {
+              // Dufrio e outras: tenta carregar direto primeiro (mais rápido)
+              const tempImg = new Image();
+              tempImg.crossOrigin = "anonymous";
+              tempImg.src = p.image;
+              await new Promise((res, rej) => {
+                tempImg.onload = res;
+                tempImg.onerror = rej;
+              });
+              const cv = document.createElement("canvas");
+              cv.width = tempImg.naturalWidth; cv.height = tempImg.naturalHeight;
+              const ctx = cv.getContext("2d");
+              ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,cv.width,cv.height);
+              ctx.drawImage(tempImg, 0, 0);
+              blob = await new Promise(r => cv.toBlob(r, "image/png"));
+            }
 
-            canvas.toBlob(async blob => {
-              try {
-                await navigator.clipboard.write([
-                  new ClipboardItem({ "image/png": blob })
-                ]);
-                overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
-                setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
-              } catch (e) {
-                // Fallback para URL se o clipboard falhar
-                await navigator.clipboard.writeText(p.image);
-                overlay.classList.add("copied"); overlaySpan.textContent = "🔗 URL Copiada!";
-                setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
-              }
-            }, "image/png");
+            // Se for blob de JPG (da Frigelar por exemplo), converte para PNG antes de copiar
+            if (blob.type !== "image/png") {
+              const bmp = await createImageBitmap(blob);
+              const cv = document.createElement("canvas");
+              cv.width = bmp.width; cv.height = bmp.height;
+              const ctx = cv.getContext("2d");
+              ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,cv.width,cv.height);
+              ctx.drawImage(bmp, 0, 0);
+              blob = await new Promise(r => cv.toBlob(r, "image/png"));
+            }
+
+            await navigator.clipboard.write([
+              new ClipboardItem({ "image/png": blob })
+            ]);
+            overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
+            setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
           } catch(e) {
+            console.error("Erro ao copiar imagem:", e);
             await navigator.clipboard.writeText(p.image);
             overlay.classList.add("copied"); overlaySpan.textContent = "🔗 URL Copiada!";
             setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
