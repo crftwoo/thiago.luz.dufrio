@@ -1,1 +1,1 @@
-Limpeza de textos e referências a sites concorrentes na ferramenta Scraper e no Hub, tornando o foco 100% exclusivo para a Dufrio.
+Adicionada nova funcao de busca simultanea para Frigelar.
