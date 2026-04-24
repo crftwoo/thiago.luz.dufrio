@@ -477,6 +477,10 @@
            const attr = agg.records[0].attributes;
            if (!attr) return null;
            
+           // Filtra produtos FORA DE ESTOQUE — a Frigelar ainda os retorna na API mas não os mostra no site
+           const availability = attr['sku.availabilityStatus'] ? attr['sku.availabilityStatus'][0] : '';
+           if (availability !== 'INSTOCK') return null;
+           
            const title = attr['product.displayName'] ? attr['product.displayName'][0] : "";
            
            let image = "";
@@ -489,20 +493,20 @@
            
            if (!spotPriceNum) return null;
            
-           // Formatando os valores para o padrão (ex: R$ 1.699,00)
-           const spotLine = "R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+           // Calcula desconto PIX (ex: "Com 7% OFF no PIX")
+           // A Frigelar usa: listPrice = preço cheio parcelado, activePrice = preço à vista com desconto
+           let spotLine = "R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+           if (listPriceNum > spotPriceNum) {
+               const descontoPct = Math.round((listPriceNum - spotPriceNum) / listPriceNum * 100);
+               if (descontoPct > 0) spotLine += ` Com ${descontoPct}% OFF no PIX`;
+           }
            
            // Frigelar sempre parcelada em 8x sem juros
-           // sku.listPrice = total do parcelado (ex: 2353,76)
-           // spotPrice = preço à vista (ex: 2189,00)
            let installLine = "";
            if (listPriceNum > spotPriceNum) {
                const totalParcelado = listPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-               const parcelas = 8;
-               const valorParcela = (listPriceNum / parcelas).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-               installLine = `ou R$ ${totalParcelado} em ${parcelas}x de R$ ${valorParcela} sem juros`;
-           } else {
-               installLine = "ou R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " parcelado";
+               const valorParcela = (listPriceNum / 8).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+               installLine = `ou R$ ${totalParcelado} em 8x de R$ ${valorParcela} sem juros`;
            }
            
            const linkSlug = attr['product.route'] ? attr['product.route'][0] : "";
