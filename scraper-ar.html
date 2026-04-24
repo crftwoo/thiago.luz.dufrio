@@ -414,37 +414,54 @@
 
     async function scrapeFrigelar(url) {
       try {
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
+        // Frigelar usa Oracle Commerce Cloud. O HTML inicial não tem os produtos (Client-Side Rendering).
+        // Precisamos interceptar a API interna substituindo /searchresults por /ccstoreui/v1/search
+        let apiUrl = url;
+        if (url.includes('/searchresults')) {
+            apiUrl = url.replace('/searchresults', '/ccstoreui/v1/search');
+        } else {
+            return []; // Se não for um link de busca padrão, ignora
+        }
+
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(apiUrl);
         const resp = await fetch(proxyUrl);
-        const html = await resp.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
+        const json = await resp.json();
         
-        const items = Array.from(doc.querySelectorAll('.product-box-container'));
-        return items.map(card => {
-           const titleEl = card.querySelector('h2.product-name');
-           if (!titleEl) return null;
-           const title = titleEl.innerText.replace(/\s+/g, ' ').trim();
+        if (!json || !json.resultsList || !json.resultsList.records) {
+            return [];
+        }
+
+        const items = json.resultsList.records;
+        
+        return items.map(agg => {
+           if (!agg.records || agg.records.length === 0) return null;
+           const attr = agg.records[0].attributes;
+           if (!attr) return null;
            
-           const imgEl = card.querySelector('img.product-image');
+           const title = attr['product.displayName'] ? attr['product.displayName'][0] : "";
+           
            let image = "";
-           if (imgEl) {
-               image = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || "";
+           if (attr['product.primaryMediumImageURL']) {
+               image = "https://www.frigelar.com.br" + attr['product.primaryMediumImageURL'][0];
            }
            
-           let spotLine = "";
-           const spotPriceEl = card.querySelector('.new-price');
-           if (spotPriceEl) spotLine = spotPriceEl.innerText.replace(/\s+/g, ' ').trim();
+           const spotPriceNum = attr['sku.activePrice'] ? parseFloat(attr['sku.activePrice'][0]) : 0;
+           const listPriceNum = attr['product.listPrice'] ? parseFloat(attr['product.listPrice'][0]) : 0;
+           
+           if (!spotPriceNum) return null;
+           
+           // Formatando os valores para o padrão (ex: R$ 1.699,00)
+           const spotLine = "R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
            
            let installLine = "";
-           const installPriceEl = card.querySelector('.parcels');
-           if (installPriceEl) installLine = installPriceEl.innerText.replace(/\s+/g, ' ').trim();
+           if (listPriceNum > spotPriceNum) {
+               installLine = "ou R$ " + listPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " parcelado";
+           } else {
+               installLine = "ou R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " parcelado";
+           }
            
-           if (!spotLine) return null;
-           
-           const linkEl = card.querySelector('a');
-           let linkHref = linkEl ? linkEl.getAttribute('href') : "";
-           const finalLink = linkHref.startsWith('http') ? linkHref : "https://www.frigelar.com.br" + linkHref;
+           const linkSlug = attr['product.route'] ? attr['product.route'][0] : "";
+           const finalLink = linkSlug ? "https://www.frigelar.com.br" + linkSlug : "";
            
            return { title, image, spot: spotLine, install: installLine, link: finalLink, discount: 0 };
         }).filter(Boolean);
