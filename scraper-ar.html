@@ -197,7 +197,7 @@
     </div>
   </div>
   <script>
-    const LAST_UPDATE = "24/04/2026 10:47";
+    const LAST_UPDATE = "24/04/2026 11:00";
     const IMAGES = {"Hiwall":"img/hi_wall.png","Hi Wall":"img/hi_wall.png","Piso Teto":"img/piso_teto.png","Cassete":"img/cassete.png"};
     let sheetData = [], selection = {tipo:"",btu:"",ciclo:""};
     const CACHE_KEY = "scraper_sheet_data_v1";
@@ -600,44 +600,97 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
         
-        // WebContinental usa VTEX IO. Seletores baseados em classes comuns
-        const items = Array.from(doc.querySelectorAll('[class*="galleryItem"], .vtex-search-result-3-x-galleryItem'));
-        return items.map(card => {
-          const titleEl = card.querySelector('[class*="productBrand"], .vtex-product-summary-2-x-productBrand');
-          if (!titleEl) return null;
-          const title = titleEl.innerText.trim();
-          
-          const imgEl = card.querySelector('img[class*="image"], .vtex-product-summary-2-x-image');
-          const image = imgEl ? (imgEl.getAttribute('src') || "") : "";
-          
-          const spotEl = card.querySelector('[class*="sellingPriceValue"], .vtex-product-summary-2-x-sellingPriceValue');
-          let spotLine = spotEl ? spotEl.innerText.trim() : "";
-          if (spotLine && !spotLine.includes('à vista')) spotLine += " à vista";
-          
-          const installEl = card.querySelector('[class*="installmentContainer"], .vtex-product-summary-2-x-installmentContainer');
-          let installLine = "";
-          if (installEl) {
-            const rawInstall = installEl.innerText.replace(/\s+/g, ' ').trim();
-            // Formato comum: "em até 10x de R$ 168,98"
-            const match = rawInstall.match(/(\d+)x\s+de\s+R\$\s*([\d.,]+)/i);
-            if (match) {
-              const parcelas = parseInt(match[1]);
-              const valorParcelaStr = match[2].replace('.', '').replace(',', '.');
-              const valorParcela = parseFloat(valorParcelaStr);
-              const total = (parcelas * valorParcela).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-              installLine = `ou R$ ${total} em ${parcelas}x de R$ ${match[2]}`;
-            } else {
-              installLine = rawInstall;
+        let products = [];
+
+        // Tentativa 1: Extração via JSON-LD (Mais estável em VTEX IO)
+        const scripts = Array.from(doc.querySelectorAll('script[type="application/ld+json"]'));
+        scripts.forEach(script => {
+          try {
+            const json = JSON.parse(script.innerText);
+            // Verifica se é uma lista de produtos ou um produto único
+            const items = json.itemListElement || (json['@type'] === 'Product' ? [json] : []);
+            items.forEach(item => {
+              const prod = item.item || item;
+              if (prod['@type'] === 'Product') {
+                const title = prod.name;
+                const image = prod.image || "";
+                const link = prod.url || "";
+                const offer = prod.offers && prod.offers.offers ? prod.offers.offers[0] : (prod.offers || {});
+                
+                // Em VTEX IO: lowPrice costuma ser o Pix e highPrice o total parcelado
+                const spotPriceNum = parseFloat(offer.lowPrice || offer.price || 0);
+                const highPriceNum = parseFloat(offer.highPrice || 0);
+                
+                if (spotPriceNum > 0) {
+                  const spotLine = "R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + " à vista";
+                  
+                  // Tenta extrair parcelamento do texto ou calcula se tiver highPrice
+                  let installLine = "";
+                  if (highPriceNum > spotPriceNum) {
+                    // Se temos o preço alto, geralmente é o 10x
+                    const totalParcelado = highPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                    const valorParcela = (highPriceNum / 10).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                    installLine = `ou R$ ${totalParcelado} até 10x de R$ ${valorParcela}`;
+                  }
+                  
+                  products.push({ title, image, spot: spotLine, install: installLine, link, discount: 0 });
+                }
+              }
+            });
+          } catch(e) {}
+        });
+
+        // Tentativa 2: DOM Tradicional (caso o JSON-LD falhe ou esteja incompleto)
+        if (products.length === 0) {
+          const items = Array.from(doc.querySelectorAll('[class*="galleryItem"], [class*="productSummary"], .vtex-search-result-3-x-galleryItem'));
+          products = items.map(card => {
+            const titleEl = card.querySelector('[class*="productBrand"], [class*="brandName"], [class*="productName"]');
+            if (!titleEl) return null;
+            const title = titleEl.innerText.trim();
+            
+            const imgEl = card.querySelector('img[class*="image"]');
+            const image = imgEl ? (imgEl.getAttribute('src') || "") : "";
+            
+            const spotEl = card.querySelector('[class*="sellingPriceValue"], [class*="priceCash"], [class*="currencyContainer"]');
+            let spotLine = spotEl ? spotEl.innerText.trim() : "";
+            if (spotLine && !spotLine.includes('à vista')) spotLine += " à vista";
+            
+            const installEl = card.querySelector('[class*="installmentContainer"], [class*="installments"]');
+            let installLine = "";
+            if (installEl) {
+              const rawInstall = installEl.innerText.replace(/\s+/g, ' ').trim();
+              const match = rawInstall.match(/(\d+)x\s+de\s+R\$\s*([\d.,]+)/i);
+              if (match) {
+                const parcelas = parseInt(match[1]);
+                const valorParcelaStr = match[2].replace('.', '').replace(',', '.');
+                const valorParcela = parseFloat(valorParcelaStr);
+                const total = (parcelas * valorParcela).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                installLine = `ou R$ ${total} em ${parcelas}x de R$ ${match[2]}`;
+              } else {
+                installLine = rawInstall;
+              }
             }
+            
+            const linkEl = card.querySelector('a[class*="clearLink"], a[href*="/p"]');
+            let finalLink = linkEl ? linkEl.getAttribute('href') : "";
+            if (finalLink && !finalLink.startsWith('http')) finalLink = "https://www.webcontinental.com.br" + finalLink;
+            
+            if (!spotLine) return null;
+            return { title, image, spot: spotLine, install: installLine, link: finalLink, discount: 0 };
+          }).filter(Boolean);
+        }
+
+        // Remove duplicatas por título
+        const unique = [];
+        const seen = new Set();
+        products.forEach(p => {
+          if (!seen.has(p.title)) {
+            unique.push(p);
+            seen.add(p.title);
           }
-          
-          const linkEl = card.querySelector('a[class*="clearLink"], .vtex-product-summary-2-x-clearLink');
-          let finalLink = linkEl ? linkEl.getAttribute('href') : "";
-          if (finalLink && !finalLink.startsWith('http')) finalLink = "https://www.webcontinental.com.br" + finalLink;
-          
-          if (!spotLine) return null;
-          return { title, image, spot: spotLine, install: installLine, link: finalLink, discount: 0 };
-        }).filter(Boolean);
+        });
+
+        return unique;
       } catch(e) { console.error("WebContinental erro:", e); return []; }
     }
 
