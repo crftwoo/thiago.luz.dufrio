@@ -430,6 +430,8 @@
         let apiUrl = url;
         if (url.includes('/searchresults')) {
             apiUrl = url.replace('/searchresults', '/ccstoreui/v1/search');
+            // Limpa lixos na URL vindos da planilha como "?&&&=undefined"
+            apiUrl = apiUrl.replace(/(\?|&)+=*undefined&*/g, '$1');
         } else {
             return []; // Se não for um link de busca padrão, ignora
         }
