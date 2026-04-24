@@ -448,25 +448,21 @@
             return []; // Se não for um link de busca padrão, ignora
         }
 
-        // Tenta dois proxies: corsproxy.io e allorigins como fallback
-        // IMPORTANTE: NÃO adicionar &t= na URL da Frigelar - causa 403 no proxy
-        let json = null;
-        const proxies = [
-          "https://corsproxy.io/?" + encodeURIComponent(apiUrl),
-          "https://api.allorigins.win/raw?url=" + encodeURIComponent(apiUrl)
-        ];
+        // Usa o nosso Cloudflare Worker dedicado como proxy CORS para a Frigelar
+        // Worker em: https://frigelar-proxy.crftwo.workers.dev/
+        const FRIGELAR_PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
         
-        for (const proxyUrl of proxies) {
-          try {
-            const resp = await fetch(proxyUrl, { cache: 'no-store' });
-            if (!resp.ok) continue;
+        let json = null;
+        try {
+          const proxyUrl = FRIGELAR_PROXY + encodeURIComponent(apiUrl);
+          const resp = await fetch(proxyUrl, { cache: 'no-store' });
+          if (resp.ok) {
             const text = await resp.text();
             if (text.includes('resultsList')) {
               json = JSON.parse(text);
-              break;
             }
-          } catch(e) { continue; }
-        }
+          }
+        } catch(e) { console.error("Frigelar Worker erro:", e); }
         
         if (!json) return [];
         
