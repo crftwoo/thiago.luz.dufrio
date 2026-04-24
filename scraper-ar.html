@@ -739,28 +739,35 @@
             }
           }
         } else {
-          // Desktop: ClipboardItem recebe uma Promise — clipboard.write() é chamado
-          // SINCRONAMENTE (mantém o gesto do usuário), enquanto o fetch roda em paralelo
+          // Desktop: copia imagem para clipboard (Dufrio e Frigelar via proxy)
           const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
           overlaySpan.textContent = "⏳...";
           try {
-            const imagePromise = (async () => {
-              const resp = await fetch(PROXY + encodeURIComponent(p.image));
-              const rawBlob = await resp.blob();
-              // Converte para PNG via canvas (blob veio do proxy, sem CORS)
-              const bmp = await createImageBitmap(rawBlob);
-              const cv = document.createElement('canvas');
-              cv.width = bmp.width; cv.height = bmp.height;
-              cv.getContext('2d').drawImage(bmp, 0, 0);
-              return new Promise(r => cv.toBlob(r, 'image/png'));
-            })();
-            // clipboard.write é chamado no contexto do clique (gesto válido)
-            // ClipboardItem resolve a Promise de forma assíncrona
-            await navigator.clipboard.write([new ClipboardItem({ 'image/png': imagePromise })]);
-            overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
-            setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
+            const resp = await fetch(PROXY + encodeURIComponent(p.image));
+            const blob = await resp.blob();
+            
+            // Converte para PNG via canvas (sempre PNG para compatibilidade máxima no clipboard)
+            const bmp = await createImageBitmap(blob);
+            const canvas = document.createElement('canvas');
+            canvas.width = bmp.width; canvas.height = bmp.height;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, canvas.width, canvas.height); // Fundo branco
+            ctx.drawImage(bmp, 0, 0);
+            
+            canvas.toBlob(async (pngBlob) => {
+              try {
+                await navigator.clipboard.write([
+                  new ClipboardItem({ "image/png": pngBlob })
+                ]);
+                overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
+                setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
+              } catch (err) {
+                console.error("Clipboard write failed:", err);
+                throw err;
+              }
+            }, "image/png");
           } catch(e) {
-            // fallback: copia URL
+            console.error("Image copy failed, falling back to URL:", e);
             await navigator.clipboard.writeText(p.image);
             overlay.classList.add("copied"); overlaySpan.textContent = "🔗 URL Copiada!";
             setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
