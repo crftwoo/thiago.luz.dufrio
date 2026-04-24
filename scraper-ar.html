@@ -248,7 +248,7 @@
     }
     function formatCiclo(ciclo) { return String(ciclo).toLowerCase().trim() === "frio" ? "Só Frio" : ciclo; }
 
-    function selectTipo(t) { 
+    async function selectTipo(t) { 
       selection.tipo = t; 
       selection.btu = ""; 
       selection.ciclo = "";
@@ -257,6 +257,10 @@
       document.getElementById("step-ciclo").classList.remove("active");
       document.getElementById("step-resultados").classList.remove("active");
       document.getElementById("loading-results").style.display = "none";
+      
+      if (sheetLoadPromise) {
+          await sheetLoadPromise;
+      }
       
       const sortBTUs = (a, b) => {
         const getVal = (s) => parseInt(String(s).replace(/[.,]/g, "").match(/\d+/) || [0], 10);
