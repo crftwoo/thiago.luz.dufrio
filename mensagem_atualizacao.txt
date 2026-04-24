@@ -1,1 +1,1 @@
-Integração WebContinental (VTEX IO) Corrigida com Proxy Codetabs e Captura __STATE__.
+WebContinental integrada via API Direta (VTEX IO) - Sem necessidade de Proxy.
