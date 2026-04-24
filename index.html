@@ -5,7 +5,7 @@
   <title>Hub de Ferramentas - Dufrio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
-  <script>document.write('<script src="ultimo_log.js?v=' + Date.now() + '"><\/script>');</script>
+
   <style>
     /* Reset & Globals */
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -415,14 +415,6 @@
 
     <div class="meta-footer">
       <div><span class="status-dot"></span> Sistemas Operacionais e Online<br><span style="font-size: 14px; opacity: 0.8; display: block; margin-top: 5px;">Criado em 16/09/2024 por Thiago Luz</span></div>
-      
-      <div class="tooltip" style="opacity: 0.7; margin-top: 16px;">
-        <span id="updateText" style="border-bottom: 1px dotted rgba(255,255,255,0.3);">Verificando estabilidade do GitHub...</span>
-        <div class="tooltiptext" id="updateTooltip">
-          <strong>Histórico de Log</strong>
-          <span id="updateMessage" style="line-height:1.4; display:block;">Carregando log oficial...</span>
-        </div>
-      </div>
     </div>
 
   </div>
@@ -496,20 +488,7 @@
       else gridO.appendChild(card);
     });
 
-    // Renderização do Log (vindo de ultimo_log.js)
-    if (typeof LATEST_LOG !== 'undefined' && LATEST_LOG.dateIso) {
-      const d = new Date(LATEST_LOG.dateIso);
-      const dia = String(d.getDate()).padStart(2, '0');
-      const mes = String(d.getMonth() + 1).padStart(2, '0');
-      const ano = d.getFullYear();
-      const hora = String(d.getHours()).padStart(2, '0');
-      const min = String(d.getMinutes()).padStart(2, '0');
-      document.getElementById("updateText").innerHTML = `Última atualização: <strong>${dia}/${mes}/${ano}</strong> às <strong>${hora}:${min}</strong>`;
-      document.getElementById("updateMessage").textContent = `"${LATEST_LOG.message}"`;
-    } else if (typeof LATEST_LOG !== 'undefined' && LATEST_LOG.date) {
-      document.getElementById("updateText").innerHTML = `Última atualização: <strong>${LATEST_LOG.date}</strong> às <strong>${LATEST_LOG.time}</strong>`;
-      document.getElementById("updateMessage").textContent = `"${LATEST_LOG.message}"`;
-    }
+
   </script>
 </body>
 </html>
