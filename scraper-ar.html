@@ -86,8 +86,22 @@
     .btn-link { display: block; width: 100%; padding: 9px; border-radius: 10px; background: linear-gradient(135deg, rgba(79,172,254,0.12), rgba(167,139,250,0.12)); border: 1px solid rgba(79,172,254,0.25); color: var(--blue); font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; text-align: center; cursor: pointer; transition: all 0.2s; font-family: "Outfit", sans-serif; }
     .btn-link:hover { background: linear-gradient(135deg, rgba(79,172,254,0.25), rgba(167,139,250,0.25)); border-color: rgba(79,172,254,0.5); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(79,172,254,0.15); }
 
-    @media (max-width: 768px) { .tipo-btn { width: 100%; flex-direction: row; } .tipo-btn img { width: 90px; } .option-btn { width: 100%; } .products-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
-    @media (max-width: 480px) { .products-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) {
+      .container { padding: 60px 14px 80px; }
+      .tipo-btn { width: 100%; flex-direction: row; }
+      .tipo-btn img { width: 90px; }
+      .option-btn { padding: 12px 18px; font-size: 11px; }
+      .products-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .product-title { font-size: 13px; }
+      .price-vista { font-size: 17px; }
+      .discount-badge { font-size: 9px; }
+      .price-install { font-size: 11px; }
+      #selection-summary { padding: 12px 16px; }
+      .filter-row { gap: 8px; }
+      .filter-btn { font-size: 10px; padding: 6px 12px; }
+    }
+    @media (max-width: 480px) { .products-grid { grid-template-columns: 1fr 1fr; gap: 8px; } .option-btn { width: auto; } }
+    @media (max-width: 360px) { .products-grid { grid-template-columns: 1fr; } }
 
     /* SUMMARY BAR */
     #selection-summary { width: 100%; background: var(--card-bg); border: 1px solid var(--card-border); padding: 16px 24px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; backdrop-filter: blur(12px); flex-wrap: wrap; gap: 14px; }
@@ -687,24 +701,45 @@
       overlay.appendChild(overlaySpan);
       imgWrap.appendChild(img); imgWrap.appendChild(overlay);
       imgWrap.onclick = async () => {
-        try {
-          const tempImg = new Image(); tempImg.crossOrigin = "anonymous"; tempImg.src = p.image;
-          await new Promise((res,rej)=>{tempImg.onload=res;tempImg.onerror=rej;});
-          const canvas = document.createElement("canvas");
-          canvas.width = tempImg.naturalWidth; canvas.height = tempImg.naturalHeight;
-          const ctx = canvas.getContext("2d"); ctx.fillStyle="#FFFFFF"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(tempImg,0,0);
-          canvas.toBlob(async blob => {
-            if(!blob) throw new Error("blob null");
-            await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
-            overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || ('ontouchstart' in window);
+        
+        if (isMobile) {
+          // Mobile: usa Web Share API se disponível, senão abre imagem em nova aba
+          if (navigator.share) {
+            try {
+              await navigator.share({ title: p.title, url: p.image });
+              overlay.classList.add("copied"); overlaySpan.textContent = "✅ Compartilhado!";
+              setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📤 Compartilhar";},1800);
+            } catch(e) {
+              if (e.name !== 'AbortError') window.open(p.image, '_blank');
+            }
+          } else {
+            window.open(p.image, '_blank');
+          }
+        } else {
+          // Desktop: copia imagem para clipboard
+          try {
+            const tempImg = new Image(); tempImg.crossOrigin = "anonymous"; tempImg.src = p.image;
+            await new Promise((res,rej)=>{tempImg.onload=res;tempImg.onerror=rej;});
+            const canvas = document.createElement("canvas");
+            canvas.width = tempImg.naturalWidth; canvas.height = tempImg.naturalHeight;
+            const ctx = canvas.getContext("2d"); ctx.fillStyle="#FFFFFF"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(tempImg,0,0);
+            canvas.toBlob(async blob => {
+              if(!blob) throw new Error("blob null");
+              await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
+              overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
+              setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
+            },"image/png");
+          } catch(e) {
+            await navigator.clipboard.writeText(p.image);
+            overlay.classList.add("copied"); overlaySpan.textContent = "🔗 URL Copiada!";
             setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
-          },"image/png");
-        } catch(e) {
-          await navigator.clipboard.writeText(p.image);
-          overlay.classList.add("copied"); overlaySpan.textContent = "🔗 URL Copiada!";
-          setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
+          }
         }
       };
+      // Adapta o label do overlay conforme o dispositivo
+      const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || ('ontouchstart' in window);
+      overlaySpan.textContent = isMobileDevice ? "📤 Compartilhar" : "📷 Copiar Foto";
 
       const info = document.createElement("div"); info.className = "product-info";
       const hint = document.createElement("div"); hint.className = "copy-hint"; hint.textContent = "COPIAR";
