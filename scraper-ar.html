@@ -183,7 +183,7 @@
     let activeFilters = { lojas: [], marcas: [], btus: [], ciclos: [] };
     const LISTA_MARCAS = ["Agratto", "Aiwa", "Aufit", "Britânia", "Carrier", "Comfee", "Consul", "Daikin", "Electrolux", "Elgin", "EOS", "Fujitsu", "Gree", "Hisense", "Hitachi", "HQ", "Komeco", "LG", "Midea", "Philco", "Samsung", "Springer Midea", "TCL", "Trane", "Vix", "York"];
     
-    const TIPOS_PADRAO = ["Hi Wall", "Piso Teto", "Cassete"];
+    const TIPOS_PADRAO = ["Hiwall", "Piso Teto", "Cassete"];
     const BTUS_PADRAO = ["9000", "12000", "18000", "24000", "30000", "36000", "48000", "60000"];
     const CICLOS_PADRAO = ["Frio", "Quente/Frio"];
     let sheetLoadPromise = null;
@@ -231,11 +231,15 @@
 
     function renderTipos() {
       const c = document.getElementById("tipo-options"); c.innerHTML = "";
-      const tipos = sheetData && sheetData.length > 0 ? [...new Set(sheetData.map(i=>i.Tipo))] : ["Hi Wall", "Piso Teto", "Cassete"];
+      const tipos = sheetData && sheetData.length > 0 ? [...new Set(sheetData.map(i=>i.Tipo))] : ["Hiwall", "Piso Teto", "Cassete"];
       tipos.forEach(t => {
         const b = document.createElement("button"); 
         b.className = "option-btn tipo-btn" + (selection.tipo === t ? " selected" : "");
-        b.innerHTML = "<img src='"+(IMAGES[t]||"img/hi_wall.png")+"' onerror=\"this.src='https://placehold.co/80';\"><span>"+t+"</span>";
+        
+        let imgName = t;
+        if (t === "Hiwall" || t === "Hi Wall") imgName = "Hi Wall";
+        b.innerHTML = "<img src='"+(IMAGES[imgName]||"img/hi_wall.png")+"' onerror=\"this.src='https://placehold.co/80';\"><span>"+t+"</span>";
+        
         b.onclick = () => selectTipo(t); c.appendChild(b);
       });
     }
