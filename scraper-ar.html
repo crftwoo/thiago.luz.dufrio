@@ -197,7 +197,7 @@
     </div>
   </div>
   <script>
-    const LAST_UPDATE = "24/04/2026 12:45";
+    const LAST_UPDATE = "24/04/2026 13:00";
     const IMAGES = {"Hiwall":"img/hi_wall.png","Hi Wall":"img/hi_wall.png","Piso Teto":"img/piso_teto.png","Cassete":"img/cassete.png"};
     let sheetData = [], selection = {tipo:"",btu:"",ciclo:""};
     const CACHE_KEY = "scraper_sheet_data_v1";
@@ -392,7 +392,7 @@
         queryParams.push('product_list_order=price');
         
         const fullUrl = categoryUrl + "?" + queryParams.join("&");
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl + "&t=" + Date.now());
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl);
         
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         const html = await resp.text();
@@ -543,7 +543,7 @@
 
     async function scrapeLeveros(url) {
       try {
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url + "&t=" + Date.now());
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         const html = await resp.text();
         const parser = new DOMParser();
@@ -593,7 +593,7 @@
     }
     async function scrapeWebContinental(url) {
       try {
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url + "&t=" + Date.now());
+        const proxyUrl = "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(url);
         const resp = await fetch(proxyUrl);
         if (!resp.ok) throw new Error("Proxy Error");
         const html = await resp.text();
