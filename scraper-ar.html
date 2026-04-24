@@ -368,7 +368,7 @@
         queryParams.push('product_list_order=price');
         
         const fullUrl = categoryUrl + "?" + queryParams.join("&");
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl);
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl + "&t=" + Date.now());
         
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         const html = await resp.text();
@@ -434,8 +434,10 @@
         let apiUrl = url;
         if (url.includes('/searchresults')) {
             apiUrl = url.replace('/searchresults', '/ccstoreui/v1/search');
-            // Limpa lixos na URL vindos da planilha como "?&&&=undefined"
             apiUrl = apiUrl.replace(/(\?|&)+=*undefined&*/g, '$1');
+            
+            // Adiciona cache buster para garantir que o corsproxy.io não retorne cache velho/erros
+            apiUrl += (apiUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
         } else {
             return []; // Se não for um link de busca padrão, ignora
         }
