@@ -412,6 +412,45 @@
       } catch(e) { console.error("Dufrio erro:", e); return []; }
     }
 
+    async function scrapeFrigelar(url) {
+      try {
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
+        const resp = await fetch(proxyUrl);
+        const html = await resp.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        
+        const items = Array.from(doc.querySelectorAll('.product-box-container'));
+        return items.map(card => {
+           const titleEl = card.querySelector('h2.product-name');
+           if (!titleEl) return null;
+           const title = titleEl.innerText.replace(/\s+/g, ' ').trim();
+           
+           const imgEl = card.querySelector('img.product-image');
+           let image = "";
+           if (imgEl) {
+               image = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || "";
+           }
+           
+           let spotLine = "";
+           const spotPriceEl = card.querySelector('.new-price');
+           if (spotPriceEl) spotLine = spotPriceEl.innerText.replace(/\s+/g, ' ').trim();
+           
+           let installLine = "";
+           const installPriceEl = card.querySelector('.parcels');
+           if (installPriceEl) installLine = installPriceEl.innerText.replace(/\s+/g, ' ').trim();
+           
+           if (!spotLine) return null;
+           
+           const linkEl = card.querySelector('a');
+           let linkHref = linkEl ? linkEl.getAttribute('href') : "";
+           const finalLink = linkHref.startsWith('http') ? linkHref : "https://www.frigelar.com.br" + linkHref;
+           
+           return { title, image, spot: spotLine, install: installLine, link: finalLink, discount: 0 };
+        }).filter(Boolean);
+      } catch(e) { console.error("Frigelar erro:", e); return []; }
+    }
+
     async function startScraping() {
       try {
         document.getElementById("selection-summary").style.display = "none";
@@ -432,15 +471,41 @@
         );
         
         const dufrioLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "dufrio");
+        const frigelarLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "frigelar");
+        
+        document.getElementById("loading-msg").innerText = "BUSCANDO LOJAS...";
+        
+        const scrapePromises = [];
         
         if (dufrioLink && dufrioLink.Link) {
-          document.getElementById("loading-msg").innerText = "BUSCANDO DUFRIO...";
-          const products = await scrapeDufrio(dufrioLink.Link);
-          products.forEach(p => {
-            p.storeName = "Dufrio";
-            allFetchedProducts.push(extractProductInfo(p));
-          });
+          scrapePromises.push(
+            scrapeDufrio(dufrioLink.Link).then(products => {
+              return products.map(p => ({...p, storeName: "Dufrio"}));
+            })
+          );
         }
+        
+        if (frigelarLink && frigelarLink.Link) {
+          scrapePromises.push(
+            scrapeFrigelar(frigelarLink.Link).then(products => {
+              return products.map(p => ({...p, storeName: "Frigelar"}));
+            })
+          );
+        }
+        
+        const resultsArrays = await Promise.all(scrapePromises);
+        
+        resultsArrays.forEach(products => {
+            products.forEach(p => {
+                allFetchedProducts.push(extractProductInfo(p));
+            });
+        });
+        
+        // Ordenar todos os produtos pelo preço à vista
+        allFetchedProducts.sort((a, b) => {
+            const getPrice = (str) => parseFloat(str.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+            return getPrice(a.spot) - getPrice(b.spot);
+        });
         
         document.getElementById("loading-results").style.display = "none";
         
