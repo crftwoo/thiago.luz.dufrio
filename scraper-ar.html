@@ -709,10 +709,14 @@
           overlaySpan.textContent = "⏳ Aguarde...";
           try {
             const resp = await fetch(PROXY + encodeURIComponent(p.image));
-            const blob = await resp.blob();
-            const ext = blob.type.includes('png') ? '.png' : '.jpg';
+            const rawBlob = await resp.blob();
+            // Força o MIME type correto baseado na URL (proteção contra Content-Type errado do proxy)
+            const imgUrl = p.image.toLowerCase();
+            const mimeType = imgUrl.includes('.png') ? 'image/png' : 'image/jpeg';
+            const blob = new Blob([rawBlob], { type: mimeType });
+            const ext = mimeType === 'image/png' ? '.png' : '.jpg';
             const fileName = (p.title.substring(0, 40).replace(/[^a-zA-Z0-9]/g, '_') || 'produto') + ext;
-            const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+            const file = new File([blob], fileName, { type: mimeType });
 
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
               // Compartilha o arquivo de imagem real (iOS 15+ e Android Chrome)
@@ -735,23 +739,24 @@
             }
           }
         } else {
-          // Desktop: busca imagem via proxy (resolve CORS) e copia para clipboard
+          // Desktop: ClipboardItem recebe uma Promise — clipboard.write() é chamado
+          // SINCRONAMENTE (mantém o gesto do usuário), enquanto o fetch roda em paralelo
           const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
           overlaySpan.textContent = "⏳...";
           try {
-            const resp = await fetch(PROXY + encodeURIComponent(p.image));
-            const blob = await resp.blob();
-            // Garante que o blob é PNG para o ClipboardItem
-            let finalBlob = blob;
-            if (!blob.type.includes('png')) {
-              // Converte para PNG via canvas local (sem CORS pois o blob veio do proxy)
-              const bmp = await createImageBitmap(blob);
+            const imagePromise = (async () => {
+              const resp = await fetch(PROXY + encodeURIComponent(p.image));
+              const rawBlob = await resp.blob();
+              // Converte para PNG via canvas (blob veio do proxy, sem CORS)
+              const bmp = await createImageBitmap(rawBlob);
               const cv = document.createElement('canvas');
               cv.width = bmp.width; cv.height = bmp.height;
               cv.getContext('2d').drawImage(bmp, 0, 0);
-              finalBlob = await new Promise(r => cv.toBlob(r, 'image/png'));
-            }
-            await navigator.clipboard.write([new ClipboardItem({'image/png': finalBlob})]);
+              return new Promise(r => cv.toBlob(r, 'image/png'));
+            })();
+            // clipboard.write é chamado no contexto do clique (gesto válido)
+            // ClipboardItem resolve a Promise de forma assíncrona
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': imagePromise })]);
             overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
             setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
           } catch(e) {
