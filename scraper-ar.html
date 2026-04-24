@@ -607,13 +607,12 @@
         
         return data.map(item => {
           const title = item.productName;
-          
-          // FILTRO DE SEGURANÇA: Só aceita se tiver "Ar" ou "Split" ou "Inverter" no título
           const titleLower = title.toLowerCase();
+          
+          // FILTRO: Só aceita se tiver "Ar", "Split" ou "Inverter" e NÃO for peça
           if (!titleLower.includes('ar') && !titleLower.includes('split') && !titleLower.includes('inverter')) return null;
-          // Ignora se tiver cara de peça de reposição
-          if (titleLower.includes('placa') || titleLower.includes('sensor') || titleLower.includes('controle') || titleLower.includes('botão')) return null;
-          const title = item.productName;
+          if (titleLower.includes('placa') || titleLower.includes('sensor') || titleLower.includes('controle') || titleLower.includes('botão') || titleLower.includes('peça')) return null;
+          
           const link = `https://www.webcontinental.com.br/${item.linkText}/p`;
           const image = item.items?.[0]?.images?.[0]?.imageUrl || "";
           const offer = item.items?.[0]?.sellers?.[0]?.commertialOffer || {};
