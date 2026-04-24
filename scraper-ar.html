@@ -485,16 +485,22 @@
            }
            
            const spotPriceNum = attr['sku.activePrice'] ? parseFloat(attr['sku.activePrice'][0]) : 0;
-           const listPriceNum = attr['product.listPrice'] ? parseFloat(attr['product.listPrice'][0]) : 0;
+           const listPriceNum = attr['sku.listPrice'] ? parseFloat(attr['sku.listPrice'][0]) : 0;
            
            if (!spotPriceNum) return null;
            
            // Formatando os valores para o padrão (ex: R$ 1.699,00)
            const spotLine = "R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
            
+           // Frigelar sempre parcelada em 8x sem juros
+           // sku.listPrice = total do parcelado (ex: 2353,76)
+           // spotPrice = preço à vista (ex: 2189,00)
            let installLine = "";
            if (listPriceNum > spotPriceNum) {
-               installLine = "ou R$ " + listPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " parcelado";
+               const totalParcelado = listPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+               const parcelas = 8;
+               const valorParcela = (listPriceNum / parcelas).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+               installLine = `ou R$ ${totalParcelado} em ${parcelas}x de R$ ${valorParcela} sem juros`;
            } else {
                installLine = "ou R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " parcelado";
            }
