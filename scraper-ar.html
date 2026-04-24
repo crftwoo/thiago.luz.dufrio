@@ -197,7 +197,7 @@
     </div>
   </div>
   <script>
-    const LAST_UPDATE = "24/04/2026 13:10";
+    const LAST_UPDATE = "24/04/2026 13:30";
     const IMAGES = {"Hiwall":"img/hi_wall.png","Hi Wall":"img/hi_wall.png","Piso Teto":"img/piso_teto.png","Cassete":"img/cassete.png"};
     let sheetData = [], selection = {tipo:"",btu:"",ciclo:""};
     const CACHE_KEY = "scraper_sheet_data_v1";
@@ -593,7 +593,7 @@
     }
     async function scrapeWebContinental(url) {
       try {
-        const proxyUrl = "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(url);
+        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
         const resp = await fetch(proxyUrl);
         if (!resp.ok) throw new Error("Proxy Error");
         const html = await resp.text();
