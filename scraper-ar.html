@@ -360,9 +360,9 @@
         queryParams.push('product_list_order=price');
         
         const fullUrl = categoryUrl + "?" + queryParams.join("&");
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl + "&t=" + Date.now());
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl);
         
-        const resp = await fetch(proxyUrl);
+        const resp = await fetch(proxyUrl, { cache: 'no-store' });
         const html = await resp.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
@@ -430,9 +430,8 @@
             return []; // Se não for um link de busca padrão, ignora
         }
 
-        const bust = apiUrl.includes('?') ? '&t=' : '?t=';
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(apiUrl + bust + Date.now());
-        const resp = await fetch(proxyUrl);
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(apiUrl);
+        const resp = await fetch(proxyUrl, { cache: 'no-store' });
         const json = await resp.json();
         
         if (!json || !json.resultsList || !json.resultsList.records) {
@@ -482,7 +481,7 @@
         document.getElementById("filters-section").style.display = "none";
         
         allFetchedProducts = [];
-        activeFilters = { marcas: [], btus: [], ciclos: [] };
+        activeFilters = { lojas: [], marcas: [], btus: [], ciclos: [] };
 
         if (sheetLoadPromise) {
           document.getElementById("loading-msg").innerText = "SINCRONIZANDO PLANILHA...";
