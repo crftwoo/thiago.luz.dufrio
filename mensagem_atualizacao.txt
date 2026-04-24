@@ -1,1 +1,1 @@
-Adicionada nova funcao de busca simultanea para Frigelar.
+Integração WebContinental (VTEX IO) Corrigida com Proxy Codetabs e Captura __STATE__.
