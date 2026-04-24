@@ -56,6 +56,7 @@
     .store-badge { position: absolute; top: 12px; left: 12px; z-index: 3; background: rgba(18,18,28,0.9); border: 1px solid rgba(255,255,255,0.1); padding: 3px 10px; border-radius: 20px; font-size: 9px; font-weight: 900; color: white; letter-spacing: 1.5px; text-transform: uppercase; backdrop-filter: blur(8px); }
     .store-badge.store-dufrio { background: linear-gradient(135deg, rgba(16,30,100,0.95), rgba(79,172,254,0.2)); border-color: rgba(79,172,254,0.3); }
     .store-badge.store-frigelar { background: linear-gradient(135deg, rgba(0,89,36,0.95), rgba(0,230,118,0.2)); border-color: rgba(0,230,118,0.3); }
+    .store-badge.store-leveros { background: linear-gradient(135deg, #ff6b00, #ff9e00); border-color: #ff9e00; }
 
     /* FOTO */
     .product-img-wrap { width: 100%; aspect-ratio: 1.1/1; background: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; border-bottom: 1px solid var(--card-border); }
@@ -118,6 +119,7 @@
     .filter-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
     .filter-btn.active { background: rgba(79,172,254,0.2); border-color: rgba(79,172,254,0.5); color: var(--blue); box-shadow: 0 0 10px rgba(79,172,254,0.2); }
     .filter-btn.store-frigelar.active { background: rgba(0,230,118,0.2); border-color: rgba(0,230,118,0.5); color: var(--green); box-shadow: 0 0 10px rgba(0,230,118,0.2); }
+    .filter-btn.store-leveros.active { background: rgba(255,107,0,0.2); border-color: rgba(255,107,0,0.5); color: #ff6b00; box-shadow: 0 0 10px rgba(255,107,0,0.2); }
 
     /* SYNC STATUS */
     .sync-status { position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: rgba(18,18,28,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); padding: 10px 18px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: all 0.4s ease; cursor: default; }
@@ -532,6 +534,57 @@
       } catch(e) { console.error("Frigelar erro:", e); return []; }
     }
 
+    async function scrapeLeveros(url) {
+      try {
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url + "&t=" + Date.now());
+        const resp = await fetch(proxyUrl, { cache: 'no-store' });
+        const html = await resp.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        
+        const items = Array.from(doc.querySelectorAll('.products__item.product-card'));
+        return items.map(card => {
+          const titleEl = card.querySelector('.product-card__bottom__name');
+          if (!titleEl) return null;
+          const title = titleEl.innerText.trim();
+          
+          const imgEl = card.querySelector('.product-card__img-container img');
+          const image = imgEl ? (imgEl.getAttribute('data-src') || imgEl.getAttribute('src') || "") : "";
+          
+          const spotEl = card.querySelector('.prices__price');
+          const spotSupportEl = card.querySelector('.prices__support-text');
+          let spotLine = spotEl ? spotEl.innerText.trim() : "";
+          if (spotSupportEl && spotSupportEl.innerText.includes('à vista')) {
+            spotLine += " à vista";
+          }
+          
+          const installEl = card.querySelector('.installment');
+          let installLine = "";
+          if (installEl) {
+            const rawInstall = installEl.innerText.replace(/\s+/g, ' ').trim();
+            // Tenta capturar o número de parcelas e o valor de cada uma
+            const match = rawInstall.match(/(\d+)x\s+de\s+R\$\s*([\d.,]+)/i);
+            if (match) {
+              const parcelas = parseInt(match[1]);
+              const valorParcelaStr = match[2].replace('.', '').replace(',', '.');
+              const valorParcela = parseFloat(valorParcelaStr);
+              const total = (parcelas * valorParcela).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+              installLine = `ou R$ ${total} em ${parcelas}x de R$ ${match[2]}`;
+            } else {
+              installLine = rawInstall;
+            }
+          }
+          
+          const linkEl = card.querySelector('.product-card__bottom a');
+          let finalLink = linkEl ? linkEl.getAttribute('href') : "";
+          if (finalLink && !finalLink.startsWith('http')) finalLink = "https://www.leveros.com.br" + finalLink;
+          
+          if (!spotLine) return null;
+          return { title, image, spot: spotLine, install: installLine, link: finalLink, discount: 0 };
+        }).filter(Boolean);
+      } catch(e) { console.error("Leveros erro:", e); return []; }
+    }
+
     async function startScraping() {
       try {
         document.getElementById("selection-summary").style.display = "none";
@@ -553,6 +606,7 @@
         
         const dufrioLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "dufrio");
         const frigelarLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "frigelar");
+        const leverosLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "leveros");
         
         document.getElementById("loading-msg").innerText = "BUSCANDO LOJAS...";
         
@@ -570,6 +624,14 @@
           scrapePromises.push(
             scrapeFrigelar(frigelarLink.Link).then(products => {
               return products.map(p => ({...p, storeName: "Frigelar"}));
+            })
+          );
+        }
+
+        if (leverosLink && leverosLink.Link) {
+          scrapePromises.push(
+            scrapeLeveros(leverosLink.Link).then(products => {
+              return products.map(p => ({...p, storeName: "Leveros"}));
             })
           );
         }
@@ -647,6 +709,7 @@
         if (type === "lojas") {
             if (item.toLowerCase() === "frigelar") btn.classList.add("store-frigelar");
             if (item.toLowerCase() === "dufrio") btn.classList.add("store-dufrio");
+            if (item.toLowerCase() === "leveros") btn.classList.add("store-leveros");
         }
         btn.innerText = item;
         btn.onclick = () => toggleFilter(btn, type, item);
@@ -690,6 +753,7 @@
       const badge = document.createElement("div"); badge.className = "store-badge";
       if (store.toLowerCase() === "frigelar") badge.classList.add("store-frigelar");
       if (store.toLowerCase() === "dufrio") badge.classList.add("store-dufrio");
+      if (store.toLowerCase() === "leveros") badge.classList.add("store-leveros");
       badge.textContent = store;
 
       const imgWrap = document.createElement("div"); imgWrap.className = "product-img-wrap";
