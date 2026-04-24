@@ -197,7 +197,7 @@
     </div>
   </div>
   <script>
-    const LAST_UPDATE = "24/04/2026 11:45";
+    const LAST_UPDATE = "24/04/2026 12:10";
     const IMAGES = {"Hiwall":"img/hi_wall.png","Hi Wall":"img/hi_wall.png","Piso Teto":"img/piso_teto.png","Cassete":"img/cassete.png"};
     let sheetData = [], selection = {tipo:"",btu:"",ciclo:""};
     const CACHE_KEY = "scraper_sheet_data_v1";
@@ -595,11 +595,10 @@
       try {
         const urlObj = new URL(pageUrl);
         const map = urlObj.searchParams.get('map') || '';
-        const pathParts = urlObj.pathname.split('/').filter(Boolean);
-        const mapParts = map.split(',');
-        const facets = pathParts.map((part, i) => `${mapParts[i] || 'ft'}=${part}`).join('&');
+        const path = urlObj.pathname.replace(/^\/|\/$/g, '');
         
-        const apiUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search?${facets}&O=OrderByPriceasc&_from=0&_to=23&sc=1`;
+        // A API VTEX funciona melhor passando o path direto e o map como parâmetro
+        const apiUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search/${path}?map=${map}&O=OrderByPriceasc&_from=0&_to=49&sc=1`;
         const proxyUrl = "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(apiUrl);
         
         const resp = await fetch(proxyUrl);
@@ -607,6 +606,13 @@
         const data = await resp.json();
         
         return data.map(item => {
+          const title = item.productName;
+          
+          // FILTRO DE SEGURANÇA: Só aceita se tiver "Ar" ou "Split" ou "Inverter" no título
+          const titleLower = title.toLowerCase();
+          if (!titleLower.includes('ar') && !titleLower.includes('split') && !titleLower.includes('inverter')) return null;
+          // Ignora se tiver cara de peça de reposição
+          if (titleLower.includes('placa') || titleLower.includes('sensor') || titleLower.includes('controle') || titleLower.includes('botão')) return null;
           const title = item.productName;
           const link = `https://www.webcontinental.com.br/${item.linkText}/p`;
           const image = item.items?.[0]?.images?.[0]?.imageUrl || "";
