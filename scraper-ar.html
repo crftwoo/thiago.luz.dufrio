@@ -434,8 +434,16 @@
         let apiUrl = url;
         if (url.includes('/searchresults')) {
             apiUrl = url.replace('/searchresults', '/ccstoreui/v1/search');
-            // Limpa parâmetros malformados vindos da planilha como "?&&&=undefined"
-            apiUrl = apiUrl.replace(/(\?|&)+=*undefined&*/g, '$1');
+            // Limpa parâmetros malformados ("?&&&=undefined") usando a API URL nativa
+            // A regex antiga estava cortando parte do N= - agora usamos URLSearchParams para remover apenas a chave vazia
+            try {
+                const urlObj = new URL(apiUrl);
+                urlObj.searchParams.delete(''); // remove o "=undefined" que tem chave vazia
+                apiUrl = urlObj.toString();
+            } catch(e) {
+                // fallback se URL for inválida por algum motivo
+                apiUrl = apiUrl.replace(/[?&]+=*undefined/gi, '').replace(/&&+/g, '&').replace(/\?&/g, '?');
+            }
         } else {
             return []; // Se não for um link de busca padrão, ignora
         }
