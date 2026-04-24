@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Correção crítica de ordenação (sort): Corrigido o bug onde as gamas de BTUs (ex: 22.000 a 24.000) iam parar no final da lista por erro de cálculo. Agora o motor de ordenação extrai de forma inteligente apenas o primeiro valor da gama, colocando tudo em perfeita ordem crescente.', dateIso: '2026-04-23T16:16:01-03:00' };
+const LATEST_LOG = { message: 'Limpeza de textos e referências a sites concorrentes na ferramenta Scraper e no Hub, tornando o foco 100% exclusivo para a Dufrio.', dateIso: '2026-04-23T21:26:14-03:00' };
