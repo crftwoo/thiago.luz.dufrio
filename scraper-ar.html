@@ -735,20 +735,27 @@
             }
           }
         } else {
-          // Desktop: copia imagem para clipboard
+          // Desktop: busca imagem via proxy (resolve CORS) e copia para clipboard
+          const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+          overlaySpan.textContent = "⏳...";
           try {
-            const tempImg = new Image(); tempImg.crossOrigin = "anonymous"; tempImg.src = p.image;
-            await new Promise((res,rej)=>{tempImg.onload=res;tempImg.onerror=rej;});
-            const canvas = document.createElement("canvas");
-            canvas.width = tempImg.naturalWidth; canvas.height = tempImg.naturalHeight;
-            const ctx = canvas.getContext("2d"); ctx.fillStyle="#FFFFFF"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(tempImg,0,0);
-            canvas.toBlob(async blob => {
-              if(!blob) throw new Error("blob null");
-              await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
-              overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
-              setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
-            },"image/png");
+            const resp = await fetch(PROXY + encodeURIComponent(p.image));
+            const blob = await resp.blob();
+            // Garante que o blob é PNG para o ClipboardItem
+            let finalBlob = blob;
+            if (!blob.type.includes('png')) {
+              // Converte para PNG via canvas local (sem CORS pois o blob veio do proxy)
+              const bmp = await createImageBitmap(blob);
+              const cv = document.createElement('canvas');
+              cv.width = bmp.width; cv.height = bmp.height;
+              cv.getContext('2d').drawImage(bmp, 0, 0);
+              finalBlob = await new Promise(r => cv.toBlob(r, 'image/png'));
+            }
+            await navigator.clipboard.write([new ClipboardItem({'image/png': finalBlob})]);
+            overlay.classList.add("copied"); overlaySpan.textContent = "✅ Copiado!";
+            setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
           } catch(e) {
+            // fallback: copia URL
             await navigator.clipboard.writeText(p.image);
             overlay.classList.add("copied"); overlaySpan.textContent = "🔗 URL Copiada!";
             setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📷 Copiar Foto";},1800);
