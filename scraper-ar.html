@@ -434,19 +434,35 @@
         let apiUrl = url;
         if (url.includes('/searchresults')) {
             apiUrl = url.replace('/searchresults', '/ccstoreui/v1/search');
+            // Limpa parâmetros malformados vindos da planilha como "?&&&=undefined"
             apiUrl = apiUrl.replace(/(\?|&)+=*undefined&*/g, '$1');
-            
-            // Adiciona cache buster para garantir que o corsproxy.io não retorne cache velho/erros
-            apiUrl += (apiUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
         } else {
             return []; // Se não for um link de busca padrão, ignora
         }
 
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(apiUrl);
-        const resp = await fetch(proxyUrl, { cache: 'no-store' });
-        const json = await resp.json();
+        // Tenta dois proxies: corsproxy.io e allorigins como fallback
+        // IMPORTANTE: NÃO adicionar &t= na URL da Frigelar - causa 403 no proxy
+        let json = null;
+        const proxies = [
+          "https://corsproxy.io/?" + encodeURIComponent(apiUrl),
+          "https://api.allorigins.win/raw?url=" + encodeURIComponent(apiUrl)
+        ];
         
-        if (!json || !json.resultsList || !json.resultsList.records) {
+        for (const proxyUrl of proxies) {
+          try {
+            const resp = await fetch(proxyUrl, { cache: 'no-store' });
+            if (!resp.ok) continue;
+            const text = await resp.text();
+            if (text.includes('resultsList')) {
+              json = JSON.parse(text);
+              break;
+            }
+          } catch(e) { continue; }
+        }
+        
+        if (!json) return [];
+        
+        if (!json.resultsList || !json.resultsList.records) {
             return [];
         }
 
