@@ -197,7 +197,7 @@
     </div>
   </div>
   <script>
-    const LAST_UPDATE = "24/04/2026 13:30";
+    const LAST_UPDATE = "24/04/2026 15:15";
     const IMAGES = {"Hiwall":"img/hi_wall.png","Hi Wall":"img/hi_wall.png","Piso Teto":"img/piso_teto.png","Cassete":"img/cassete.png"};
     let sheetData = [], selection = {tipo:"",btu:"",ciclo:""};
     const CACHE_KEY = "scraper_sheet_data_v1";
@@ -593,87 +593,67 @@
     }
     async function scrapeWebContinental(url) {
       try {
-        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
         const resp = await fetch(proxyUrl);
         if (!resp.ok) throw new Error("Proxy Error");
         const html = await resp.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
+        
+        // Extrai o __STATE__ de forma robusta via Regex
+        const stateMatch = html.match(/__STATE__\s*=\s*({.*?});/s);
+        if (!stateMatch) throw new Error("State not found");
+        const state = JSON.parse(stateMatch[1]);
         
         let products = [];
         
-        // Estratégia 1: __STATE__ (VTEX IO)
-        const scripts = Array.from(doc.querySelectorAll('script'));
-        let state = null;
-        for (const s of scripts) {
-          if (s.innerText.includes('__STATE__')) {
-            try {
-              const jsonStr = s.innerText.split('__STATE__ = ')[1].split('};')[0] + '}';
-              state = JSON.parse(jsonStr);
-              break;
-            } catch(e) {}
-          }
-        }
-        
-        if (state) {
-          Object.keys(state).forEach(key => {
-            if (key.startsWith('Product:') && state[key].productName) {
-              const p = state[key];
-              const title = p.productName;
-              const titleLower = title.toLowerCase();
-              
-              // FILTRO: Só ar-condicionado
-              if (!titleLower.includes('ar') && !titleLower.includes('split') && !titleLower.includes('inverter')) return;
-              if (titleLower.includes('placa') || titleLower.includes('sensor') || titleLower.includes('controle') || titleLower.includes('botão') || titleLower.includes('peça')) return;
+        Object.keys(state).forEach(key => {
+          if (key.startsWith('Product:') && state[key].productName) {
+            const p = state[key];
+            const title = p.productName;
+            const titleLower = title.toLowerCase();
+            
+            // Filtros: Só ar-condicionado, nada de peças
+            if (!titleLower.includes('ar') && !titleLower.includes('split')) return;
+            if (titleLower.includes('placa') || titleLower.includes('sensor') || titleLower.includes('controle') || titleLower.includes('botão') || titleLower.includes('peça')) return;
 
-              const link = "https://www.webcontinental.com.br" + (p.linkText ? `/${p.linkText}/p` : "");
-              const skuKey = p.items && p.items.length > 0 ? p.items[0].id : null;
-              const image = skuKey && state[`Image:${skuKey}`] ? state[`Image:${skuKey}`].imageUrl : "";
-              const priceKey = skuKey ? `Price:${skuKey}` : null;
-              const spotPriceNum = priceKey && state[priceKey] ? state[priceKey].lowPrice : 0;
-              const highPriceNum = priceKey && state[priceKey] ? state[priceKey].highPrice : 0;
-
-              if (spotPriceNum > 0) {
-                const spotLine = "R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + " à vista";
-                let installLine = "";
-                if (highPriceNum > spotPriceNum) {
-                  const totalParcelado = highPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                  const valorParcela = (highPriceNum / 10).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                  installLine = `ou R$ ${totalParcelado} até 10x de R$ ${valorParcela}`;
+            const link = "https://www.webcontinental.com.br" + (p.linkText ? `/${p.linkText}/p` : "");
+            
+            // Busca o preço no emaranhado do VTEX IO (PriceRange)
+            let price = 0;
+            const priceRangeKey = p.priceRange?.id;
+            if (priceRangeKey && state[priceRangeKey]) {
+                const sellingPriceKey = state[priceRangeKey].sellingPrice?.id;
+                if (sellingPriceKey && state[sellingPriceKey]) {
+                    price = state[sellingPriceKey].lowPrice || 0;
                 }
-                products.push({ title, image, spot: spotLine, install: installLine, link, discount: 0 });
-              }
             }
-          });
-        }
-        
-        // Estratégia 2: DOM puro (Fallback Agressivo)
-        if (products.length === 0) {
-          const cards = Array.from(doc.querySelectorAll('[class*="productSummary"], [class*="galleryItem"], article'));
-          products = cards.map(card => {
-             const titleEl = card.querySelector('h3, [class*="productName"], [class*="brandName"]');
-             if (!titleEl) return null;
-             const title = titleEl.innerText.trim();
-             const titleLower = title.toLowerCase();
-             if (!titleLower.includes('ar') && !titleLower.includes('split')) return null;
-             if (titleLower.includes('placa') || titleLower.includes('sensor')) return null;
-             
-             const imgEl = card.querySelector('img');
-             const image = imgEl ? (imgEl.getAttribute('src') || "") : "";
-             const spotEl = card.querySelector('[class*="sellingPriceValue"], [class*="priceCash"]');
-             const spot = spotEl ? spotEl.innerText.trim() : "";
-             
-             const linkEl = card.querySelector('a[href*="/p"]');
-             let link = linkEl ? linkEl.getAttribute('href') : "";
-             if (link && !link.startsWith('http')) link = "https://www.webcontinental.com.br" + link;
-             
-             return spot ? { title, image, spot, install: "", link, discount: 0 } : null;
-          }).filter(Boolean);
-        }
+
+            // Fallback se não achou no PriceRange
+            if (price === 0 && p.items && p.items.length > 0) {
+                const skuId = p.items[0].id;
+                Object.keys(state).forEach(sKey => {
+                    if (sKey.includes(skuId) && state[sKey].Price) price = state[sKey].Price;
+                });
+            }
+
+            if (price > 0) {
+                const image = p.items && p.items.length > 0 && p.items[0].images && p.items[0].images.length > 0 
+                              ? (state[p.items[0].images[0].id]?.imageUrl || "") : "";
+                
+                products.push({
+                    title,
+                    image,
+                    spot: "R$ " + price.toLocaleString('pt-BR', {minimumFractionDigits: 2}),
+                    install: "", // WebContinental geralmente não expõe parcelamento fácil no State inicial
+                    link,
+                    discount: 0
+                });
+            }
+          }
+        });
         
         return products;
       } catch(e) {
-        console.error("WebContinental HTML Fail:", e);
+        console.error("WebContinental Fail:", e);
         return [];
       }
     }
