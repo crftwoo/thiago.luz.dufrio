@@ -704,17 +704,35 @@
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || ('ontouchstart' in window);
         
         if (isMobile) {
-          // Mobile: usa Web Share API se disponível, senão abre imagem em nova aba
-          if (navigator.share) {
-            try {
+          // Mobile: busca a imagem pelo proxy (resolve CORS) e compartilha o arquivo real
+          const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+          overlaySpan.textContent = "⏳ Aguarde...";
+          try {
+            const resp = await fetch(PROXY + encodeURIComponent(p.image));
+            const blob = await resp.blob();
+            const ext = blob.type.includes('png') ? '.png' : '.jpg';
+            const fileName = (p.title.substring(0, 40).replace(/[^a-zA-Z0-9]/g, '_') || 'produto') + ext;
+            const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              // Compartilha o arquivo de imagem real (iOS 15+ e Android Chrome)
+              await navigator.share({ files: [file], title: p.title });
+            } else if (navigator.share) {
+              // Fallback: compartilha só a URL se files não for suportado
               await navigator.share({ title: p.title, url: p.image });
-              overlay.classList.add("copied"); overlaySpan.textContent = "✅ Compartilhado!";
-              setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📤 Compartilhar";},1800);
-            } catch(e) {
-              if (e.name !== 'AbortError') window.open(p.image, '_blank');
+            } else {
+              window.open(p.image, '_blank');
             }
-          } else {
-            window.open(p.image, '_blank');
+            overlay.classList.add("copied"); overlaySpan.textContent = "✅ Compartilhado!";
+            setTimeout(()=>{overlay.classList.remove("copied");overlaySpan.textContent="📤 Compartilhar";},1800);
+          } catch(e) {
+            if (e.name === 'AbortError') {
+              overlaySpan.textContent = "📤 Compartilhar"; // usuário cancelou
+            } else {
+              // fallback final: abre imagem em nova aba
+              window.open(p.image, '_blank');
+              overlaySpan.textContent = "📤 Compartilhar";
+            }
           }
         } else {
           // Desktop: copia imagem para clipboard
