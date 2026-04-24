@@ -197,7 +197,7 @@
     </div>
   </div>
   <script>
-    const LAST_UPDATE = "24/04/2026 15:15";
+    const LAST_UPDATE = "24/04/2026 15:30";
     const IMAGES = {"Hiwall":"img/hi_wall.png","Hi Wall":"img/hi_wall.png","Piso Teto":"img/piso_teto.png","Cassete":"img/cassete.png"};
     let sheetData = [], selection = {tipo:"",btu:"",ciclo:""};
     const CACHE_KEY = "scraper_sheet_data_v1";
@@ -591,72 +591,6 @@
         }).filter(Boolean);
       } catch(e) { console.error("Leveros erro:", e); return []; }
     }
-    async function scrapeWebContinental(url) {
-      try {
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
-        const resp = await fetch(proxyUrl);
-        if (!resp.ok) throw new Error("Proxy Error");
-        const html = await resp.text();
-        
-        // Extrai o __STATE__ de forma robusta via Regex
-        const stateMatch = html.match(/__STATE__\s*=\s*({.*?});/s);
-        if (!stateMatch) throw new Error("State not found");
-        const state = JSON.parse(stateMatch[1]);
-        
-        let products = [];
-        
-        Object.keys(state).forEach(key => {
-          if (key.startsWith('Product:') && state[key].productName) {
-            const p = state[key];
-            const title = p.productName;
-            const titleLower = title.toLowerCase();
-            
-            // Filtros: Só ar-condicionado, nada de peças
-            if (!titleLower.includes('ar') && !titleLower.includes('split')) return;
-            if (titleLower.includes('placa') || titleLower.includes('sensor') || titleLower.includes('controle') || titleLower.includes('botão') || titleLower.includes('peça')) return;
-
-            const link = "https://www.webcontinental.com.br" + (p.linkText ? `/${p.linkText}/p` : "");
-            
-            // Busca o preço no emaranhado do VTEX IO (PriceRange)
-            let price = 0;
-            const priceRangeKey = p.priceRange?.id;
-            if (priceRangeKey && state[priceRangeKey]) {
-                const sellingPriceKey = state[priceRangeKey].sellingPrice?.id;
-                if (sellingPriceKey && state[sellingPriceKey]) {
-                    price = state[sellingPriceKey].lowPrice || 0;
-                }
-            }
-
-            // Fallback se não achou no PriceRange
-            if (price === 0 && p.items && p.items.length > 0) {
-                const skuId = p.items[0].id;
-                Object.keys(state).forEach(sKey => {
-                    if (sKey.includes(skuId) && state[sKey].Price) price = state[sKey].Price;
-                });
-            }
-
-            if (price > 0) {
-                const image = p.items && p.items.length > 0 && p.items[0].images && p.items[0].images.length > 0 
-                              ? (state[p.items[0].images[0].id]?.imageUrl || "") : "";
-                
-                products.push({
-                    title,
-                    image,
-                    spot: "R$ " + price.toLocaleString('pt-BR', {minimumFractionDigits: 2}),
-                    install: "", // WebContinental geralmente não expõe parcelamento fácil no State inicial
-                    link,
-                    discount: 0
-                });
-            }
-          }
-        });
-        
-        return products;
-      } catch(e) {
-        console.error("WebContinental Fail:", e);
-        return [];
-      }
-    }
 
     async function startScraping() {
       try {
@@ -680,7 +614,6 @@
         const dufrioLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "dufrio");
         const frigelarLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "frigelar");
         const leverosLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "leveros");
-        const webcontinentalLink = links.find(l => l.Site && String(l.Site).toLowerCase().replace(/\s/g,'') === "webcontinental");
         
         document.getElementById("loading-msg").innerText = "BUSCANDO LOJAS...";
         
@@ -710,13 +643,6 @@
           );
         }
 
-        if (webcontinentalLink && webcontinentalLink.Link) {
-          scrapePromises.push(
-            scrapeWebContinental(webcontinentalLink.Link).then(products => {
-              return products.map(p => ({...p, storeName: "WebContinental"}));
-            })
-          );
-        }
         
         const resultsArrays = await Promise.all(scrapePromises);
         
