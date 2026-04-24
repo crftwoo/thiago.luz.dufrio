@@ -591,87 +591,45 @@
         }).filter(Boolean);
       } catch(e) { console.error("Leveros erro:", e); return []; }
     }
-
-    async function scrapeWebContinental(url) {
+    async function scrapeWebContinental(pageUrl) {
       try {
-        const proxyUrl = "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(url);
-        const resp = await fetch(proxyUrl, { cache: 'no-store' });
-        const html = await resp.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
+        const urlObj = new URL(pageUrl);
+        const map = urlObj.searchParams.get('map') || '';
+        const pathParts = urlObj.pathname.split('/').filter(Boolean);
+        const mapParts = map.split(',');
+        const facets = pathParts.map((part, i) => `${mapParts[i] || 'ft'}=${part}`).join('&');
         
-        let products = [];
-
-        // Tentativa 1: Extração via __STATE__ (VTEX IO - Suporta script e template)
-        let stateData = null;
-        const containers = Array.from(doc.querySelectorAll('script, template'));
-        for (const c of containers) {
-          const content = c.innerText || c.innerHTML || "";
-          if (content.includes('__STATE__') || c.getAttribute('data-varname') === '__STATE__') {
-            try {
-              let jsonStr = content.includes('__STATE__ = ') ? content.split('__STATE__ = ')[1].split('};')[0] + '}' : content.trim();
-              if (!jsonStr.startsWith('{')) {
-                const match = jsonStr.match(/(\{.*\})/s);
-                if (match) jsonStr = match[1];
-              }
-              stateData = JSON.parse(jsonStr);
-              if (stateData) break;
-            } catch(e) {}
+        const apiUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search?${facets}&O=OrderByPriceasc&_from=0&_to=23&sc=1`;
+        
+        const resp = await fetch(apiUrl);
+        if (!resp.ok) throw new Error("API Error");
+        const data = await resp.json();
+        
+        return data.map(item => {
+          const title = item.productName;
+          const link = `https://www.webcontinental.com.br/${item.linkText}/p`;
+          const image = item.items?.[0]?.images?.[0]?.imageUrl || "";
+          const offer = item.items?.[0]?.sellers?.[0]?.commertialOffer || {};
+          
+          const price = offer.Price || 0;
+          if (price <= 0) return null;
+          
+          const spotLine = "R$ " + price.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + " à vista";
+          let installLine = "";
+          
+          const installments = offer.Installments || [];
+          if (installments.length > 0) {
+            const best = installments.reduce((a, b) => b.NumberOfInstallments > a.NumberOfInstallments ? b : a);
+            const total = (best.NumberOfInstallments * best.Value).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            installLine = `ou R$ ${total} em ${best.NumberOfInstallments}x de R$ ${best.Value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
           }
-        }
-
-        if (stateData) {
-          Object.keys(stateData).forEach(key => {
-            if (key.startsWith('Product:') && stateData[key].productName) {
-              const p = stateData[key];
-              const title = p.productName;
-              const link = "https://www.webcontinental.com.br" + (p.linkText ? `/${p.linkText}/p` : "");
-              const skuKey = p.items && p.items.length > 0 ? p.items[0].id : null;
-              const image = skuKey && stateData[`Image:${skuKey}`] ? stateData[`Image:${skuKey}`].imageUrl : "";
-              const priceKey = skuKey ? `Price:${skuKey}` : null;
-              const spotPriceNum = priceKey && stateData[priceKey] ? stateData[priceKey].lowPrice : 0;
-              const highPriceNum = priceKey && stateData[priceKey] ? stateData[priceKey].highPrice : 0;
-
-              if (spotPriceNum > 0) {
-                const spotLine = "R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + " à vista";
-                let installLine = "";
-                if (highPriceNum > spotPriceNum) {
-                  const totalParcelado = highPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                  const valorParcela = (highPriceNum / 10).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                  installLine = `ou R$ ${totalParcelado} até 10x de R$ ${valorParcela}`;
-                }
-                products.push({ title, image, spot: spotLine, install: installLine, link, discount: 0 });
-              }
-            }
-          });
-        }
-
-        // Tentativa 2: Fallback DOM (Super Agressivo)
-        if (products.length === 0) {
-          const cards = Array.from(doc.querySelectorAll('[class*="galleryItem"], [class*="productSummary"], article'));
-          products = cards.map(card => {
-            const titleEl = card.querySelector('[class*="productBrand"], [class*="brandName"], h3');
-            if (!titleEl) return null;
-            const title = titleEl.innerText.trim();
-            const imgEl = card.querySelector('img');
-            const image = imgEl ? (imgEl.getAttribute('src') || "") : "";
-            const spotEl = card.querySelector('[class*="sellingPriceValue"], [class*="priceCash"]');
-            let spotLine = spotEl ? spotEl.innerText.trim() : "";
-            if (spotLine && !spotLine.includes('à vista')) spotLine += " à vista";
-            
-            const linkEl = card.querySelector('a[href*="/p"]');
-            let finalLink = linkEl ? linkEl.getAttribute('href') : "";
-            if (finalLink && !finalLink.startsWith('http')) finalLink = "https://www.webcontinental.com.br" + finalLink;
-            
-            return spotLine ? { title, image, spot: spotLine, install: "", link: finalLink, discount: 0 } : null;
-          }).filter(Boolean);
-        }
-
-        const unique = [];
-        const seen = new Set();
-        products.forEach(p => { if (!seen.has(p.title)) { unique.push(p); seen.add(p.title); } });
-        return unique;
-      } catch(e) { console.error("WebContinental erro:", e); return []; }
+          
+          return { title, image, spot: spotLine, install: installLine, link, discount: 0 };
+        }).filter(Boolean);
+      } catch(e) {
+        console.error("WebContinental API Fail:", e);
+        return [];
+      }
     }
 
     async function startScraping() {
