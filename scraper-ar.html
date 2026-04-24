@@ -197,7 +197,7 @@
     </div>
   </div>
   <script>
-    const LAST_UPDATE = "24/04/2026 11:10";
+    const LAST_UPDATE = "24/04/2026 11:20";
     const IMAGES = {"Hiwall":"img/hi_wall.png","Hi Wall":"img/hi_wall.png","Piso Teto":"img/piso_teto.png","Cassete":"img/cassete.png"};
     let sheetData = [], selection = {tipo:"",btu:"",ciclo:""};
     const CACHE_KEY = "scraper_sheet_data_v1";
@@ -602,80 +602,74 @@
         
         let products = [];
 
-        // Tentativa 1: Extração via __STATE__ (VTEX IO)
-        const stateScript = Array.from(doc.querySelectorAll('script')).find(s => s.innerText.includes('__STATE__'));
-        if (stateScript) {
-          try {
-            const stateStr = stateScript.innerText.split('__STATE__ = ')[1].split('};')[0] + '}';
-            const state = JSON.parse(stateStr);
-            
-            Object.keys(state).forEach(key => {
-              if (key.startsWith('Product:') && state[key].productName) {
-                const p = state[key];
-                const title = p.productName;
-                const link = "https://www.webcontinental.com.br" + (p.linkText ? `/${p.linkText}/p` : "");
-                const skuKey = p.items && p.items.length > 0 ? p.items[0].id : null;
-                const image = skuKey && state[`Image:${skuKey}`] ? state[`Image:${skuKey}`].imageUrl : "";
-                const priceKey = skuKey ? `Price:${skuKey}` : null;
-                const spotPriceNum = priceKey && state[priceKey] ? state[priceKey].lowPrice : 0;
-                const highPriceNum = priceKey && state[priceKey] ? state[priceKey].highPrice : 0;
-
-                if (spotPriceNum > 0) {
-                  const spotLine = "R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + " à vista";
-                  let installLine = "";
-                  if (highPriceNum > spotPriceNum) {
-                    const totalParcelado = highPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                    const valorParcela = (highPriceNum / 10).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                    installLine = `ou R$ ${totalParcelado} até 10x de R$ ${valorParcela}`;
-                  }
-                  products.push({ title, image, spot: spotLine, install: installLine, link, discount: 0 });
-                }
+        // Tentativa 1: Extração via __STATE__ (VTEX IO - Suporta script e template)
+        let stateData = null;
+        const containers = Array.from(doc.querySelectorAll('script, template'));
+        for (const c of containers) {
+          const content = c.innerText || c.innerHTML || "";
+          if (content.includes('__STATE__') || c.getAttribute('data-varname') === '__STATE__') {
+            try {
+              let jsonStr = content.includes('__STATE__ = ') ? content.split('__STATE__ = ')[1].split('};')[0] + '}' : content.trim();
+              if (!jsonStr.startsWith('{')) {
+                const match = jsonStr.match(/(\{.*\})/s);
+                if (match) jsonStr = match[1];
               }
-            });
-          } catch(e) { }
+              stateData = JSON.parse(jsonStr);
+              if (stateData) break;
+            } catch(e) {}
+          }
         }
 
-        // Tentativa 2: Fallback DOM
+        if (stateData) {
+          Object.keys(stateData).forEach(key => {
+            if (key.startsWith('Product:') && stateData[key].productName) {
+              const p = stateData[key];
+              const title = p.productName;
+              const link = "https://www.webcontinental.com.br" + (p.linkText ? `/${p.linkText}/p` : "");
+              const skuKey = p.items && p.items.length > 0 ? p.items[0].id : null;
+              const image = skuKey && stateData[`Image:${skuKey}`] ? stateData[`Image:${skuKey}`].imageUrl : "";
+              const priceKey = skuKey ? `Price:${skuKey}` : null;
+              const spotPriceNum = priceKey && stateData[priceKey] ? stateData[priceKey].lowPrice : 0;
+              const highPriceNum = priceKey && stateData[priceKey] ? stateData[priceKey].highPrice : 0;
+
+              if (spotPriceNum > 0) {
+                const spotLine = "R$ " + spotPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + " à vista";
+                let installLine = "";
+                if (highPriceNum > spotPriceNum) {
+                  const totalParcelado = highPriceNum.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                  const valorParcela = (highPriceNum / 10).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                  installLine = `ou R$ ${totalParcelado} até 10x de R$ ${valorParcela}`;
+                }
+                products.push({ title, image, spot: spotLine, install: installLine, link, discount: 0 });
+              }
+            }
+          });
+        }
+
+        // Tentativa 2: Fallback DOM (Super Agressivo)
         if (products.length === 0) {
-          const items = Array.from(doc.querySelectorAll('[class*="galleryItem"], [class*="productSummary"]'));
-          products = items.map(card => {
-            const titleEl = card.querySelector('[class*="productBrand"], [class*="brandName"]');
+          const cards = Array.from(doc.querySelectorAll('[class*="galleryItem"], [class*="productSummary"], article'));
+          products = cards.map(card => {
+            const titleEl = card.querySelector('[class*="productBrand"], [class*="brandName"], h3');
             if (!titleEl) return null;
             const title = titleEl.innerText.trim();
-            const imgEl = card.querySelector('img[class*="image"]');
+            const imgEl = card.querySelector('img');
             const image = imgEl ? (imgEl.getAttribute('src') || "") : "";
             const spotEl = card.querySelector('[class*="sellingPriceValue"], [class*="priceCash"]');
             let spotLine = spotEl ? spotEl.innerText.trim() : "";
             if (spotLine && !spotLine.includes('à vista')) spotLine += " à vista";
             
-            const installEl = card.querySelector('[class*="installmentContainer"]');
-            let installLine = "";
-            if (installEl) {
-              const rawInstall = installEl.innerText.replace(/\s+/g, ' ').trim();
-              const match = rawInstall.match(/(\d+)x\s+de\s+R\$\s*([\d.,]+)/i);
-              if (match) {
-                const total = (parseInt(match[1]) * parseFloat(match[2].replace('.','').replace(',','.'))).toLocaleString('pt-BR', {minimumFractionDigits:2});
-                installLine = `ou R$ ${total} em ${match[1]}x de R$ ${match[2]}`;
-              }
-            }
             const linkEl = card.querySelector('a[href*="/p"]');
             let finalLink = linkEl ? linkEl.getAttribute('href') : "";
             if (finalLink && !finalLink.startsWith('http')) finalLink = "https://www.webcontinental.com.br" + finalLink;
             
-            return spotLine ? { title, image, spot: spotLine, install: installLine, link: finalLink, discount: 0 } : null;
+            return spotLine ? { title, image, spot: spotLine, install: "", link: finalLink, discount: 0 } : null;
           }).filter(Boolean);
         }
 
-        // Remove duplicatas por título
         const unique = [];
         const seen = new Set();
-        products.forEach(p => {
-          if (!seen.has(p.title)) {
-            unique.push(p);
-            seen.add(p.title);
-          }
-        });
-
+        products.forEach(p => { if (!seen.has(p.title)) { unique.push(p); seen.add(p.title); } });
         return unique;
       } catch(e) { console.error("WebContinental erro:", e); return []; }
     }
