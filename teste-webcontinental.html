@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste WebContinental - Filtro de Precisão</title>
+    <title>Teste WebContinental - Extração Blindada</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -154,7 +154,7 @@
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:59</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 02:02</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -183,7 +183,7 @@
             
             grid.innerHTML = "";
             debug.innerHTML = "";
-            status.innerText = "LIMPANDO LISTA E FILTRANDO BTUS...";
+            status.innerText = "EXTRAINDO DADOS DO LINK...";
             status.style.color = "#00f2fe";
 
             try {
@@ -193,7 +193,7 @@
 
                 const marker = '__STATE__">';
                 const idx = html.indexOf(marker);
-                if (idx === -1) throw new Error("Erro ao acessar dados do site.");
+                if (idx === -1) throw new Error("Erro de resposta do site.");
 
                 let jsonStr = html.substring(idx);
                 const scriptStart = jsonStr.indexOf('<script>');
@@ -202,39 +202,48 @@
                 const stateObj = JSON.parse(jsonStr);
                 const allKeys = Object.keys(stateObj);
 
-                // IDENTIFICAÇÃO DO FILTRO NO LINK (Ex: 9000-btus)
+                log(`Estado mapeado.`);
+
+                // Detecção inteligente da lista filtrada
                 const filterMatch = urlInput.match(/capacidade-btus=([^&]+)/) || urlInput.match(/9000-btus/);
                 const filterText = filterMatch ? filterMatch[0] : "";
-                log(`Filtro detectado no link: ${filterText}`);
-
-                // BUSCA PELA LISTA QUE CONTÉM O FILTRO E A ORDENAÇÃO
-                let searchKey = allKeys.find(k => k.includes('productSearch') && k.includes('OrderByPriceASC') && k.includes(filterText));
                 
-                // Backup se não achar com tudo junto
+                let searchKey = allKeys.find(k => k.includes('productSearch') && k.includes('OrderByPriceASC') && k.includes(filterText));
                 if (!searchKey) searchKey = allKeys.find(k => k.includes('productSearch') && k.includes(filterText));
                 if (!searchKey) searchKey = allKeys.find(k => k.includes('productSearch') && k.includes('OrderByPriceASC'));
 
-                if (!searchKey) throw new Error("Não foi possível encontrar a lista filtrada no código.");
-
                 const productsRef = (stateObj[searchKey]?.products || []);
-                log(`Localizados ${productsRef.length} produtos que respeitam o seu filtro.`);
+                log(`Processando ${productsRef.length} itens...`);
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                const processed = productsRef.map((pRef) => {
+                const processed = productsRef.map((pRef, pIdx) => {
                     try {
                         const product = stateObj[pRef.id];
-                        const itemKey = allKeys.find(k => k.startsWith(pRef.id + ".items") || k.startsWith("$" + pRef.id + ".items"));
-                        const item = stateObj[itemKey].id ? stateObj[stateObj[itemKey].id] : stateObj[itemKey];
-                        const sellerKey = allKeys.find(k => k.startsWith(itemKey + ".sellers") || (item.id && k.startsWith(item.id + ".sellers")));
-                        const seller = stateObj[sellerKey][0].id ? stateObj[stateObj[sellerKey][0].id] : stateObj[sellerKey][0];
+                        if (!product) return null;
+
+                        // Localização cega de SKUs e Ofertas (não depende de nomes de chaves fixos)
+                        const itemKey = allKeys.find(k => k.startsWith(pRef.id + ".items") || k.includes(pRef.id.split(':')[1] + ".items"));
+                        if (!itemKey) return null;
+
+                        const itemEntry = stateObj[itemKey];
+                        const item = itemEntry.id ? stateObj[itemEntry.id] : itemEntry;
+                        if (!item) return null;
+
+                        const sellerKey = allKeys.find(k => k.startsWith(itemKey + ".sellers") || k.includes(item.itemId + ".sellers") || (item.id && k.startsWith(item.id + ".sellers")));
+                        if (!sellerKey) return null;
+
+                        const sellers = stateObj[sellerKey];
+                        const seller = sellers[0].id ? stateObj[sellers[0].id] : sellers[0];
                         const offer = seller.commertialOffer.id ? stateObj[seller.commertialOffer.id] : seller.commertialOffer;
 
                         let price = offer.spotPrice || offer.Price || 0;
                         let fullPrice = offer.Price || price;
                         let installments = 10;
 
-                        const instKey = allKeys.find(k => k.startsWith(offer.id + ".Installments") || k.includes(offer.id + ".Installments"));
+                        // Busca parcelas de forma recursiva no estado
+                        const instPrefix = offer.id ? offer.id + ".Installments" : null;
+                        const instKey = allKeys.find(k => instPrefix && k.startsWith(instPrefix));
                         if (instKey) {
                             const list = stateObj[instKey];
                             if (Array.isArray(list)) {
@@ -254,10 +263,12 @@
                             installments: installments,
                             link: `https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}`
                         };
-                    } catch (e) { return null; }
+                    } catch (e) { 
+                        return null; 
+                    }
                 }).filter(p => p !== null);
 
-                status.innerText = `SUCESSO! ${processed.length} PRODUTOS ENCONTRADOS (APENAS 9000 BTUs).`;
+                status.innerText = `SUCESSO! ${processed.length} PRODUTOS ENCONTRADOS.`;
 
                 processed.forEach(p => {
                     const card = document.createElement('div');
