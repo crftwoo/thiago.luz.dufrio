@@ -153,6 +153,7 @@
     <div class="page-header">
       <h1>Scraper de Ar Condicionado</h1>
       <p>Comparação de preços em tempo real entre múltiplas lojas</p>
+      <div id="header-update-time" style="font-size: 10px; color: var(--blue); margin-top: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;">Última atualização: --/--/--</div>
     </div>
     <div id="step-tipo" class="step-section active">
       <h2>Selecione o Tipo</h2>
@@ -198,8 +199,24 @@
       <div class="products-grid" id="results-grid"></div>
     </div>
   </div>
+  
+  <script src="ultimo_log.js" onerror="window.LATEST_LOG = null;"></script>
   <script>
-    const LAST_UPDATE = "24/04/2026 15:30";
+    let displayUpdate = "Desconhecido";
+    if (typeof LATEST_LOG !== 'undefined' && LATEST_LOG && LATEST_LOG.dateIso) {
+        try {
+            const dateObj = new Date(LATEST_LOG.dateIso);
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const year = dateObj.getFullYear();
+            const hours = String(dateObj.getHours()).padStart(2, '0');
+            const mins = String(dateObj.getMinutes()).padStart(2, '0');
+            displayUpdate = `${day}/${month}/${year} às ${hours}:${mins}`;
+        } catch(e) {}
+    } else {
+        displayUpdate = "24/04/2026 às 15:30"; // fallback
+    }
+
     const IMAGES = {"Hiwall":"img/hi_wall.png","Hi Wall":"img/hi_wall.png","Piso Teto":"img/piso_teto.png","Cassete":"img/cassete.png"};
     let sheetData = [], selection = {tipo:"",btu:"",ciclo:""};
     const CACHE_KEY = "scraper_sheet_data_v1";
@@ -219,9 +236,12 @@
       
       const syncStatus = document.getElementById("sync-status");
       const syncText = document.getElementById("sync-text");
-      document.getElementById("update-text").innerText = "Atualizado: " + LAST_UPDATE;
+      document.getElementById("update-text").innerText = "Atualizado: " + displayUpdate;
+      const headerUpdate = document.getElementById("header-update-time");
+      if(headerUpdate) headerUpdate.innerText = "Última versão sincronizada: " + displayUpdate;
 
       // 2. Carrega a planilha em segundo plano
+
       sheetLoadPromise = (async () => {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
