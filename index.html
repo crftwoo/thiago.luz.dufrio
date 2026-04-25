@@ -415,18 +415,13 @@
 
     <div class="meta-footer">
       <div><span class="status-dot"></span> Sistemas Operacionais e Online<br><span style="font-size: 14px; opacity: 0.8; display: block; margin-top: 5px;">Criado em 16/09/2024 por Thiago Luz</span></div>
-      <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); min-width: 500px;">
-        <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">📊 Última Atualização</div>
-        <div id="update-status" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); text-align: left;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
-            <div style="flex: 1;">
-              <div id="update-title" style="font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">--</div>
-              <div id="update-desc" style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Carregando...</div>
-            </div>
-            <div id="update-datetime" style="font-size: 12px; color: var(--text-muted); white-space: nowrap; text-align: right;">
-              <div>--</div>
-              <div>--</div>
-            </div>
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div class="tooltip" style="cursor: help; display: inline-block;">
+          <span style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase;">📦 Última atualização</span>
+          <div class="tooltiptext" style="width: 320px; bottom: 130%; left: 50%; transform: translateX(-50%);">
+            <div id="update-title" style="color: #4facfe; font-weight: 800; margin-bottom: 6px; font-size: 12px;">--</div>
+            <div id="update-desc" style="color: var(--text-main); font-size: 12px; line-height: 1.4; text-align: left; margin-bottom: 8px;">Carregando...</div>
+            <div id="update-datetime" style="color: var(--text-muted); font-size: 11px; text-align: right;">--</div>
           </div>
         </div>
       </div>
