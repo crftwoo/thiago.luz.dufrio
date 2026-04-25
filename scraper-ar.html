@@ -632,12 +632,14 @@
           const listPriceNum = offer.ListPrice;
           if (!spotPriceNum) return null;
 
-          // Linha de preço à vista + badge de desconto (igual aos outros scrapers)
-          let spotLine = fmtBR(spotPriceNum);
-          if (listPriceNum > spotPriceNum) {
-            const pct = Math.round((listPriceNum - spotPriceNum) / listPriceNum * 100);
-            if (pct > 0) spotLine += ` ${pct}% OFF`;
-          }
+          // Formato pedido pelo usuário (igual texto que aparece no site da WebContinental):
+          //   spot:    "R$ 1.659,65 à vista"
+          //   install: "ou R$ 1.659,65 até 10x de R$ 165,96"
+          // OBS: hoje usamos offer.Price (preço regular) no spot. O site mostra o preço PIX
+          // (~4% mais barato), mas esse valor só vem na GraphQL `dataProduct` que bloqueia
+          // requests de outro host. Pra ter o PIX exato, precisamos atualizar o Cloudflare
+          // Worker pra mandar Origin/Referer = webcontinental.com.br.
+          let spotLine = `${fmtBR(spotPriceNum)} à vista`;
 
           // Melhor opção de parcelamento sem juros (maior número de parcelas)
           const noInterest = (offer.Installments || []).filter(i => i.InterestRate === 0 && i.NumberOfInstallments > 1);
@@ -648,8 +650,9 @@
 
           let installLine = "";
           if (best) {
-            const totalNum = best.Value * best.NumberOfInstallments;
-            installLine = `ou ${fmtBR(totalNum)} em ${best.NumberOfInstallments}x de ${fmtBR(best.Value)} sem juros`;
+            // Total parcelado = offer.Price (preço regular). Não recalcula best.Value*N
+            // pra evitar diferença de centavos (ex: 165.96*10=1659.60 mas Price=1659.65).
+            installLine = `ou ${fmtBR(spotPriceNum)} até ${best.NumberOfInstallments}x de ${fmtBR(best.Value)}`;
           }
 
           const image = (item.images && item.images[0] && (item.images[0].imageUrl || item.images[0].imageUrlOriginal)) || "";
