@@ -1,1 +1,0 @@
-fix(wc): reescreve scraper WebContinental usando API VTEX catalog - __STATE__ ignorava order=, agora traz Agratto e todos os produtos ordenados por preco
