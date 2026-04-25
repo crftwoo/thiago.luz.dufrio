@@ -1,0 +1,38 @@
+{
+  "products": [],
+  "recordsFiltered": 0,
+  "correction": {
+    "misspelled": true
+  },
+  "fuzzy": "auto",
+  "operator": "or",
+  "translated": false,
+  "pagination": {
+    "count": 0,
+    "current": {
+      "index": 1,
+      "proxyUrl": "search/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/trade-policy/1?an=lojawebcontinental&sort=price:asc&count=50&page=1&operator=or&fuzzy=auto"
+    },
+    "before": [],
+    "after": [],
+    "perPage": 50,
+    "next": {
+      "index": 0
+    },
+    "previous": {
+      "index": 0
+    },
+    "first": {
+      "index": 0
+    },
+    "last": {
+      "index": 0
+    }
+  },
+  "options": {
+    "sorts": [],
+    "counts": [],
+    "deliveryPromisesEnabled": false
+  },
+  "searchId": "0686b75221a54308bc6b7e0bda7c2b5d"
+}

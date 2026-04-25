@@ -600,17 +600,57 @@
       // que respeita a ordenação e traz todos os produtos com preços corretos.
       try {
         const urlObj = new URL(url);
-        const path = urlObj.pathname.replace(/^\//, ''); // ex: "climatizacao/ar-condicionado/..."
-        const order = urlObj.searchParams.get('order') || 'OrderByPriceASC';
-
-        const apiUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search/${path}?_from=0&_to=49&O=${order}`;
+        const pathParts = urlObj.pathname.replace(/^\//, '').split('/');
+        const mapParts = (urlObj.searchParams.get('map') || '').split(',');
+        
+        let categoryPath = [];
+        let specKeywords = [];
+        
+        for (let i = 0; i < pathParts.length; i++) {
+          const mapVal = mapParts[i] || '';
+          if (mapVal.startsWith('c') && mapVal.includes('category')) {
+            categoryPath.push(pathParts[i]);
+          } else {
+            let keyword = pathParts[i].replace('-btus', '').replace(/-/g, ' ').toLowerCase();
+            specKeywords.push(keyword);
+          }
+        }
+        
+        const catalogUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search/${categoryPath.join('/')}?O=OrderByPriceASC&_from=0&_to=49`;
         const WORKER_PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
-        const proxyUrl = WORKER_PROXY + encodeURIComponent(apiUrl);
+        const proxyUrl = WORKER_PROXY + encodeURIComponent(catalogUrl);
 
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         if (!resp.ok) return [];
-        const products = await resp.json();
+        let products = await resp.json();
         if (!Array.isArray(products)) return [];
+
+        // Filtra os produtos pelo que não é categoria (ex: "9000", "inverter")
+        products = products.filter(p => {
+          const title = p.productName.toLowerCase();
+          return specKeywords.every(kw => {
+            if (title.includes(kw)) return true;
+            if (kw === '9000' && title.includes('9.000')) return true;
+            if (kw === '12000' && title.includes('12.000')) return true;
+            if (kw === '18000' && title.includes('18.000')) return true;
+            if (kw === '24000' && title.includes('24.000')) return true;
+            if (kw === '30000' && title.includes('30.000')) return true;
+            if (kw === '36000' && title.includes('36.000')) return true;
+            if (kw === 'quente frio' || kw === 'quente e frio') {
+                return title.includes('quente') && title.includes('frio');
+            }
+            if (kw === 'so frio') {
+                return title.includes('frio') && !title.includes('quente');
+            }
+            if (p.allSpecifications) {
+                for (const spec of p.allSpecifications) {
+                    const val = p[spec];
+                    if (Array.isArray(val) && val.some(v => v.toLowerCase().includes(kw))) return true;
+                }
+            }
+            return false;
+          });
+        });
 
         const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
