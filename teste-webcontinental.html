@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste WebContinental - Versão Final</title>
+    <title>Teste WebContinental - Preço Real e Ordenado</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -154,7 +154,7 @@
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 02:08</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 02:14</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -183,7 +183,7 @@
             
             grid.innerHTML = "";
             debug.innerHTML = "";
-            status.innerText = "SINCRONIZANDO COM A PESQUISA...";
+            status.innerText = "RASTREAMENTO PROFUNDO DE PREÇOS...";
             status.style.color = "#00f2fe";
 
             try {
@@ -193,7 +193,7 @@
 
                 const marker = '__STATE__">';
                 const idx = html.indexOf(marker);
-                if (idx === -1) throw new Error("Erro de conexão com o site.");
+                if (idx === -1) throw new Error("Erro de conexão.");
 
                 let jsonStr = html.substring(idx);
                 const scriptStart = jsonStr.indexOf('<script>');
@@ -202,20 +202,18 @@
                 const stateObj = JSON.parse(jsonStr);
                 const allKeys = Object.keys(stateObj);
 
-                log(`Dados carregados: ${allKeys.length} chaves.`);
+                log(`Estado mapeado.`);
 
-                // Detecção do filtro (9000-btus)
+                // Detecção do filtro
                 const filterMatch = urlInput.match(/9000-btus/) || urlInput.match(/capacidade-btus=([^&]+)/);
                 const filterText = filterMatch ? (filterMatch[1] || filterMatch[0]) : "";
                 
-                // Busca cirúrgica da lista
                 let searchKey = allKeys.find(k => k.includes('productSearch') && k.includes('OrderByPriceASC') && k.includes(filterText));
                 if (!searchKey) searchKey = allKeys.find(k => k.includes('productSearch') && k.includes(filterText));
                 if (!searchKey) searchKey = allKeys.find(k => k.includes('productSearch') && k.includes('OrderByPriceASC'));
-                if (!searchKey) searchKey = allKeys.find(k => k.includes('productSearch'));
 
                 const productsRef = (stateObj[searchKey]?.products || []);
-                log(`Localizados ${productsRef.length} itens no código.`);
+                log(`Processando ${productsRef.length} aparelhos...`);
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -228,11 +226,8 @@
                         const itemEntry = stateObj[itemKey];
                         const item = itemEntry.id ? stateObj[itemEntry.id] : itemEntry;
 
-                        // CORREÇÃO: Trata sellers como Array ou Objeto único
                         const sellerKey = allKeys.find(k => k.startsWith(itemKey + ".sellers") || (item.id && k.startsWith(item.id + ".sellers")));
                         const sellersData = stateObj[sellerKey];
-                        
-                        // Pega o primeiro seller de forma segura
                         const sellerEntry = Array.isArray(sellersData) ? sellersData[0] : sellersData;
                         const seller = sellerEntry.id ? stateObj[sellerEntry.id] : sellerEntry;
                         
@@ -242,7 +237,21 @@
                         let fullPrice = offer.Price || price;
                         let installments = 10;
 
-                        const instKey = allKeys.find(k => k.startsWith(offer.id + ".Installments") || k.includes(offer.id + ".Installments"));
+                        // BUSCA RECURSIVA SE O PREÇO VIER ZERO
+                        if (price === 0) {
+                            const possiblePriceKeys = allKeys.filter(k => k.includes(item.itemId) && (k.includes('commertialOffer') || k.includes('Price')));
+                            for (let pk of possiblePriceKeys) {
+                                const entry = stateObj[pk];
+                                if (entry.Price > 0 || entry.spotPrice > 0) {
+                                    price = entry.spotPrice || entry.Price;
+                                    fullPrice = entry.Price || price;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Busca parcelas
+                        const instKey = allKeys.find(k => k.startsWith(offer.id + ".Installments") || k.includes(offer.id + ".Installments") || (item.itemId && k.includes(item.itemId) && k.includes('Installments')));
                         if (instKey) {
                             const list = stateObj[instKey];
                             if (Array.isArray(list)) {
@@ -265,7 +274,10 @@
                     } catch (e) { return null; }
                 }).filter(p => p !== null);
 
-                status.innerText = `SUCESSO! ${processed.length} PRODUTOS ENCONTRADOS.`;
+                // ORDENAÇÃO LOCAL OBRIGATÓRIA (Menor para Maior)
+                processed.sort((a, b) => a.priceCash - b.priceCash);
+
+                status.innerText = `SUCESSO! ${processed.length} PRODUTOS ORDENADOS POR PREÇO.`;
 
                 processed.forEach(p => {
                     const card = document.createElement('div');
