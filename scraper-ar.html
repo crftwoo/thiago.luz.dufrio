@@ -403,7 +403,10 @@
 
     async function scrapeDufrio(url) {
       try {
+        console.log("🔗 Dufrio URL original da planilha:", url);
         const f = parseDufrioFilters(url);
+        console.log("📦 Filtros extraídos:", f);
+
         let categoryUrl = "https://www.dufrio.com.br/ar-condicionado/" + f.categoria;
         let queryParams = [];
         if (f.capacidades.length > 0) {
@@ -412,21 +415,23 @@
         if (f.ciclo) queryParams.push(`ec_ciclo=${encodeURIComponent(f.ciclo)}`);
         queryParams.push('product_list_dir=asc');
         queryParams.push('product_list_order=price');
-        
+
         const fullUrl = categoryUrl + "?" + queryParams.join("&");
+        console.log("🎯 URL final Dufrio:", fullUrl);
         const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl);
-        
+
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         const html = await resp.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
-        
+
         const items = Array.from(doc.querySelectorAll('.product-item'));
-        return items.map(card => {
+        console.log(`📊 Dufrio: encontrados ${items.length} items brutos`);
+        const result = items.map(card => {
            const titleEl = card.querySelector('a.product-item-link');
            if (!titleEl) return null;
            const title = titleEl.innerText.trim();
-           
+
            const imgEl = card.querySelector('img.product-image-photo, img.product-image');
            let image = "";
            if (imgEl) {
@@ -436,7 +441,7 @@
                    if (sourceEl && sourceEl.srcset) image = sourceEl.srcset.split(',')[0].split(' ')[0];
                }
            }
-           
+
            let spotLine = "";
            const spotPriceEl = card.querySelector('.spot-price');
            if (spotPriceEl) spotLine = spotPriceEl.innerText.replace(/\s+/g, ' ').trim();
@@ -452,25 +457,27 @@
                    if (labelToUse) spotLine += ' ' + labelToUse.innerText.replace(/\s+/g, ' ').trim();
                }
            }
-           
+
            let installLine = "";
            const ps = card.querySelectorAll('p');
            ps.forEach(p => {
                const pText = p.innerText.toLowerCase();
                if (pText.includes('ou r$') && (pText.includes('em') || pText.includes('x'))) {
-                   installLine = p.innerText.replace(/\s+/g, ' ').replace(/\u00A0/g, ' ').trim();
+                   installLine = p.innerText.replace(/\s+/g, ' ').replace(/ /g, ' ').trim();
                }
            });
-           
+
            if (!spotLine) return null; // Filtra produtos esgotados (Avise-me)
-           
+
            let linkHref = titleEl.getAttribute('href');
            if(!linkHref) linkHref = "";
            const finalLink = linkHref.startsWith('http') ? linkHref : "https://www.dufrio.com.br" + linkHref;
-           
+
            return { title, image, spot: spotLine, install: installLine, link: finalLink, discount: 0 };
         }).filter(Boolean);
-      } catch(e) { console.error("Dufrio erro:", e); return []; }
+        console.log(`✅ Dufrio: ${result.length} produtos após filtro`);
+        return result;
+      } catch(e) { console.error("❌ Dufrio erro:", e); return []; }
     }
 
     async function scrapeFrigelar(url) {
@@ -627,7 +634,7 @@
       try {
         document.getElementById("selection-summary").style.display = "none";
         document.getElementById("filters-section").style.display = "none";
-        
+
         allFetchedProducts = [];
         activeFilters = { lojas: [], marcas: [], btus: [], ciclos: [] };
 
@@ -635,13 +642,26 @@
           document.getElementById("loading-msg").innerText = "SINCRONIZANDO PLANILHA...";
           await sheetLoadPromise;
         }
-        
-        const links = sheetData.filter(i => 
-          i.Tipo === selection.tipo && 
-          i.BTUs === selection.btu && 
-          i.Ciclo === selection.ciclo
-        );
-        
+
+        // Normaliza ciclo: remove "só" e lowercase
+        const normalizeCiclo = (c) => {
+          const normalized = String(c || "").toLowerCase().trim().replace(/^só\s+/, "");
+          return normalized;
+        };
+        const cicloNormalizado = normalizeCiclo(selection.ciclo);
+        console.log("🔍 Buscando:", { tipo: selection.tipo, btu: selection.btu, ciclo: selection.ciclo, cicloNorm: cicloNormalizado });
+
+        const links = sheetData.filter(i => {
+          const cicloSheet = normalizeCiclo(i.Ciclo);
+          const match = i.Tipo === selection.tipo &&
+                       i.BTUs === selection.btu &&
+                       cicloSheet === cicloNormalizado;
+          if (match) console.log("✅ Link encontrado:", { Tipo: i.Tipo, BTUs: i.BTUs, Ciclo: i.Ciclo, Site: i.Site });
+          return match;
+        });
+
+        console.log("📋 Links encontrados:", links.length);
+
         const dufrioLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "dufrio");
         const frigelarLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "frigelar");
         const leverosLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "leveros");
