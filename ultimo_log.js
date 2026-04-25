@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'fix: corrige todas as strings com <script> e </script> dentro do bloco JS (quebravam o parser HTML)', dateIso: '2026-04-24T22:32:38-03:00' };
+const LATEST_LOG = { message: 'fix(scraper-webcontinental): lookup dinamico de chaves Apollo - produtos como Agratto nao eram encontrados por usarem filtro diferente de ALL_AVAILABLE', dateIso: '2026-04-24T22:40:22-03:00' };

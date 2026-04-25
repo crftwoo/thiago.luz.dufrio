@@ -635,17 +635,22 @@
           const product = state[productKey];
           if (!product) return null;
 
-          // O Apollo cache normaliza tudo. As keys seguem padrão estável:
-          //   item:   `${productKey}.items({"filter":"ALL_AVAILABLE"}).0`
-          //   seller: `${itemKey}.sellers.0`
-          //   offer:  `$${sellerKey}.commertialOffer`
-          const itemKey = productKey + '.items({"filter":"ALL_AVAILABLE"}).0';
-          const sellerKey = itemKey + '.sellers.0';
+          // O Apollo cache pode usar filtros diferentes por produto ("ALL_AVAILABLE",
+          // "FIRST_AVAILABLE", sem filtro). Busca dinâmica para não perder produtos.
+          const itemKey = Object.keys(state).find(k =>
+            k.startsWith(productKey + '.items(') && k.endsWith(').0')
+          ) || (productKey + '.items({"filter":"ALL_AVAILABLE"}).0');
+
+          // Seller também pode variar; busca dinâmica
+          const sellerKey = Object.keys(state).find(k =>
+            k.startsWith(itemKey + '.sellers') && k.endsWith('.0')
+          ) || (itemKey + '.sellers.0');
+
           const offerKey = '$' + sellerKey + '.commertialOffer';
           const item = state[itemKey];
           const offer = state[offerKey];
           if (!offer) return null;
-          // Filtra esgotado
+          // Filtra esgotado (só descarta se explicitamente 0 — undefined/null = em estoque)
           if (typeof offer.AvailableQuantity === 'number' && offer.AvailableQuantity <= 0) return null;
 
           const spotPriceNum = offer.spotPrice; // preço PIX (à vista) — o que aparece grande no site

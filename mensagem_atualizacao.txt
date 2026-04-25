@@ -1,1 +1,1 @@
-fix: corrige todas as strings com <script> e </script> dentro do bloco JS (quebravam o parser HTML)
+fix(scraper-webcontinental): lookup dinamico de chaves Apollo - produtos como Agratto nao eram encontrados por usarem filtro diferente de ALL_AVAILABLE
