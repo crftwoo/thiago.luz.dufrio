@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste WebContinental - Extração Definitiva</title>
+    <title>Teste WebContinental - Preço à Vista Real</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -154,7 +154,7 @@
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 02:22</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 02:26</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -183,7 +183,7 @@
             
             grid.innerHTML = "";
             debug.innerHTML = "";
-            status.innerText = "CAPTURANDO PREÇOS OCULTOS...";
+            status.innerText = "CAPTURANDO MELHOR PREÇO À VISTA...";
             status.style.color = "#00f2fe";
 
             try {
@@ -232,25 +232,29 @@
                         
                         const offer = seller.commertialOffer.id ? stateObj[seller.commertialOffer.id] : seller.commertialOffer;
 
+                        // Tenta pegar o menor preço possível (lowPrice ou spotPrice)
                         let price = offer.spotPrice || offer.Price || 0;
                         
-                        // FALLBACK 1: priceRange (Onde o Agratto de 1522 se esconde)
-                        if (price === 0) {
-                            const rangeKey = allKeys.find(k => k.includes(pRef.id) && k.includes('priceRange.sellingPrice'));
-                            if (rangeKey) price = stateObj[rangeKey].highPrice || stateObj[rangeKey].lowPrice || 0;
+                        // FALLBACK 1: priceRange (Foco no lowPrice para bater o Pix/Boleto)
+                        const rangeKey = allKeys.find(k => k.includes(pRef.id) && k.includes('priceRange.sellingPrice'));
+                        if (rangeKey) {
+                            const range = stateObj[rangeKey];
+                            const bestPrice = range.lowPrice || range.highPrice || 0;
+                            if (bestPrice > 0 && (price === 0 || bestPrice < price)) price = bestPrice;
                         }
 
-                        // FALLBACK 2: Busca por SKU no estado inteiro
-                        if (price === 0) {
-                            const skuKeys = allKeys.filter(k => k.includes(item.itemId) && (k.includes('Price') || k.includes('spotPrice')));
-                            for (let sk of skuKeys) {
-                                if (stateObj[sk] > 0) { price = stateObj[sk]; break; }
-                            }
+                        // FALLBACK 2: Busca recursiva de qualquer valor menor
+                        const skuKeys = allKeys.filter(k => k.includes(item.itemId) && (k.includes('Price') || k.includes('spotPrice') || k.includes('Value')));
+                        for (let sk of skuKeys) {
+                            const val = stateObj[sk];
+                            if (typeof val === 'number' && val > 0 && (price === 0 || val < price)) price = val;
                         }
 
-                        if (price === 0) return null; // Filtra se não achou preço
+                        if (price === 0) return null;
 
                         let fullPrice = offer.Price || price;
+                        if (fullPrice < price) fullPrice = price;
+                        
                         let installments = 10;
 
                         const instKey = allKeys.find(k => k.startsWith(offer.id + ".Installments") || k.includes(offer.id + ".Installments") || (item.itemId && k.includes(item.itemId) && k.includes('Installments')));
@@ -260,6 +264,7 @@
                                 list.forEach(ir => {
                                     const inst = ir.id ? stateObj[ir.id] : ir;
                                     if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) installments = Math.max(installments, inst.NumberOfInstallments);
+                                    // Se achou uma parcela única mais barata, esse é o preço à vista real
                                     if (inst.NumberOfInstallments === 1 && inst.Value < price && inst.Value > 0) price = inst.Value;
                                 });
                             }
@@ -276,10 +281,9 @@
                     } catch (e) { return null; }
                 }).filter(p => p !== null && p.priceCash > 0);
 
-                // ORDENAÇÃO MANUAL (Garantia de menor preço no topo)
                 processed.sort((a, b) => a.priceCash - b.priceCash);
 
-                status.innerText = `SUCESSO! ${processed.length} PRODUTOS ENCONTRADOS E ORDENADOS.`;
+                status.innerText = `SUCESSO! ${processed.length} PRODUTOS ENCONTRADOS.`;
 
                 processed.forEach(p => {
                     const card = document.createElement('div');
