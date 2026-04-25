@@ -621,8 +621,20 @@
         try { state = JSON.parse(html.substring(scriptStart + ('<' + 'script>').length, scriptEnd)); }
         catch(e) { console.error('WC __STATE__ parse:', e); return []; }
 
-        // Acha o resultado da busca (ordem dos produtos)
-        const psKey = Object.keys(state).find(k => k.startsWith('$ROOT_QUERY.productSearch'));
+        // Seleciona a chave productSearch correta do Apollo cache.
+        // O __STATE__ pode ter múltiplas queries cacheadas (ex: relevância, mais vendidos).
+        // Priorizamos a que usa OrderByPriceASC (igual ao link da planilha),
+        // depois a que tem mais produtos, e por último qualquer uma.
+        const allPsKeys = Object.keys(state).filter(k => k.startsWith('$ROOT_QUERY.productSearch'));
+        let psKey = allPsKeys.find(k => k.includes('OrderByPriceASC'));
+        if (!psKey) {
+          psKey = allPsKeys.reduce((best, k) => {
+            const entry = state[k];
+            if (!entry || !Array.isArray(entry.products)) return best;
+            if (!best) return k;
+            return (entry.products.length > (state[best]?.products?.length || 0)) ? k : best;
+          }, null);
+        }
         if (!psKey) return [];
         const ps = state[psKey];
         if (!ps || !Array.isArray(ps.products)) return [];

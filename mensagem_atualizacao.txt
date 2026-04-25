@@ -1,1 +1,1 @@
-fix(scraper-webcontinental): lookup dinamico de chaves Apollo - produtos como Agratto nao eram encontrados por usarem filtro diferente de ALL_AVAILABLE
+fix(scraper-wc): seleciona chave productSearch correta do Apollo cache - prioriza OrderByPriceASC para trazer Agratto e outros em ordem certa
