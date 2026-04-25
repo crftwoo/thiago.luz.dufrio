@@ -80,6 +80,8 @@
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.05);
             transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
         }
         .card:hover {
             transform: translateY(-5px);
@@ -94,23 +96,28 @@
         }
         .card-content {
             padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
         .card-title {
             font-size: 0.9rem;
-            height: 40px;
+            height: 60px;
             overflow: hidden;
-            margin-bottom: 10px;
-            color: var(--text-dim);
+            margin-bottom: 15px;
+            color: var(--text);
+            line-height: 1.2;
         }
         .card-price {
             font-size: 1.4rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--accent);
             margin-bottom: 5px;
         }
         .card-install {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: var(--text-dim);
+            margin-bottom: 15px;
         }
         .status {
             text-align: center;
@@ -122,21 +129,32 @@
             background: #000;
             color: #0f0;
             font-family: monospace;
-            font-size: 10px;
+            font-size: 11px;
             padding: 15px;
             border-radius: 10px;
             margin-top: 30px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             border: 1px solid #333;
             display: none;
+        }
+        .btn-link {
+            display: inline-block;
+            margin-top: auto;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.8rem;
+            border: 1px solid var(--accent);
+            padding: 5px 10px;
+            border-radius: 5px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:22</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:26</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -187,66 +205,43 @@
                 let jsonStr = html.substring(idx);
                 const scriptStart = jsonStr.indexOf('<script>');
                 const scriptEnd = jsonStr.indexOf('</' + 'script>');
-                if (scriptStart === -1 || scriptEnd === -1) throw new Error("Erro na estrutura de scripts");
-
+                
                 jsonStr = jsonStr.substring(scriptStart + 8, scriptEnd).trim();
                 const stateObj = JSON.parse(jsonStr);
                 const allKeys = Object.keys(stateObj);
                 log(`Estado carregado (${allKeys.length} chaves)`);
 
-                // SUPER BUSCA: Procura por qualquer chave de produto ou busca
                 const searchKey = allKeys.find(k => k.includes('productSearch('));
-                if (!searchKey) {
-                    log("ERRO: Não encontrei a chave 'productSearch' no STATE.", "red");
-                    log("Primeiras 20 chaves do site: " + allKeys.slice(0, 20).join(', '), "yellow");
-                    throw new Error("Chave de busca não encontrada");
-                }
-                log("Chave de busca encontrada: " + searchKey.substring(0, 50) + "...");
+                if (!searchKey) throw new Error("Chave de busca não encontrada");
 
                 const searchResult = stateObj[searchKey];
                 const products = searchResult.products || [];
-                if (products.length === 0) throw new Error("A lista de produtos retornou vazia.");
-
-                log(`Encontrados ${products.length} produtos. Processando dados individuais...`);
+                log(`Encontrados ${products.length} produtos.`);
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                const processedProducts = products.map((pRef, index) => {
+                const processedProducts = products.map((pRef) => {
                     try {
                         const product = stateObj[pRef.id];
                         if (!product) return null;
 
-                        // Localizar Itens (SKUs) - Busca recursiva nas chaves
+                        // Localizar Item
                         const itemKeys = allKeys.filter(k => k.startsWith(pRef.id + ".items") || k.startsWith("$" + pRef.id + ".items"));
                         if (itemKeys.length === 0) return null;
                         
-                        let item = null;
-                        const firstItemRef = stateObj[itemKeys[0]];
-                        
-                        // Formato de referência ou objeto direto
-                        if (firstItemRef && firstItemRef.id) item = stateObj[firstItemRef.id];
-                        else if (Array.isArray(firstItemRef) && firstItemRef[0]?.id) item = stateObj[firstItemRef[0].id];
-                        else if (firstItemRef && firstItemRef.itemId) item = firstItemRef;
-
+                        const itemKey = itemKeys[0];
+                        const itemData = stateObj[itemKey];
+                        const item = itemData.id ? stateObj[itemData.id] : itemData;
                         if (!item) return null;
 
-                        // Imagem
-                        let image = "";
-                        if (item.images && item.images.length > 0) {
-                            const imgRef = item.images[0];
-                            const imgObj = imgRef.id ? stateObj[imgRef.id] : imgRef;
-                            if (imgObj) image = imgObj.imageUrl || imgObj.imageTag;
-                        }
-
-                        // Preços e Vendedores
-                        const sellersKey = allKeys.find(k => k.startsWith(item.id + ".sellers") || k.startsWith("$" + item.id + ".sellers") || k.startsWith(itemKeys[0] + ".sellers"));
+                        // Localizar Sellers
+                        const sellersKey = allKeys.find(k => k.startsWith(itemKey + ".sellers") || k.startsWith(item.id + ".sellers") || k.startsWith("$" + item.id + ".sellers"));
                         if (!sellersKey) return null;
                         
                         const sellersList = stateObj[sellersKey];
                         const sellerRef = Array.isArray(sellersList) ? sellersList[0] : sellersList;
                         const seller = sellerRef.id ? stateObj[sellerRef.id] : sellerRef;
                         
-                        if (!seller || !seller.commertialOffer) return null;
                         const offerRef = seller.commertialOffer;
                         const offer = offerRef.id ? stateObj[offerRef.id] : offerRef;
                         if (!offer) return null;
@@ -254,36 +249,37 @@
                         let spotPrice = offer.spotPrice || offer.Price;
                         let best = null;
                         
-                        if (offer.Installments) {
-                            offer.Installments.forEach(instRef => {
-                                const inst = instRef.id ? stateObj[instRef.id] : instRef;
-                                if (!inst) return;
-                                if (inst.NumberOfInstallments === 1 && inst.Value < spotPrice) spotPrice = inst.Value;
-                                if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) {
-                                    if (!best || inst.NumberOfInstallments > best.NumberOfInstallments) best = inst;
-                                }
-                            });
-                        }
+                        // Capturar parcelas
+                        const instKeys = allKeys.filter(k => k.startsWith(offerRef.id + ".Installments") || k.startsWith("$" + offerRef.id + ".Installments"));
+                        instKeys.forEach(ik => {
+                            const instList = stateObj[ik];
+                            if (Array.isArray(instList)) {
+                                instList.forEach(ir => {
+                                    const inst = ir.id ? stateObj[ir.id] : ir;
+                                    if (!inst) return;
+                                    if (inst.NumberOfInstallments === 1 && inst.Value < spotPrice && inst.Value > 0) spotPrice = inst.Value;
+                                    if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) {
+                                        if (!best || inst.NumberOfInstallments > best.NumberOfInstallments) best = inst;
+                                    }
+                                });
+                            }
+                        });
 
                         return {
-                            name: product.productName || product.name,
-                            image: image,
+                            name: product.productName || product.name || item.nameComplete || item.name,
+                            image: (item.images && item.images[0]) ? (stateObj[item.images[0].id]?.imageUrl || item.images[0].imageUrl) : "",
                             priceCash: spotPrice,
                             priceFull: offer.Price,
-                            installments: best ? best.NumberOfInstallments : 0,
+                            installments: best ? best.NumberOfInstallments : 10,
                             link: `https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}`
                         };
                     } catch (e) {
                         return null;
                     }
-                }).filter(p => p !== null);
+                }).filter(p => p !== null && p.priceCash > 0);
 
-                log(`Processamento concluído. ${processedProducts.length} cards prontos.`);
-
-                // Ordenação: Menor preço à vista
                 processedProducts.sort((a, b) => a.priceCash - b.priceCash);
-
-                status.innerText = `SUCESSO! EXIBINDO ${processedProducts.length} PRODUTOS ORDENADOS`;
+                status.innerText = `SUCESSO! EXIBINDO ${processedProducts.length} PRODUTOS`;
 
                 processedProducts.forEach(p => {
                     const card = document.createElement('div');
@@ -292,18 +288,17 @@
                         <img src="${p.image}" alt="">
                         <div class="card-content">
                             <div class="card-title">${p.name}</div>
-                            <div class="card-price">${fmtBR(p.priceCash)}</div>
-                            <div class="card-install">${p.installments > 0 ? 'ou ' + fmtBR(p.priceFull) + ' em ' + p.installments + 'x' : ''}</div>
-                            <a href="${p.link}" target="_blank" style="display:block; margin-top:10px; color:var(--accent); text-decoration:none; font-size:0.8rem;">Ver no site</a>
+                            <div class="card-price">${fmtBR(p.priceCash)} à vista</div>
+                            <div class="card-install">ou ${fmtBR(p.priceFull)} em até ${p.installments}x de ${fmtBR(p.priceFull/p.installments)}</div>
+                            <a href="${p.link}" target="_blank" class="btn-link">Ver no site</a>
                         </div>
                     `;
                     grid.appendChild(card);
                 });
 
             } catch (error) {
-                log("ERRO FATAL: " + error.message, "red");
+                log("ERRO: " + error.message, "red");
                 status.innerText = "ERRO: " + error.message;
-                status.style.color = "#ff5252";
             }
         }
     </script>
