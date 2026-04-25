@@ -123,7 +123,7 @@
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:13</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:17</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -157,7 +157,7 @@
 
                 let jsonStr = html.substring(idx);
                 const scriptStart = jsonStr.indexOf('<script>');
-                const scriptEnd = jsonStr.indexOf('<\/script>');
+                const scriptEnd = jsonStr.indexOf('</' + 'script>');
                 if (scriptStart === -1 || scriptEnd === -1) throw new Error("Estrutura de script inválida no HTML");
 
                 jsonStr = jsonStr.substring(scriptStart + 8, scriptEnd).trim();
@@ -165,13 +165,20 @@
 
                 // Busca a query de resultados
                 const searchKey = Object.keys(stateObj).find(k => k.startsWith('$ROOT_QUERY.productSearch'));
-                if (!searchKey) throw new Error("Nenhum resultado de busca encontrado no STATE da página");
+                if (!searchKey) {
+                    console.log("Keys disponíveis:", Object.keys(stateObj).slice(0, 20));
+                    throw new Error("Nenhum resultado de busca encontrado no STATE da página. Verifique o console.");
+                }
 
                 const searchResult = stateObj[searchKey];
-                if (!searchResult || !searchResult.products) throw new Error("A lista de produtos está vazia no STATE");
+                if (!searchResult || !searchResult.products) {
+                    console.log("Conteúdo da searchKey:", searchResult);
+                    throw new Error("A lista de produtos está vazia ou malformada no STATE.");
+                }
                 
                 const products = searchResult.products;
-                status.innerText = `PROCESSANDO ${products.length} PRODUTOS...`;
+                status.innerText = `DEBUG: SearchKey encontrada. Processando ${products.length} produtos...`;
+                console.log("Primeiro pRef:", products[0]);
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
