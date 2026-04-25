@@ -30,6 +30,12 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .version {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-dim);
             margin-bottom: 30px;
         }
         .input-group {
@@ -110,14 +116,16 @@
             text-align: center;
             margin-bottom: 20px;
             color: var(--accent);
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:05</div>
         <div class="input-group">
-            <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui...">
+            <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
         </div>
         <div id="status" class="status"></div>
@@ -133,79 +141,112 @@
             if (!url) return alert("Cole um link!");
             
             grid.innerHTML = "";
-            status.innerText = "BUSCANDO DADOS...";
+            status.innerText = "BUSCANDO DADOS NO SITE...";
+            status.style.color = "#00f2fe";
 
             try {
                 const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
-                const resp = await fetch(PROXY + encodeURIComponent(url));
-                if (!resp.ok) throw new Error("Erro na requisição");
+                const resp = await fetch(PROXY + encodeURIComponent(url), { cache: 'no-store' });
+                if (!resp.ok) throw new Error("Erro na requisição (Status " + resp.status + ")");
                 const html = await resp.text();
 
                 // Extração do __STATE__
                 const marker = '__STATE__">';
                 const idx = html.indexOf(marker);
-                if (idx === -1) throw new Error("Não foi possível encontrar o estado da página");
+                if (idx === -1) throw new Error("Não foi possível encontrar o estado da página (__STATE__)");
 
                 let jsonStr = html.substring(idx);
                 const scriptStart = jsonStr.indexOf('<script>');
-                const scriptEnd = jsonStr.indexOf('<\/script>'); // ESCAPED!
-                if (scriptStart === -1 || scriptEnd === -1) throw new Error("Estrutura de script inválida");
+                const scriptEnd = jsonStr.indexOf('<\/script>');
+                if (scriptStart === -1 || scriptEnd === -1) throw new Error("Estrutura de script inválida no HTML");
 
                 jsonStr = jsonStr.substring(scriptStart + 8, scriptEnd).trim();
                 const stateObj = JSON.parse(jsonStr);
 
+                // Busca a query de resultados
                 const searchKey = Object.keys(stateObj).find(k => k.startsWith('$ROOT_QUERY.productSearch'));
-                if (!searchKey) throw new Error("Nenhum resultado de busca encontrado no estado");
+                if (!searchKey) throw new Error("Nenhum resultado de busca encontrado no STATE da página");
 
                 const searchResult = stateObj[searchKey];
+                if (!searchResult || !searchResult.products) throw new Error("A lista de produtos está vazia no STATE");
+                
                 const products = searchResult.products;
-
                 status.innerText = `PROCESSANDO ${products.length} PRODUTOS...`;
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                // Coleta e processa os dados para ordenação
                 const processedProducts = products.map(pRef => {
-                    const product = stateObj[pRef.id];
-                    if (!product) return null;
-                    
-                    const itemKeys = Object.keys(stateObj).filter(k => k.startsWith(`${pRef.id}.items`));
-                    if (itemKeys.length === 0) return null;
-                    const item = stateObj[stateObj[itemKeys[0]][0].id];
-                    if (!item) return null;
-                    
-                    const sellersKey = Object.keys(stateObj).find(k => k.startsWith(`${item.id}.sellers`));
-                    if (!sellersKey) return null;
-                    const seller = stateObj[stateObj[sellersKey][0].id];
-                    const offer = stateObj[seller.commertialOffer.id];
-                    if (!offer) return null;
-                    
-                    let spotPrice = offer.spotPrice || offer.Price;
-                    let best = null;
-                    if (offer.Installments) {
-                        offer.Installments.forEach(instRef => {
-                            const inst = stateObj[instRef.id];
-                            if (inst.NumberOfInstallments === 1 && inst.Value < spotPrice) spotPrice = inst.Value;
-                            if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) {
-                                if (!best || inst.NumberOfInstallments > best.NumberOfInstallments) best = inst;
-                            }
-                        });
-                    }
+                    try {
+                        const product = stateObj[pRef.id];
+                        if (!product) return null;
 
-                    return {
-                        name: product.productName,
-                        image: stateObj[item.images[0].id].imageUrl,
-                        priceCash: spotPrice,
-                        priceFull: offer.Price,
-                        installments: best ? best.NumberOfInstallments : 0,
-                        link: `https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}`
-                    };
+                        // Localizar Items (SKUs)
+                        const itemKeys = Object.keys(stateObj).filter(k => k.startsWith(`${pRef.id}.items`) || k.startsWith(`$${pRef.id}.items`));
+                        if (itemKeys.length === 0) return null;
+                        
+                        const itemsList = stateObj[itemKeys[0]];
+                        if (!itemsList || itemsList.length === 0) return null;
+                        
+                        const item = stateObj[itemsList[0].id];
+                        if (!item) return null;
+
+                        // Imagem
+                        let image = "";
+                        if (item.images && item.images.length > 0) {
+                            const imgObj = stateObj[item.images[0].id];
+                            if (imgObj) image = imgObj.imageUrl;
+                        }
+
+                        // Vendedor e Oferta
+                        const sellersKey = Object.keys(stateObj).find(k => k.startsWith(`${itemsList[0].id}.sellers`) || k.startsWith(`$${itemsList[0].id}.sellers`));
+                        if (!sellersKey) return null;
+                        
+                        const sellersList = stateObj[sellersKey];
+                        if (!sellersList || sellersList.length === 0) return null;
+                        
+                        const seller = stateObj[sellersList[0].id];
+                        if (!seller || !seller.commertialOffer) return null;
+                        
+                        const offer = stateObj[seller.commertialOffer.id];
+                        if (!offer) return null;
+
+                        let spotPrice = offer.spotPrice || offer.Price;
+                        let best = null;
+                        
+                        if (offer.Installments) {
+                            offer.Installments.forEach(instRef => {
+                                const inst = stateObj[instRef.id];
+                                if (!inst) return;
+                                if (inst.NumberOfInstallments === 1 && inst.Value < spotPrice) spotPrice = inst.Value;
+                                if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) {
+                                    if (!best || inst.NumberOfInstallments > best.NumberOfInstallments) best = inst;
+                                }
+                            });
+                        }
+
+                        return {
+                            name: product.productName || product.name,
+                            image: image,
+                            priceCash: spotPrice,
+                            priceFull: offer.Price,
+                            installments: best ? best.NumberOfInstallments : 0,
+                            link: `https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}`
+                        };
+                    } catch (e) {
+                        console.warn("Falha ao processar item individual:", e);
+                        return null;
+                    }
                 }).filter(p => p !== null);
 
-                // ORDENAÇÃO: Menor preço à vista para o maior
+                // Ordenação: Menor preço à vista
                 processedProducts.sort((a, b) => a.priceCash - b.priceCash);
 
-                status.innerText = `EXIBINDO ${processedProducts.length} PRODUTOS (ORDENADOS POR MENOR PREÇO À VISTA)`;
+                status.innerText = `SUCESSO! EXIBINDO ${processedProducts.length} PRODUTOS ORDENADOS POR MENOR PREÇO À VISTA`;
+
+                if (processedProducts.length === 0) {
+                    status.innerText = "NENHUM PRODUTO DISPONÍVEL ENCONTRADO.";
+                    status.style.color = "#ff5252";
+                }
 
                 processedProducts.forEach(p => {
                     const card = document.createElement('div');
@@ -225,6 +266,7 @@
             } catch (error) {
                 console.error(error);
                 status.innerText = "ERRO: " + error.message;
+                status.style.color = "#ff5252";
             }
         }
     </script>
