@@ -154,7 +154,7 @@
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:36</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:40</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -183,7 +183,7 @@
             
             grid.innerHTML = "";
             debug.innerHTML = "";
-            status.innerText = "BUSCANDO AGRATTOS E OUTROS...";
+            status.innerText = "RECUPERANDO PRODUTOS...";
             status.style.color = "#00f2fe";
 
             try {
@@ -202,49 +202,45 @@
                 const stateObj = JSON.parse(jsonStr);
                 const allKeys = Object.keys(stateObj);
 
-                log(`Estado carregado. Buscando na lista oficial...`);
+                log(`Estado carregado.`);
 
                 let searchKey = allKeys.find(k => k.includes('productSearch') && k.includes('OrderByPriceASC'));
                 if (!searchKey) searchKey = allKeys.find(k => k.includes('productSearch'));
 
                 const productsRef = (stateObj[searchKey]?.products || []);
-                log(`Lista oficial tem ${productsRef.length} itens.`);
+                log(`Lista oficial tem ${productsRef.length} referências.`);
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                const processedProducts = productsRef.map((pRef) => {
+                const processedProducts = productsRef.map((pRef, idx) => {
                     try {
                         const product = stateObj[pRef.id];
                         if (!product) return null;
 
-                        // Tenta achar itens de qualquer forma (com ou sem filtros no nome da chave)
+                        // Localizar Item
                         const itemKeys = allKeys.filter(k => k.startsWith(pRef.id + ".items"));
-                        if (itemKeys.length === 0) {
-                            log(`Aviso: Produto ${pRef.id} sem itens no estado.`, "yellow");
-                            return null;
-                        }
+                        if (itemKeys.length === 0) return null;
                         
-                        const itemKey = itemKeys[0];
-                        const item = stateObj[itemKey].id ? stateObj[stateObj[itemKey].id] : stateObj[itemKey];
+                        const itemRef = stateObj[itemKeys[0]];
+                        const item = itemRef.id ? stateObj[itemRef.id] : itemRef;
 
-                        // Tenta achar vendedores de qualquer forma
-                        const sellersKey = allKeys.find(k => k.startsWith(itemKey + ".sellers") || k.includes(item.id + ".sellers"));
-                        if (!sellersKey) return null;
-                        
-                        const sellers = stateObj[sellersKey];
+                        // Localizar Oferta
+                        const sellerKey = allKeys.find(k => k.startsWith(itemKeys[0] + ".sellers") || (item.id && k.startsWith(item.id + ".sellers")));
+                        if (!sellerKey) return null;
+
+                        const sellers = stateObj[sellerKey];
                         const seller = sellers[0].id ? stateObj[sellers[0].id] : sellers[0];
                         
                         const offer = seller.commertialOffer.id ? stateObj[seller.commertialOffer.id] : seller.commertialOffer;
 
-                        // BUSCA AGRESSIVA DE PREÇO: Tenta spotPrice, Price, ListPrice, etc.
-                        let price = offer.spotPrice || offer.Price || offer.ListPrice || 0;
+                        let price = offer.spotPrice || offer.Price || 0;
                         let fullPrice = offer.Price || price;
-                        
-                        // Captura de parcelas
                         let installments = 10;
-                        const instKeys = allKeys.filter(k => k.startsWith(offer.id + ".Installments") || k.includes(".Installments"));
-                        instKeys.forEach(ik => {
-                            const list = stateObj[ik];
+
+                        // Parcelas
+                        const instKey = allKeys.find(k => k.startsWith(offer.id ? offer.id : "" + ".Installments") || k.includes(offer.id ? offer.id : "NOID" + ".Installments"));
+                        if (instKey) {
+                            const list = stateObj[instKey];
                             if (Array.isArray(list)) {
                                 list.forEach(ir => {
                                     const inst = ir.id ? stateObj[ir.id] : ir;
@@ -252,7 +248,7 @@
                                     if (inst.NumberOfInstallments === 1 && inst.Value < price && inst.Value > 0) price = inst.Value;
                                 });
                             }
-                        });
+                        }
 
                         return {
                             name: product.productName || product.name,
@@ -262,11 +258,14 @@
                             installments: installments,
                             link: `https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}`
                         };
-                    } catch (e) { return null; }
-                }).filter(p => p !== null && p.priceCash > 0);
+                    } catch (e) { 
+                        if (idx === 0) log(`Erro no primeiro item: ${e.message}`, "yellow");
+                        return null; 
+                    }
+                }).filter(p => p !== null);
 
                 processedProducts.sort((a, b) => a.priceCash - b.priceCash);
-                status.innerText = `SUCESSO! ${processedProducts.length} PRODUTOS.`;
+                status.innerText = `SUCESSO! ${processedProducts.length} PRODUTOS ENCONTRADOS.`;
 
                 processedProducts.forEach(p => {
                     const card = document.createElement('div');
