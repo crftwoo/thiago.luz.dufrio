@@ -118,91 +118,115 @@
             color: var(--accent);
             font-weight: bold;
         }
+        #debug-console {
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 30px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:17</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:22</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
         </div>
         <div id="status" class="status"></div>
         <div id="results-grid" class="results-grid"></div>
+        <div id="debug-console"></div>
     </div>
 
     <script>
+        function log(msg, color = "#0f0") {
+            const console = document.getElementById('debug-console');
+            console.style.display = "block";
+            const line = document.createElement('div');
+            line.style.color = color;
+            line.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+
         async function renderCards() {
             const url = document.getElementById('link-input').value;
             const grid = document.getElementById('results-grid');
             const status = document.getElementById('status');
+            const debug = document.getElementById('debug-console');
             
             if (!url) return alert("Cole um link!");
             
             grid.innerHTML = "";
-            status.innerText = "BUSCANDO DADOS NO SITE...";
+            debug.innerHTML = "";
+            status.innerText = "INICIANDO CAPTURA...";
             status.style.color = "#00f2fe";
 
             try {
                 const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+                log("Buscando HTML via Proxy...");
                 const resp = await fetch(PROXY + encodeURIComponent(url), { cache: 'no-store' });
-                if (!resp.ok) throw new Error("Erro na requisição (Status " + resp.status + ")");
+                if (!resp.ok) throw new Error("Falha no Proxy (Status " + resp.status + ")");
+                
                 const html = await resp.text();
+                log(`HTML recebido (${Math.round(html.length/1024)} KB)`);
 
-                // Extração do __STATE__
                 const marker = '__STATE__">';
                 const idx = html.indexOf(marker);
-                if (idx === -1) throw new Error("Não foi possível encontrar o estado da página (__STATE__)");
+                if (idx === -1) throw new Error("Marcador __STATE__ não encontrado no HTML!");
 
+                log("Extraindo JSON do estado...");
                 let jsonStr = html.substring(idx);
                 const scriptStart = jsonStr.indexOf('<script>');
                 const scriptEnd = jsonStr.indexOf('</' + 'script>');
-                if (scriptStart === -1 || scriptEnd === -1) throw new Error("Estrutura de script inválida no HTML");
+                if (scriptStart === -1 || scriptEnd === -1) throw new Error("Erro na estrutura de scripts");
 
                 jsonStr = jsonStr.substring(scriptStart + 8, scriptEnd).trim();
                 const stateObj = JSON.parse(jsonStr);
+                const allKeys = Object.keys(stateObj);
+                log(`Estado carregado (${allKeys.length} chaves)`);
 
-                // Busca a query de resultados
-                const searchKey = Object.keys(stateObj).find(k => k.startsWith('$ROOT_QUERY.productSearch'));
+                // SUPER BUSCA: Procura por qualquer chave de produto ou busca
+                const searchKey = allKeys.find(k => k.includes('productSearch('));
                 if (!searchKey) {
-                    console.log("Keys disponíveis:", Object.keys(stateObj).slice(0, 20));
-                    throw new Error("Nenhum resultado de busca encontrado no STATE da página. Verifique o console.");
+                    log("ERRO: Não encontrei a chave 'productSearch' no STATE.", "red");
+                    log("Primeiras 20 chaves do site: " + allKeys.slice(0, 20).join(', '), "yellow");
+                    throw new Error("Chave de busca não encontrada");
                 }
+                log("Chave de busca encontrada: " + searchKey.substring(0, 50) + "...");
 
                 const searchResult = stateObj[searchKey];
-                if (!searchResult || !searchResult.products) {
-                    console.log("Conteúdo da searchKey:", searchResult);
-                    throw new Error("A lista de produtos está vazia ou malformada no STATE.");
-                }
-                
-                const products = searchResult.products;
-                status.innerText = `DEBUG: SearchKey encontrada. Processando ${products.length} produtos...`;
-                console.log("Primeiro pRef:", products[0]);
+                const products = searchResult.products || [];
+                if (products.length === 0) throw new Error("A lista de produtos retornou vazia.");
+
+                log(`Encontrados ${products.length} produtos. Processando dados individuais...`);
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                const processedProducts = products.map(pRef => {
+                const processedProducts = products.map((pRef, index) => {
                     try {
                         const product = stateObj[pRef.id];
                         if (!product) return null;
 
-                        // Localizar Items (SKUs)
-                        // Em buscas, as chaves costumam ser "Product:sp-123.items({"filter":"ALL_AVAILABLE"}).0"
-                        const itemKeys = Object.keys(stateObj).filter(k => k.startsWith(`${pRef.id}.items`));
+                        // Localizar Itens (SKUs) - Busca recursiva nas chaves
+                        const itemKeys = allKeys.filter(k => k.startsWith(pRef.id + ".items") || k.startsWith("$" + pRef.id + ".items"));
                         if (itemKeys.length === 0) return null;
                         
                         let item = null;
-                        let itemRef = stateObj[itemKeys[0]];
+                        const firstItemRef = stateObj[itemKeys[0]];
                         
-                        // Se for uma referência {id: "..."}
-                        if (itemRef && itemRef.id) {
-                            item = stateObj[itemRef.id];
-                        } 
-                        // Se a chave já for o item (comum quando o índice .0 está no nome da chave)
-                        else if (itemRef && itemRef.itemId) {
-                            item = itemRef;
-                        }
+                        // Formato de referência ou objeto direto
+                        if (firstItemRef && firstItemRef.id) item = stateObj[firstItemRef.id];
+                        else if (Array.isArray(firstItemRef) && firstItemRef[0]?.id) item = stateObj[firstItemRef[0].id];
+                        else if (firstItemRef && firstItemRef.itemId) item = firstItemRef;
 
                         if (!item) return null;
 
@@ -214,17 +238,15 @@
                             if (imgObj) image = imgObj.imageUrl || imgObj.imageTag;
                         }
 
-                        // Vendedor e Oferta
-                        const sellersKey = Object.keys(stateObj).find(k => k.startsWith(`${item.id || itemKeys[0]}.sellers`));
+                        // Preços e Vendedores
+                        const sellersKey = allKeys.find(k => k.startsWith(item.id + ".sellers") || k.startsWith("$" + item.id + ".sellers") || k.startsWith(itemKeys[0] + ".sellers"));
                         if (!sellersKey) return null;
                         
                         const sellersList = stateObj[sellersKey];
-                        if (!sellersList || sellersList.length === 0) return null;
-                        
-                        const sellerRef = sellersList[0];
+                        const sellerRef = Array.isArray(sellersList) ? sellersList[0] : sellersList;
                         const seller = sellerRef.id ? stateObj[sellerRef.id] : sellerRef;
-                        if (!seller || !seller.commertialOffer) return null;
                         
+                        if (!seller || !seller.commertialOffer) return null;
                         const offerRef = seller.commertialOffer;
                         const offer = offerRef.id ? stateObj[offerRef.id] : offerRef;
                         if (!offer) return null;
@@ -234,7 +256,7 @@
                         
                         if (offer.Installments) {
                             offer.Installments.forEach(instRef => {
-                                const inst = stateObj[instRef.id];
+                                const inst = instRef.id ? stateObj[instRef.id] : instRef;
                                 if (!inst) return;
                                 if (inst.NumberOfInstallments === 1 && inst.Value < spotPrice) spotPrice = inst.Value;
                                 if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) {
@@ -252,20 +274,16 @@
                             link: `https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}`
                         };
                     } catch (e) {
-                        console.warn("Falha ao processar item individual:", e);
                         return null;
                     }
                 }).filter(p => p !== null);
 
+                log(`Processamento concluído. ${processedProducts.length} cards prontos.`);
+
                 // Ordenação: Menor preço à vista
                 processedProducts.sort((a, b) => a.priceCash - b.priceCash);
 
-                status.innerText = `SUCESSO! EXIBINDO ${processedProducts.length} PRODUTOS ORDENADOS POR MENOR PREÇO À VISTA`;
-
-                if (processedProducts.length === 0) {
-                    status.innerText = "NENHUM PRODUTO DISPONÍVEL ENCONTRADO.";
-                    status.style.color = "#ff5252";
-                }
+                status.innerText = `SUCESSO! EXIBINDO ${processedProducts.length} PRODUTOS ORDENADOS`;
 
                 processedProducts.forEach(p => {
                     const card = document.createElement('div');
@@ -283,7 +301,7 @@
                 });
 
             } catch (error) {
-                console.error(error);
+                log("ERRO FATAL: " + error.message, "red");
                 status.innerText = "ERRO: " + error.message;
                 status.style.color = "#ff5252";
             }
