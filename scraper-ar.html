@@ -595,69 +595,100 @@
     }
 
     async function scrapeWebContinental(url) {
-      // WebContinental usa VTEX IO (renderizado client-side, HTML inicial vem vazio).
-      // Em vez de parsear HTML, batemos direto na API legada do catálogo VTEX:
-      // /api/catalog_system/pub/products/search{path}?map=c,c,...&O=order&_from=&_to=
-      // O `map` precisa ter 1 "c" por segmento de path + 1 (do initialMap=c).
-      // IMPORTANTE: usamos o Cloudflare Worker (mesmo da Frigelar) porque a resposta
-      // do VTEX (50 produtos × 100+ installments cada) passa de 3MB e o corsproxy.io
-      // grátis só permite 1MB.
+      // WebContinental usa VTEX IO. Tentei a API pública /api/catalog_system mas ela
+      // só dá o preço regular (Price), não o PIX (spotPrice). A GraphQL "dataProduct"
+      // que tem o PIX bloqueia requests de outra origem.
+      //
+      // SOLUÇÃO: a página de busca server-side já vem com TODO o estado pré-renderizado
+      // dentro de um <template id="__STATE__"><script>{...}</script></template>. Esse
+      // JSON é o cache normalizado do Apollo, e tem productSearch ordenado, todos os
+      // produtos, ofertas com Price + spotPrice (PIX), instalments, imagens e links.
+      // Tudo numa requisição só. Buscamos o HTML via Worker (resposta passa de 2MB).
       try {
-        const u = new URL(url);
-        const pathSegments = u.pathname.split('/').filter(Boolean);
-        if (pathSegments.length === 0) return [];
-        const mapStr = Array(pathSegments.length + 1).fill('c').join(',');
-        const order = u.searchParams.get('order') || u.searchParams.get('O') || 'OrderByPriceASC';
-        const apiUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search${u.pathname}?map=${mapStr}&O=${encodeURIComponent(order)}&_from=0&_to=49`;
-
         const WORKER_PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
-        const proxyUrl = WORKER_PROXY + encodeURIComponent(apiUrl);
+        const proxyUrl = WORKER_PROXY + encodeURIComponent(url);
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         if (!resp.ok && resp.status !== 206) return [];
-        const products = await resp.json();
-        if (!Array.isArray(products)) return [];
+        const html = await resp.text();
+
+        // Extrai o JSON do __STATE__
+        const stateIdx = html.indexOf('__STATE__');
+        if (stateIdx < 0) return [];
+        const scriptStart = html.indexOf('<script>', stateIdx);
+        const scriptEnd = html.indexOf('</script>', scriptStart);
+        if (scriptStart < 0 || scriptEnd < 0) return [];
+        let state;
+        try { state = JSON.parse(html.substring(scriptStart + '<script>'.length, scriptEnd)); }
+        catch(e) { console.error('WC __STATE__ parse:', e); return []; }
+
+        // Acha o resultado da busca (ordem dos produtos)
+        const psKey = Object.keys(state).find(k => k.startsWith('$ROOT_QUERY.productSearch'));
+        if (!psKey) return [];
+        const ps = state[psKey];
+        if (!ps || !Array.isArray(ps.products)) return [];
 
         const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        return products.map(p => {
-          const item = p.items && p.items[0];
-          if (!item) return null;
-          const seller = item.sellers && item.sellers[0];
-          const offer = seller && seller.commertialOffer;
+        return ps.products.map(ref => {
+          const productKey = ref && ref.id;
+          if (!productKey) return null;
+          const product = state[productKey];
+          if (!product) return null;
+
+          // O Apollo cache normaliza tudo. As keys seguem padrão estável:
+          //   item:   `${productKey}.items({"filter":"ALL_AVAILABLE"}).0`
+          //   seller: `${itemKey}.sellers.0`
+          //   offer:  `$${sellerKey}.commertialOffer`
+          const itemKey = productKey + '.items({"filter":"ALL_AVAILABLE"}).0';
+          const sellerKey = itemKey + '.sellers.0';
+          const offerKey = '$' + sellerKey + '.commertialOffer';
+          const item = state[itemKey];
+          const offer = state[offerKey];
           if (!offer) return null;
-          // Filtra esgotado — VTEX devolve mesmo sem estoque
+          // Filtra esgotado
           if (typeof offer.AvailableQuantity === 'number' && offer.AvailableQuantity <= 0) return null;
 
-          const spotPriceNum = offer.Price;
-          const listPriceNum = offer.ListPrice;
-          if (!spotPriceNum) return null;
+          const spotPriceNum = offer.spotPrice; // preço PIX (à vista) — o que aparece grande no site
+          const priceNum = offer.Price;          // preço regular (parcelado total)
+          const finalSpot = spotPriceNum || priceNum;
+          if (!finalSpot) return null;
+          const finalParcTotal = priceNum || spotPriceNum;
 
-          // Formato pedido pelo usuário (igual texto que aparece no site da WebContinental):
-          //   spot:    "R$ 1.659,65 à vista"
-          //   install: "ou R$ 1.659,65 até 10x de R$ 165,96"
-          // OBS: hoje usamos offer.Price (preço regular) no spot. O site mostra o preço PIX
-          // (~4% mais barato), mas esse valor só vem na GraphQL `dataProduct` que bloqueia
-          // requests de outro host. Pra ter o PIX exato, precisamos atualizar o Cloudflare
-          // Worker pra mandar Origin/Referer = webcontinental.com.br.
-          let spotLine = `${fmtBR(spotPriceNum)} à vista`;
-
-          // Melhor opção de parcelamento sem juros (maior número de parcelas)
-          const noInterest = (offer.Installments || []).filter(i => i.InterestRate === 0 && i.NumberOfInstallments > 1);
+          // Melhor parcelamento sem juros — entries estão em chaves separadas no cache
+          const installKeys = Object.keys(state).filter(k => k.startsWith(offerKey + '.Installments'));
           let best = null;
-          for (const inst of noInterest) {
+          for (const ik of installKeys) {
+            const inst = state[ik];
+            if (!inst || inst.InterestRate !== 0 || !inst.NumberOfInstallments) continue;
             if (!best || inst.NumberOfInstallments > best.NumberOfInstallments) best = inst;
           }
 
-          let installLine = "";
-          if (best) {
-            // Total parcelado = offer.Price (preço regular). Não recalcula best.Value*N
-            // pra evitar diferença de centavos (ex: 165.96*10=1659.60 mas Price=1659.65).
-            installLine = `ou ${fmtBR(spotPriceNum)} até ${best.NumberOfInstallments}x de ${fmtBR(best.Value)}`;
+          // Imagem: item.images[0] aponta pra Image:XXXX que tem .imageUrl
+          let image = "";
+          if (item && item.images && item.images[0]) {
+            const imgRef = item.images[0];
+            const imgEntity = imgRef.id ? state[imgRef.id] : imgRef;
+            if (imgEntity && imgEntity.imageUrl) image = imgEntity.imageUrl;
           }
 
-          const image = (item.images && item.images[0] && (item.images[0].imageUrl || item.images[0].imageUrlOriginal)) || "";
-          const link = p.link || (p.linkText ? `https://www.webcontinental.com.br/${p.linkText}/p` : "");
-          const title = p.productName || "";
+          // Link: product.link já vem absoluto; se relativo, prefixa o domínio
+          let link = product.link || '';
+          if (link && !link.startsWith('http')) link = 'https://www.webcontinental.com.br' + link;
+          // VTEX retorna link sem skuId às vezes; adiciona se item.itemId existir
+          if (link && item && item.itemId && !link.includes('skuId=')) {
+            link += (link.includes('?') ? '&' : '?') + 'skuId=' + item.itemId;
+          }
+
+          const title = product.productName || '';
+
+          // Formato pedido pelo usuário (idêntico ao site WebContinental):
+          //   spot:    "R$ 1.591,26 à vista"  (PIX)
+          //   install: "ou R$ 1.659,65 até 10x de R$ 165,96"  (regular Price + best installment)
+          const spotLine = `${fmtBR(finalSpot)} à vista`;
+          let installLine = "";
+          if (best && best.NumberOfInstallments > 1) {
+            installLine = `ou ${fmtBR(finalParcTotal)} até ${best.NumberOfInstallments}x de ${fmtBR(best.Value)}`;
+          }
 
           return { title, image, spot: spotLine, install: installLine, link, discount: 0 };
         }).filter(Boolean);
