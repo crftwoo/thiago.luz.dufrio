@@ -600,7 +600,7 @@
       // que tem o PIX bloqueia requests de outra origem.
       //
       // SOLUÇÃO: a página de busca server-side já vem com TODO o estado pré-renderizado
-      // dentro de um <template id="__STATE__"><script>{...}</script></template>. Esse
+      // dentro de um <template id="__STATE__"><script>{...}<\/script><\/template>. Esse
       // JSON é o cache normalizado do Apollo, e tem productSearch ordenado, todos os
       // produtos, ofertas com Price + spotPrice (PIX), instalments, imagens e links.
       // Tudo numa requisição só. Buscamos o HTML via Worker (resposta passa de 2MB).

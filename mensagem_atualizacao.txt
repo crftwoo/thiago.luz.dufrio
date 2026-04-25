@@ -1,1 +1,1 @@
-WebContinental integrada via API Direta (VTEX IO) - Sem necessidade de Proxy.
+fix: corrige bug que quebrava o scraper (</script> no comentário JS fechava o bloco HTML prematuramente)
