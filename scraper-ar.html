@@ -630,10 +630,30 @@
           const mapVal = mapParts[i] || '';
           if (mapVal.startsWith('c') && mapVal.includes('category')) {
             categoryPath.push(pathParts[i]);
+          } else if (mapVal === 'productclusternames') {
+            // Ignorar rótulos de cluster que não são especificações
+            continue;
           } else {
             let keyword = pathParts[i].replace('-btus', '').replace(/-/g, ' ').toLowerCase();
             specKeywords.push(keyword);
           }
+        }
+        
+        let btuKeywords = [];
+        let otherKeywords = [];
+        for (let kw of specKeywords) {
+            if (/^\d+$/.test(kw)) {
+                btuKeywords.push(kw);
+            } else {
+                otherKeywords.push(kw);
+            }
+        }
+        
+        let fqParams = "";
+        const initialMap = urlObj.searchParams.get('initialMap');
+        const initialQuery = urlObj.searchParams.get('initialQuery');
+        if (initialMap === 'productClusterIds' && initialQuery) {
+            fqParams = `&fq=productClusterIds:${initialQuery}`;
         }
         
         let ftParam = "";
@@ -641,7 +661,7 @@
             ftParam = "&ft=" + encodeURIComponent(specKeywords.join(' '));
         }
         
-        const catalogUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search/${categoryPath.join('/')}?O=OrderByPriceASC&_from=0&_to=49${ftParam}`;
+        const catalogUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search/${categoryPath.join('/')}?O=OrderByPriceASC&_from=0&_to=49${ftParam}${fqParams}`;
         const WORKER_PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
         const proxyUrl = WORKER_PROXY + encodeURIComponent(catalogUrl);
 
@@ -650,17 +670,23 @@
         let products = await resp.json();
         if (!Array.isArray(products)) return [];
 
-        // Filtra os produtos pelo que não é categoria (ex: "9000", "inverter")
+        // Filtra os produtos
         products = products.filter(p => {
           const title = p.productName.toLowerCase();
-          return specKeywords.every(kw => {
+          
+          let matchBtu = true;
+          if (btuKeywords.length > 0) {
+              matchBtu = btuKeywords.some(kw => {
+                  if (title.includes(kw)) return true;
+                  let formatted = kw.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                  if (title.includes(formatted)) return true;
+                  return false;
+              });
+          }
+          if (!matchBtu) return false;
+
+          return otherKeywords.every(kw => {
             if (title.includes(kw)) return true;
-            if (kw === '9000' && title.includes('9.000')) return true;
-            if (kw === '12000' && title.includes('12.000')) return true;
-            if (kw === '18000' && title.includes('18.000')) return true;
-            if (kw === '24000' && title.includes('24.000')) return true;
-            if (kw === '30000' && title.includes('30.000')) return true;
-            if (kw === '36000' && title.includes('36.000')) return true;
             if (kw === 'quente frio' || kw === 'quente e frio') {
                 return title.includes('quente') && title.includes('frio');
             }
