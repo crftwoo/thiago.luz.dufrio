@@ -415,6 +415,21 @@
 
     <div class="meta-footer">
       <div><span class="status-dot"></span> Sistemas Operacionais e Online<br><span style="font-size: 14px; opacity: 0.8; display: block; margin-top: 5px;">Criado em 16/09/2024 por Thiago Luz</span></div>
+      <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); min-width: 500px;">
+        <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">📊 Última Atualização</div>
+        <div id="update-status" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); text-align: left;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
+            <div style="flex: 1;">
+              <div id="update-title" style="font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">--</div>
+              <div id="update-desc" style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Carregando...</div>
+            </div>
+            <div id="update-datetime" style="font-size: 12px; color: var(--text-muted); white-space: nowrap; text-align: right;">
+              <div>--</div>
+              <div>--</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -471,7 +486,7 @@
       card.dataset.id = f.slug;
       card.style.setProperty('--card-color', f.color);
       card.onclick = () => openTool(idx);
-      
+
       card.innerHTML = `
         <div class="card-top">
           <div class="icon-box">${f.icone}</div>
@@ -482,12 +497,33 @@
           <div class="card-desc">${f.desc}</div>
         </div>
       `;
-      
+
       if(f.category === 'camara') gridC.appendChild(card);
       else if(f.category === 'ar') gridA.appendChild(card);
       else gridO.appendChild(card);
     });
 
+    // Carregar e exibir última atualização
+    async function loadLastUpdate() {
+      try {
+        const response = await fetch('updates.json?t=' + new Date().getTime());
+        const data = await response.json();
+        if (data.updates && data.updates.length > 0) {
+          const latest = data.updates[0];
+          document.getElementById('update-title').textContent = latest.title;
+          document.getElementById('update-desc').textContent = latest.description;
+          document.getElementById('update-datetime').innerHTML = `
+            <div style="font-weight: 600; color: #4facfe;">${latest.date}</div>
+            <div>${latest.time}</div>
+          `;
+        }
+      } catch(e) {
+        console.error('Erro ao carregar atualizações:', e);
+        document.getElementById('update-status').innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">Não foi possível carregar o histórico de atualizações</div>';
+      }
+    }
+
+    loadLastUpdate();
 
   </script>
 </body>
