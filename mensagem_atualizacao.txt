@@ -1,1 +1,1 @@
-fix: corrige bug que quebrava o scraper (</script> no comentário JS fechava o bloco HTML prematuramente)
+fix: corrige todas as strings com <script> e </script> dentro do bloco JS (quebravam o parser HTML)

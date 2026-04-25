@@ -614,11 +614,11 @@
         // Extrai o JSON do __STATE__
         const stateIdx = html.indexOf('__STATE__');
         if (stateIdx < 0) return [];
-        const scriptStart = html.indexOf('<script>', stateIdx);
-        const scriptEnd = html.indexOf('</script>', scriptStart);
+        const scriptStart = html.indexOf('<' + 'script>', stateIdx);
+        const scriptEnd = html.indexOf('</' + 'script>', scriptStart);
         if (scriptStart < 0 || scriptEnd < 0) return [];
         let state;
-        try { state = JSON.parse(html.substring(scriptStart + '<script>'.length, scriptEnd)); }
+        try { state = JSON.parse(html.substring(scriptStart + ('<' + 'script>').length, scriptEnd)); }
         catch(e) { console.error('WC __STATE__ parse:', e); return []; }
 
         // Acha o resultado da busca (ordem dos produtos)
