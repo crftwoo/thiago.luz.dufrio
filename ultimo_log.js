@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'fix(scraper-wc): seleciona chave productSearch correta do Apollo cache - prioriza OrderByPriceASC para trazer Agratto e outros em ordem certa', dateIso: '2026-04-24T22:55:15-03:00' };
+const LATEST_LOG = { message: 'fix(wc): reescreve scraper WebContinental usando API VTEX catalog - __STATE__ ignorava order=, agora traz Agratto e todos os produtos ordenados por preco', dateIso: '2026-04-24T23:09:17-03:00' };

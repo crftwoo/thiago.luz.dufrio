@@ -595,122 +595,72 @@
     }
 
     async function scrapeWebContinental(url) {
-      // WebContinental usa VTEX IO. Tentei a API pública /api/catalog_system mas ela
-      // só dá o preço regular (Price), não o PIX (spotPrice). A GraphQL "dataProduct"
-      // que tem o PIX bloqueia requests de outra origem.
-      //
-      // SOLUÇÃO: a página de busca server-side já vem com TODO o estado pré-renderizado
-      // dentro de um <template id="__STATE__"><script>{...}<\/script><\/template>. Esse
-      // JSON é o cache normalizado do Apollo, e tem productSearch ordenado, todos os
-      // produtos, ofertas com Price + spotPrice (PIX), instalments, imagens e links.
-      // Tudo numa requisição só. Buscamos o HTML via Worker (resposta passa de 2MB).
+      // VTEX: o __STATE__ do HTML sempre retorna por "Mais Vendidos",
+      // ignorando o parâmetro order= da URL. Usamos a API de catálogo
+      // que respeita a ordenação e traz todos os produtos com preços corretos.
       try {
+        const urlObj = new URL(url);
+        const path = urlObj.pathname.replace(/^\//, ''); // ex: "climatizacao/ar-condicionado/..."
+        const order = urlObj.searchParams.get('order') || 'OrderByPriceASC';
+
+        const apiUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search/${path}?_from=0&_to=49&O=${order}`;
         const WORKER_PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
-        const proxyUrl = WORKER_PROXY + encodeURIComponent(url);
+        const proxyUrl = WORKER_PROXY + encodeURIComponent(apiUrl);
+
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
-        if (!resp.ok && resp.status !== 206) return [];
-        const html = await resp.text();
-
-        // Extrai o JSON do __STATE__
-        const stateIdx = html.indexOf('__STATE__');
-        if (stateIdx < 0) return [];
-        const scriptStart = html.indexOf('<' + 'script>', stateIdx);
-        const scriptEnd = html.indexOf('</' + 'script>', scriptStart);
-        if (scriptStart < 0 || scriptEnd < 0) return [];
-        let state;
-        try { state = JSON.parse(html.substring(scriptStart + ('<' + 'script>').length, scriptEnd)); }
-        catch(e) { console.error('WC __STATE__ parse:', e); return []; }
-
-        // Seleciona a chave productSearch correta do Apollo cache.
-        // O __STATE__ pode ter múltiplas queries cacheadas (ex: relevância, mais vendidos).
-        // Priorizamos a que usa OrderByPriceASC (igual ao link da planilha),
-        // depois a que tem mais produtos, e por último qualquer uma.
-        const allPsKeys = Object.keys(state).filter(k => k.startsWith('$ROOT_QUERY.productSearch'));
-        let psKey = allPsKeys.find(k => k.includes('OrderByPriceASC'));
-        if (!psKey) {
-          psKey = allPsKeys.reduce((best, k) => {
-            const entry = state[k];
-            if (!entry || !Array.isArray(entry.products)) return best;
-            if (!best) return k;
-            return (entry.products.length > (state[best]?.products?.length || 0)) ? k : best;
-          }, null);
-        }
-        if (!psKey) return [];
-        const ps = state[psKey];
-        if (!ps || !Array.isArray(ps.products)) return [];
+        if (!resp.ok) return [];
+        const products = await resp.json();
+        if (!Array.isArray(products)) return [];
 
         const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        return ps.products.map(ref => {
-          const productKey = ref && ref.id;
-          if (!productKey) return null;
-          const product = state[productKey];
-          if (!product) return null;
+        return products.map(p => {
+          const item = p.items && p.items[0];
+          const seller = item && item.sellers && item.sellers[0];
+          const offer = seller && seller.commertialOffer;
+          if (!offer || offer.AvailableQuantity <= 0) return null;
 
-          // O Apollo cache pode usar filtros diferentes por produto ("ALL_AVAILABLE",
-          // "FIRST_AVAILABLE", sem filtro). Busca dinâmica para não perder produtos.
-          const itemKey = Object.keys(state).find(k =>
-            k.startsWith(productKey + '.items(') && k.endsWith(').0')
-          ) || (productKey + '.items({"filter":"ALL_AVAILABLE"}).0');
+          // Preço PIX: busca nos Installments (PaymentSystemName = "Pix" ou 1x sem juros)
+          let spotPrice = offer.spotPrice || offer.Price;
+          if (Array.isArray(offer.Installments)) {
+            const pix = offer.Installments.find(i => i.PaymentSystemName && i.PaymentSystemName.toLowerCase() === 'pix');
+            if (pix && pix.Value) spotPrice = pix.Value;
+            else {
+              // fallback: installment de 1x sem juros = preço à vista
+              const avista = offer.Installments.find(i => i.NumberOfInstallments === 1 && i.InterestRate === 0);
+              if (avista && avista.Value) spotPrice = avista.Value;
+            }
+          }
 
-          // Seller também pode variar; busca dinâmica
-          const sellerKey = Object.keys(state).find(k =>
-            k.startsWith(itemKey + '.sellers') && k.endsWith('.0')
-          ) || (itemKey + '.sellers.0');
-
-          const offerKey = '$' + sellerKey + '.commertialOffer';
-          const item = state[itemKey];
-          const offer = state[offerKey];
-          if (!offer) return null;
-          // Filtra esgotado (só descarta se explicitamente 0 — undefined/null = em estoque)
-          if (typeof offer.AvailableQuantity === 'number' && offer.AvailableQuantity <= 0) return null;
-
-          const spotPriceNum = offer.spotPrice; // preço PIX (à vista) — o que aparece grande no site
-          const priceNum = offer.Price;          // preço regular (parcelado total)
-          const finalSpot = spotPriceNum || priceNum;
-          if (!finalSpot) return null;
-          const finalParcTotal = priceNum || spotPriceNum;
-
-          // Melhor parcelamento sem juros — entries estão em chaves separadas no cache
-          const installKeys = Object.keys(state).filter(k => k.startsWith(offerKey + '.Installments'));
+          // Melhor parcelamento sem juros
           let best = null;
-          for (const ik of installKeys) {
-            const inst = state[ik];
-            if (!inst || inst.InterestRate !== 0 || !inst.NumberOfInstallments) continue;
-            if (!best || inst.NumberOfInstallments > best.NumberOfInstallments) best = inst;
+          if (Array.isArray(offer.Installments)) {
+            for (const inst of offer.Installments) {
+              if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) {
+                if (!best || inst.NumberOfInstallments > best.NumberOfInstallments) best = inst;
+              }
+            }
           }
 
-          // Imagem: item.images[0] aponta pra Image:XXXX que tem .imageUrl
-          let image = "";
-          if (item && item.images && item.images[0]) {
-            const imgRef = item.images[0];
-            const imgEntity = imgRef.id ? state[imgRef.id] : imgRef;
-            if (imgEntity && imgEntity.imageUrl) image = imgEntity.imageUrl;
-          }
-
-          // Link: product.link já vem absoluto; se relativo, prefixa o domínio
-          let link = product.link || '';
+          const title = p.productName || '';
+          const image = (item.images && item.images[0] && item.images[0].imageUrl) || '';
+          let link = p.link || '';
           if (link && !link.startsWith('http')) link = 'https://www.webcontinental.com.br' + link;
-          // VTEX retorna link sem skuId às vezes; adiciona se item.itemId existir
-          if (link && item && item.itemId && !link.includes('skuId=')) {
+          if (link && item.itemId && !link.includes('skuId=')) {
             link += (link.includes('?') ? '&' : '?') + 'skuId=' + item.itemId;
           }
 
-          const title = product.productName || '';
-
-          // Formato pedido pelo usuário (idêntico ao site WebContinental):
-          //   spot:    "R$ 1.591,26 à vista"  (PIX)
-          //   install: "ou R$ 1.659,65 até 10x de R$ 165,96"  (regular Price + best installment)
-          const spotLine = `${fmtBR(finalSpot)} à vista`;
-          let installLine = "";
-          if (best && best.NumberOfInstallments > 1) {
-            installLine = `ou ${fmtBR(finalParcTotal)} até ${best.NumberOfInstallments}x de ${fmtBR(best.Value)}`;
+          const spotLine = `${fmtBR(spotPrice)} à vista`;
+          let installLine = '';
+          if (best) {
+            installLine = `ou ${fmtBR(offer.Price)} até ${best.NumberOfInstallments}x de ${fmtBR(best.Value)}`;
           }
 
           return { title, image, spot: spotLine, install: installLine, link, discount: 0 };
         }).filter(Boolean);
       } catch(e) { console.error("WebContinental erro:", e); return []; }
     }
+
 
     async function startScraping() {
       try {

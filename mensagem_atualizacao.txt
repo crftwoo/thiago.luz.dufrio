@@ -1,1 +1,1 @@
-fix(scraper-wc): seleciona chave productSearch correta do Apollo cache - prioriza OrderByPriceASC para trazer Agratto e outros em ordem certa
+fix(wc): reescreve scraper WebContinental usando API VTEX catalog - __STATE__ ignorava order=, agora traz Agratto e todos os produtos ordenados por preco
