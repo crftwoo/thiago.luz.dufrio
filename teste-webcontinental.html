@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste WebContinental - STATE Extraction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0b10;
+            --card-bg: #151921;
+            --accent: #00f2fe;
+            --text: #ffffff;
+            --text-dim: #a0a0a0;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+        }
+        button {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            color: #0a0b10;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background: white;
+            padding: 10px;
+        }
+        .card-content {
+            padding: 15px;
+        }
+        .card-title {
+            font-size: 0.9rem;
+            height: 40px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            color: var(--text-dim);
+        }
+        .card-price {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+        .card-install {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+        .status {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Renderizador WebContinental</h1>
+        <div class="input-group">
+            <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui...">
+            <button onclick="renderCards()">RENDERIZAR CARDS</button>
+        </div>
+        <div id="status" class="status"></div>
+        <div id="results-grid" class="results-grid"></div>
+    </div>
+
+    <script>
+        async function renderCards() {
+            const url = document.getElementById('link-input').value;
+            const grid = document.getElementById('results-grid');
+            const status = document.getElementById('status');
+            
+            if (!url) return alert("Cole um link!");
+            
+            grid.innerHTML = "";
+            status.innerText = "BUSCANDO DADOS...";
+
+            try {
+                const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+                const resp = await fetch(PROXY + encodeURIComponent(url));
+                if (!resp.ok) throw new Error("Erro na requisição");
+                const html = await resp.text();
+
+                // Extração do __STATE__
+                const marker = '__STATE__">';
+                const idx = html.indexOf(marker);
+                if (idx === -1) throw new Error("Não foi possível encontrar o estado da página");
+
+                let jsonStr = html.substring(idx);
+                const scriptStart = jsonStr.indexOf('<script>');
+                const scriptEnd = jsonStr.indexOf('<\/script>'); // ESCAPED!
+                if (scriptStart === -1 || scriptEnd === -1) throw new Error("Estrutura de script inválida");
+
+                jsonStr = jsonStr.substring(scriptStart + 8, scriptEnd).trim();
+                const stateObj = JSON.parse(jsonStr);
+
+                const searchKey = Object.keys(stateObj).find(k => k.startsWith('$ROOT_QUERY.productSearch'));
+                if (!searchKey) throw new Error("Nenhum resultado de busca encontrado no estado");
+
+                const searchResult = stateObj[searchKey];
+                const products = searchResult.products;
+
+                status.innerText = `ENCONTRADOS ${products.length} PRODUTOS. RENDERIZANDO...`;
+
+                const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                products.forEach(pRef => {
+                    const product = stateObj[pRef.id];
+                    
+                    // SKU info
+                    const itemKeys = Object.keys(stateObj).filter(k => k.startsWith(`${pRef.id}.items`));
+                    if (itemKeys.length === 0) return;
+                    const item = stateObj[stateObj[itemKeys[0]][0].id];
+                    
+                    // Preço
+                    const sellersKey = Object.keys(stateObj).find(k => k.startsWith(`${item.id}.sellers`));
+                    const seller = stateObj[stateObj[sellersKey][0].id];
+                    const offer = stateObj[seller.commertialOffer.id];
+                    
+                    let spotPrice = offer.spotPrice || offer.Price;
+                    let best = null;
+                    if (offer.Installments) {
+                        offer.Installments.forEach(instRef => {
+                            const inst = stateObj[instRef.id];
+                            if (inst.NumberOfInstallments === 1 && inst.Value < spotPrice) spotPrice = inst.Value;
+                            if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) {
+                                if (!best || inst.NumberOfInstallments > best.NumberOfInstallments) best = inst;
+                            }
+                        });
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <img src="${stateObj[item.images[0].id].imageUrl}" alt="">
+                        <div class="card-content">
+                            <div class="card-title">${product.productName}</div>
+                            <div class="card-price">${fmtBR(spotPrice)}</div>
+                            <div class="card-install">${best ? 'ou ' + fmtBR(offer.Price) + ' em ' + best.NumberOfInstallments + 'x' : ''}</div>
+                            <a href="https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}" target="_blank" style="display:block; margin-top:10px; color:var(--accent); text-decoration:none; font-size:0.8rem;">Ver no site</a>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error(error);
+                status.innerText = "ERRO: " + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
