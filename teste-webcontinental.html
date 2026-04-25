@@ -160,22 +160,25 @@
                 const searchResult = stateObj[searchKey];
                 const products = searchResult.products;
 
-                status.innerText = `ENCONTRADOS ${products.length} PRODUTOS. RENDERIZANDO...`;
+                status.innerText = `PROCESSANDO ${products.length} PRODUTOS...`;
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                products.forEach(pRef => {
+                // Coleta e processa os dados para ordenação
+                const processedProducts = products.map(pRef => {
                     const product = stateObj[pRef.id];
+                    if (!product) return null;
                     
-                    // SKU info
                     const itemKeys = Object.keys(stateObj).filter(k => k.startsWith(`${pRef.id}.items`));
-                    if (itemKeys.length === 0) return;
+                    if (itemKeys.length === 0) return null;
                     const item = stateObj[stateObj[itemKeys[0]][0].id];
+                    if (!item) return null;
                     
-                    // Preço
                     const sellersKey = Object.keys(stateObj).find(k => k.startsWith(`${item.id}.sellers`));
+                    if (!sellersKey) return null;
                     const seller = stateObj[stateObj[sellersKey][0].id];
                     const offer = stateObj[seller.commertialOffer.id];
+                    if (!offer) return null;
                     
                     let spotPrice = offer.spotPrice || offer.Price;
                     let best = null;
@@ -189,15 +192,31 @@
                         });
                     }
 
+                    return {
+                        name: product.productName,
+                        image: stateObj[item.images[0].id].imageUrl,
+                        priceCash: spotPrice,
+                        priceFull: offer.Price,
+                        installments: best ? best.NumberOfInstallments : 0,
+                        link: `https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}`
+                    };
+                }).filter(p => p !== null);
+
+                // ORDENAÇÃO: Menor preço à vista para o maior
+                processedProducts.sort((a, b) => a.priceCash - b.priceCash);
+
+                status.innerText = `EXIBINDO ${processedProducts.length} PRODUTOS (ORDENADOS POR MENOR PREÇO À VISTA)`;
+
+                processedProducts.forEach(p => {
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.innerHTML = `
-                        <img src="${stateObj[item.images[0].id].imageUrl}" alt="">
+                        <img src="${p.image}" alt="">
                         <div class="card-content">
-                            <div class="card-title">${product.productName}</div>
-                            <div class="card-price">${fmtBR(spotPrice)}</div>
-                            <div class="card-install">${best ? 'ou ' + fmtBR(offer.Price) + ' em ' + best.NumberOfInstallments + 'x' : ''}</div>
-                            <a href="https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}" target="_blank" style="display:block; margin-top:10px; color:var(--accent); text-decoration:none; font-size:0.8rem;">Ver no site</a>
+                            <div class="card-title">${p.name}</div>
+                            <div class="card-price">${fmtBR(p.priceCash)}</div>
+                            <div class="card-install">${p.installments > 0 ? 'ou ' + fmtBR(p.priceFull) + ' em ' + p.installments + 'x' : ''}</div>
+                            <a href="${p.link}" target="_blank" style="display:block; margin-top:10px; color:var(--accent); text-decoration:none; font-size:0.8rem;">Ver no site</a>
                         </div>
                     `;
                     grid.appendChild(card);
