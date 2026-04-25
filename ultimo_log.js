@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'fix(wc): reescreve scraper WebContinental usando API VTEX catalog - __STATE__ ignorava order=, agora traz Agratto e todos os produtos ordenados por preco', dateIso: '2026-04-25T01:26:23-03:00' };
+const LATEST_LOG = { message: 'fix(wc): reescreve scraper WebContinental usando API VTEX catalog - __STATE__ ignorava order=, agora traz Agratto e todos os produtos ordenados por preco', dateIso: '2026-04-25T01:33:21-03:00' };

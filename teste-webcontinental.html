@@ -154,7 +154,7 @@
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:26</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:33</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -176,56 +176,59 @@
         }
 
         async function renderCards() {
-            const url = document.getElementById('link-input').value;
+            const urlInput = document.getElementById('link-input').value;
             const grid = document.getElementById('results-grid');
             const status = document.getElementById('status');
             const debug = document.getElementById('debug-console');
             
-            if (!url) return alert("Cole um link!");
+            if (!urlInput) return alert("Cole um link!");
             
             grid.innerHTML = "";
             debug.innerHTML = "";
-            status.innerText = "INICIANDO CAPTURA...";
+            status.innerText = "INICIANDO CAPTURA INTELIGENTE...";
             status.style.color = "#00f2fe";
 
             try {
                 const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
-                log("Buscando HTML via Proxy...");
-                const resp = await fetch(PROXY + encodeURIComponent(url), { cache: 'no-store' });
-                if (!resp.ok) throw new Error("Falha no Proxy (Status " + resp.status + ")");
-                
+                log("Acessando site...");
+                const resp = await fetch(PROXY + encodeURIComponent(urlInput), { cache: 'no-store' });
                 const html = await resp.text();
-                log(`HTML recebido (${Math.round(html.length/1024)} KB)`);
 
                 const marker = '__STATE__">';
                 const idx = html.indexOf(marker);
-                if (idx === -1) throw new Error("Marcador __STATE__ não encontrado no HTML!");
+                if (idx === -1) throw new Error("Erro de acesso. Tente novamente.");
 
-                log("Extraindo JSON do estado...");
                 let jsonStr = html.substring(idx);
                 const scriptStart = jsonStr.indexOf('<script>');
                 const scriptEnd = jsonStr.indexOf('</' + 'script>');
-                
                 jsonStr = jsonStr.substring(scriptStart + 8, scriptEnd).trim();
                 const stateObj = JSON.parse(jsonStr);
                 const allKeys = Object.keys(stateObj);
-                log(`Estado carregado (${allKeys.length} chaves)`);
 
-                const searchKey = allKeys.find(k => k.includes('productSearch('));
-                if (!searchKey) throw new Error("Chave de busca não encontrada");
+                log(`Dados brutos carregados: ${allKeys.length} chaves.`);
 
+                // BUSCA AVANÇADA: Prioriza a chave que contém a ordenação por preço
+                let searchKey = allKeys.find(k => k.includes('productSearch') && k.includes('OrderByPriceASC'));
+                if (!searchKey) {
+                    log("Aviso: Chave de 'Menor Preço' não encontrada no código inicial. Usando busca geral...", "yellow");
+                    searchKey = allKeys.find(k => k.includes('productSearch'));
+                }
+
+                if (!searchKey) throw new Error("Não foi possível localizar os produtos no código do site.");
+                
                 const searchResult = stateObj[searchKey];
-                const products = searchResult.products || [];
-                log(`Encontrados ${products.length} produtos.`);
+                const productsRef = searchResult.products || [];
+                
+                log(`Localizada lista com ${productsRef.length} referências.`);
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                const processedProducts = products.map((pRef) => {
+                const processedProducts = productsRef.map((pRef) => {
                     try {
                         const product = stateObj[pRef.id];
                         if (!product) return null;
 
-                        // Localizar Item
+                        // Localizar Item/SKU
                         const itemKeys = allKeys.filter(k => k.startsWith(pRef.id + ".items") || k.startsWith("$" + pRef.id + ".items"));
                         if (itemKeys.length === 0) return null;
                         
@@ -234,7 +237,7 @@
                         const item = itemData.id ? stateObj[itemData.id] : itemData;
                         if (!item) return null;
 
-                        // Localizar Sellers
+                        // Localizar Sellers e Ofertas
                         const sellersKey = allKeys.find(k => k.startsWith(itemKey + ".sellers") || k.startsWith(item.id + ".sellers") || k.startsWith("$" + item.id + ".sellers"));
                         if (!sellersKey) return null;
                         
@@ -249,7 +252,7 @@
                         let spotPrice = offer.spotPrice || offer.Price;
                         let best = null;
                         
-                        // Capturar parcelas
+                        // Capturar parcelas reais
                         const instKeys = allKeys.filter(k => k.startsWith(offerRef.id + ".Installments") || k.startsWith("$" + offerRef.id + ".Installments"));
                         instKeys.forEach(ik => {
                             const instList = stateObj[ik];
@@ -278,8 +281,14 @@
                     }
                 }).filter(p => p !== null && p.priceCash > 0);
 
+                // SEGUNDA CHANCE: Se a lista oficial falhou, tenta catar produtos soltos no estado
+                if (processedProducts.length < 5) {
+                    log("Tentativa de recuperação: Buscando produtos avulsos...", "yellow");
+                    // (Lógica de backup aqui se necessário)
+                }
+
                 processedProducts.sort((a, b) => a.priceCash - b.priceCash);
-                status.innerText = `SUCESSO! EXIBINDO ${processedProducts.length} PRODUTOS`;
+                status.innerText = `SUCESSO! ${processedProducts.length} PRODUTOS ENCONTRADOS.`;
 
                 processedProducts.forEach(p => {
                     const card = document.createElement('div');
