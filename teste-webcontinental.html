@@ -154,7 +154,7 @@
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:48</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:52</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -183,7 +183,7 @@
             
             grid.innerHTML = "";
             debug.innerHTML = "";
-            status.innerText = "BUSCANDO PRODUTOS VIA API (PAGINAÇÃO)...";
+            status.innerText = "CAPTURANDO O QUE VOCÊ VÊ NA TELA...";
             status.style.color = "#00f2fe";
 
             try {
@@ -198,41 +198,24 @@
                     path = path.split('?')[0];
                 }
                 
-                log(`Iniciando busca em: ${path}`);
+                log(`Sincronizando com: ${path}`);
                 
-                let allProducts = [];
-                // Busca até 5 páginas (250 produtos)
-                for (let i = 0; i < 5; i++) {
-                    const from = i * 50;
-                    const to = from + 49;
-                    status.innerText = `LENDO PÁGINA ${i + 1} (${from}-${to})...`;
-                    
-                    const apiUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search${path}?O=OrderByPriceASC&_from=${from}&_to=${to}`;
-                    const resp = await fetch(PROXY + encodeURIComponent(apiUrl));
-                    if (!resp.ok) {
-                        log(`Falha ao ler página ${i+1}`, "red");
-                        break;
-                    }
-                    
-                    const data = await resp.json();
-                    if (!data || data.length === 0) break;
-                    
-                    allProducts = allProducts.concat(data);
-                    log(`Página ${i+1} carregada: +${data.length} produtos.`);
-                    if (data.length < 50) break;
-                }
-
-                if (allProducts.length === 0) throw new Error("Nenhum produto encontrado na API.");
+                // Busca apenas os primeiros 50 (para cobrir os 40 do site)
+                const apiUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search${path}?O=OrderByPriceASC&_from=0&_to=49`;
+                const resp = await fetch(PROXY + encodeURIComponent(apiUrl));
+                if (!resp.ok) throw new Error("Erro na comunicação com o site.");
+                
+                const data = await resp.json();
+                log(`Carregados ${data.length} produtos do topo.`);
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                const processed = allProducts.map(p => {
+                const processed = data.map(p => {
                     try {
                         const item = p.items[0];
                         const seller = item.sellers[0];
                         const offer = seller.commertialOffer;
                         
-                        // Busca o melhor preço à vista nas parcelas
                         let price = offer.spotPrice || offer.Price || 0;
                         let fullPrice = offer.Price || price;
                         let installments = 10;
@@ -257,12 +240,9 @@
                             link: p.link
                         };
                     } catch (e) { return null; }
-                }).filter(p => p !== null && p.priceCash > 0);
+                }).filter(p => p !== null);
 
-                // Reordena final pelo preço à vista real
-                processed.sort((a, b) => a.priceCash - b.priceCash);
-                
-                status.innerText = `SUCESSO! ${processed.length} PRODUTOS RENDERIZADOS.`;
+                status.innerText = `SUCESSO! EXIBINDO ${processed.length} PRODUTOS (IGUAL AO SITE).`;
 
                 processed.forEach(p => {
                     const card = document.createElement('div');
