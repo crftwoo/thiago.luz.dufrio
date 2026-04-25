@@ -614,131 +614,86 @@
       } catch(e) { console.error("Leveros erro:", e); return []; }
     }
 
-    async function scrapeWebContinental(url) {
-      // VTEX: o __STATE__ do HTML sempre retorna por "Mais Vendidos",
-      // ignorando o parâmetro order= da URL. Usamos a API de catálogo
-      // que respeita a ordenação e traz todos os produtos com preços corretos.
+    async function scrapeWebContinental(url, selection) {
       try {
-        const urlObj = new URL(url);
-        const pathParts = urlObj.pathname.replace(/^\//, '').split('/');
-        const mapParts = (urlObj.searchParams.get('map') || '').split(',');
-        
-        let categoryPath = [];
-        let specKeywords = [];
-        
-        for (let i = 0; i < pathParts.length; i++) {
-          const mapVal = mapParts[i] || '';
-          if (mapVal.startsWith('c') && mapVal.includes('category')) {
-            categoryPath.push(pathParts[i]);
-          } else if (mapVal === 'productclusternames') {
-            // Ignorar rótulos de cluster que não são especificações
-            continue;
-          } else {
-            let keyword = pathParts[i].replace('-btus', '').replace(/-/g, ' ').toLowerCase();
-            specKeywords.push(keyword);
-          }
-        }
-        
-        let btuKeywords = [];
-        let otherKeywords = [];
-        for (let kw of specKeywords) {
-            if (/^\d+$/.test(kw)) {
-                btuKeywords.push(kw);
-            } else {
-                otherKeywords.push(kw);
-            }
-        }
-        
-        let fqParams = "";
-        const initialMap = urlObj.searchParams.get('initialMap');
-        const initialQuery = urlObj.searchParams.get('initialQuery');
-        if (initialMap === 'productClusterIds' && initialQuery) {
-            fqParams = `&fq=productClusterIds:${initialQuery}`;
-        }
-        
-        let ftParam = "";
-        if (specKeywords.length > 0) {
-            ftParam = "&ft=" + encodeURIComponent(specKeywords.join(' '));
-        }
-        
-        const catalogUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search/${categoryPath.join('/')}?O=OrderByPriceASC&_from=0&_to=49${ftParam}${fqParams}`;
-        const WORKER_PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
-        const proxyUrl = WORKER_PROXY + encodeURIComponent(catalogUrl);
-
-        const resp = await fetch(proxyUrl, { cache: 'no-store' });
+        const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+        const resp = await fetch(PROXY + encodeURIComponent(url), { cache: 'no-store' });
         if (!resp.ok) return [];
-        let products = await resp.json();
-        if (!Array.isArray(products)) return [];
+        const html = await resp.text();
 
-        // Filtra os produtos
-        products = products.filter(p => {
-          const title = p.productName.toLowerCase();
-          
-          let matchBtu = true;
-          if (btuKeywords.length > 0) {
-              matchBtu = btuKeywords.some(kw => {
-                  if (title.includes(kw)) return true;
-                  let formatted = kw.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                  if (title.includes(formatted)) return true;
-                  return false;
-              });
-          }
-          if (!matchBtu) return false;
+        // Extrai o __STATE__ do HTML (WebContinental utiliza VTEX IO)
+        const marker = '__STATE__">';
+        const idx = html.indexOf(marker);
+        if (idx === -1) return [];
 
-          return otherKeywords.every(kw => {
-            if (title.includes(kw)) return true;
-            if (kw === 'quente frio' || kw === 'quente e frio') {
-                return title.includes('quente') && title.includes('frio');
-            }
-            if (kw === 'so frio') {
-                return title.includes('frio') && !title.includes('quente');
-            }
-            if (p.allSpecifications) {
-                for (const spec of p.allSpecifications) {
-                    const val = p[spec];
-                    if (Array.isArray(val) && val.some(v => v.toLowerCase().includes(kw))) return true;
-                }
-            }
-            return false;
-          });
-        });
+        let jsonStr = html.substring(idx);
+        const scriptStart = jsonStr.indexOf('<script>');
+        const scriptEnd = jsonStr.indexOf('</script>');
+        if (scriptStart === -1 || scriptEnd === -1) return [];
+
+        jsonStr = jsonStr.substring(scriptStart + 8, scriptEnd).trim();
+        const stateObj = JSON.parse(jsonStr);
+
+        // Encontra a busca de produtos no estado (productSearch)
+        const searchKey = Object.keys(stateObj).find(k => k.startsWith('$ROOT_QUERY.productSearch'));
+        if (!searchKey) return [];
+
+        const searchResult = stateObj[searchKey];
+        if (!searchResult || !searchResult.products) return [];
 
         const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const results = [];
 
-        return products.map(p => {
-          const item = p.items && p.items[0];
-          const seller = item && item.sellers && item.sellers[0];
-          const offer = seller && seller.commertialOffer;
-          if (!offer || offer.AvailableQuantity <= 0) return null;
+        for (const pRef of searchResult.products) {
+          const product = stateObj[pRef.id];
+          if (!product) continue;
 
-          // Preço PIX: busca nos Installments (PaymentSystemName = "Pix" ou 1x sem juros)
-          let spotPrice = offer.spotPrice || offer.Price;
-          if (Array.isArray(offer.Installments)) {
-            const pix = offer.Installments.find(i => i.PaymentSystemName && i.PaymentSystemName.toLowerCase() === 'pix');
-            if (pix && pix.Value) spotPrice = pix.Value;
-            else {
-              // fallback: installment de 1x sem juros = preço à vista
-              const avista = offer.Installments.find(i => i.NumberOfInstallments === 1 && i.InterestRate === 0);
-              if (avista && avista.Value) spotPrice = avista.Value;
-            }
+          // Filtro Local: Ciclo
+          const titleLower = (product.productName || product.name || "").toLowerCase();
+          if (selection.cycle === 'frio' && (titleLower.includes('quente') || titleLower.includes('q/f'))) continue;
+          if (selection.cycle === 'quente-frio' && !(titleLower.includes('quente') || titleLower.includes('q/f'))) continue;
+
+          // Encontra o SKU padrão
+          const itemKeys = Object.keys(stateObj).filter(k => k.startsWith(`${pRef.id}.items`));
+          if (itemKeys.length === 0) continue;
+          
+          const itemsArr = stateObj[itemKeys[0]];
+          if (!itemsArr || itemsArr.length === 0) continue;
+          
+          const item = stateObj[itemsArr[0].id];
+          if (!item) continue;
+
+          // Imagem
+          let image = "";
+          if (item.images && item.images.length > 0) {
+            const imgObj = stateObj[item.images[0].id];
+            if (imgObj) image = imgObj.imageUrl;
           }
 
-          // Melhor parcelamento sem juros
+          // Preço e Parcelamento
+          const sellersKey = Object.keys(stateObj).find(k => k.startsWith(`${itemsArr[0].id}.sellers`));
+          if (!sellersKey) continue;
+          const sellersArr = stateObj[sellersKey];
+          const seller = stateObj[sellersArr[0].id];
+          const offer = stateObj[seller.commertialOffer.id];
+
+          if (!offer || offer.AvailableQuantity <= 0) continue;
+
+          let spotPrice = offer.spotPrice || offer.Price;
           let best = null;
-          if (Array.isArray(offer.Installments)) {
-            for (const inst of offer.Installments) {
+
+          if (offer.Installments) {
+            for (const instRef of offer.Installments) {
+              const inst = stateObj[instRef.id];
+              if (!inst) continue;
+              
+              if (inst.NumberOfInstallments === 1) {
+                if (inst.Value < spotPrice) spotPrice = inst.Value;
+              }
               if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) {
                 if (!best || inst.NumberOfInstallments > best.NumberOfInstallments) best = inst;
               }
             }
-          }
-
-          const title = p.productName || '';
-          const image = (item.images && item.images[0] && item.images[0].imageUrl) || '';
-          let link = p.link || '';
-          if (link && !link.startsWith('http')) link = 'https://www.webcontinental.com.br' + link;
-          if (link && item.itemId && !link.includes('skuId=')) {
-            link += (link.includes('?') ? '&' : '?') + 'skuId=' + item.itemId;
           }
 
           const spotLine = `${fmtBR(spotPrice)} à vista`;
@@ -747,10 +702,25 @@
             installLine = `ou ${fmtBR(offer.Price)} até ${best.NumberOfInstallments}x de ${fmtBR(best.Value)}`;
           }
 
-          return { title, image, spot: spotLine, install: installLine, link, discount: 0 };
-        }).filter(Boolean);
-      } catch(e) { console.error("WebContinental erro:", e); return []; }
+          let link = "https://www.webcontinental.com.br/" + (product.linkText || "") + "/p";
+          if (item.itemId) link += "?skuId=" + item.itemId;
+
+          results.push({
+            title: product.productName || product.name || "",
+            image: image,
+            spot: spotLine,
+            install: installLine,
+            link: link,
+            discount: 0
+          });
+        }
+
+        return results;
+      } catch(e) { console.error("WC erro:", e); return []; }
     }
+
+
+
 
 
     async function startScraping() {
