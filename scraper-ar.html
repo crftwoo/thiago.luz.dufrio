@@ -819,12 +819,20 @@
           marca = m; break;
         }
       }
-      let btu = "Outros";
-      const btuMatch = p.title.match(/\b(\d{4,5})\s*BTU/i) || p.title.match(/\b(\d{4,5})\b/);
+      let btu = "";
+      // Remove pontos para facilitar o match (ex: 9.000 -> 9000)
+      const titleClean = p.title.replace(/\./g, "");
+      const btuMatch = titleClean.match(/\b(\d{4,5})\s*BTU/i) || titleClean.match(/\b(\d{4,5})\b/);
       if (btuMatch) {
         let bNum = btuMatch[1];
         btu = bNum.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " BTUs";
+      } else if (selection && selection.btu) {
+        // Fallback para o que o usuário escolheu
+        btu = selection.btu.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " BTUs";
+      } else {
+        btu = "Outros"; // Apenas caso extremo
       }
+      
       let ciclo = "Só Frio";
       if (p.title.toLowerCase().includes("quente")) ciclo = "Quente/Frio";
       p.marca = marca; p.btu = btu; p.ciclo = ciclo;
