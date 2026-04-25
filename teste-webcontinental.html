@@ -123,7 +123,7 @@
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:05</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:13</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -181,33 +181,45 @@
                         if (!product) return null;
 
                         // Localizar Items (SKUs)
-                        const itemKeys = Object.keys(stateObj).filter(k => k.startsWith(`${pRef.id}.items`) || k.startsWith(`$${pRef.id}.items`));
+                        // Em buscas, as chaves costumam ser "Product:sp-123.items({"filter":"ALL_AVAILABLE"}).0"
+                        const itemKeys = Object.keys(stateObj).filter(k => k.startsWith(`${pRef.id}.items`));
                         if (itemKeys.length === 0) return null;
                         
-                        const itemsList = stateObj[itemKeys[0]];
-                        if (!itemsList || itemsList.length === 0) return null;
+                        let item = null;
+                        let itemRef = stateObj[itemKeys[0]];
                         
-                        const item = stateObj[itemsList[0].id];
+                        // Se for uma referência {id: "..."}
+                        if (itemRef && itemRef.id) {
+                            item = stateObj[itemRef.id];
+                        } 
+                        // Se a chave já for o item (comum quando o índice .0 está no nome da chave)
+                        else if (itemRef && itemRef.itemId) {
+                            item = itemRef;
+                        }
+
                         if (!item) return null;
 
                         // Imagem
                         let image = "";
                         if (item.images && item.images.length > 0) {
-                            const imgObj = stateObj[item.images[0].id];
-                            if (imgObj) image = imgObj.imageUrl;
+                            const imgRef = item.images[0];
+                            const imgObj = imgRef.id ? stateObj[imgRef.id] : imgRef;
+                            if (imgObj) image = imgObj.imageUrl || imgObj.imageTag;
                         }
 
                         // Vendedor e Oferta
-                        const sellersKey = Object.keys(stateObj).find(k => k.startsWith(`${itemsList[0].id}.sellers`) || k.startsWith(`$${itemsList[0].id}.sellers`));
+                        const sellersKey = Object.keys(stateObj).find(k => k.startsWith(`${item.id || itemKeys[0]}.sellers`));
                         if (!sellersKey) return null;
                         
                         const sellersList = stateObj[sellersKey];
                         if (!sellersList || sellersList.length === 0) return null;
                         
-                        const seller = stateObj[sellersList[0].id];
+                        const sellerRef = sellersList[0];
+                        const seller = sellerRef.id ? stateObj[sellerRef.id] : sellerRef;
                         if (!seller || !seller.commertialOffer) return null;
                         
-                        const offer = stateObj[seller.commertialOffer.id];
+                        const offerRef = seller.commertialOffer;
+                        const offer = offerRef.id ? stateObj[offerRef.id] : offerRef;
                         if (!offer) return null;
 
                         let spotPrice = offer.spotPrice || offer.Price;
