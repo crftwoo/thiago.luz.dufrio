@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste WebContinental - STATE Extraction</title>
+    <title>Teste WebContinental - API REST Extraction</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -154,7 +154,7 @@
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:40</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:48</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -183,91 +183,88 @@
             
             grid.innerHTML = "";
             debug.innerHTML = "";
-            status.innerText = "RECUPERANDO PRODUTOS...";
+            status.innerText = "BUSCANDO PRODUTOS VIA API (PAGINAÇÃO)...";
             status.style.color = "#00f2fe";
 
             try {
                 const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
-                const resp = await fetch(PROXY + encodeURIComponent(urlInput), { cache: 'no-store' });
-                const html = await resp.text();
+                
+                let path = "";
+                try {
+                    const urlObj = new URL(urlInput);
+                    path = urlObj.pathname;
+                } catch(e) {
+                    path = urlInput.split('webcontinental.com.br')[1] || urlInput;
+                    path = path.split('?')[0];
+                }
+                
+                log(`Iniciando busca em: ${path}`);
+                
+                let allProducts = [];
+                // Busca até 5 páginas (250 produtos)
+                for (let i = 0; i < 5; i++) {
+                    const from = i * 50;
+                    const to = from + 49;
+                    status.innerText = `LENDO PÁGINA ${i + 1} (${from}-${to})...`;
+                    
+                    const apiUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search${path}?O=OrderByPriceASC&_from=${from}&_to=${to}`;
+                    const resp = await fetch(PROXY + encodeURIComponent(apiUrl));
+                    if (!resp.ok) {
+                        log(`Falha ao ler página ${i+1}`, "red");
+                        break;
+                    }
+                    
+                    const data = await resp.json();
+                    if (!data || data.length === 0) break;
+                    
+                    allProducts = allProducts.concat(data);
+                    log(`Página ${i+1} carregada: +${data.length} produtos.`);
+                    if (data.length < 50) break;
+                }
 
-                const marker = '__STATE__">';
-                const idx = html.indexOf(marker);
-                if (idx === -1) throw new Error("Erro de conexão.");
-
-                let jsonStr = html.substring(idx);
-                const scriptStart = jsonStr.indexOf('<script>');
-                const scriptEnd = jsonStr.indexOf('</' + 'script>');
-                jsonStr = jsonStr.substring(scriptStart + 8, scriptEnd).trim();
-                const stateObj = JSON.parse(jsonStr);
-                const allKeys = Object.keys(stateObj);
-
-                log(`Estado carregado.`);
-
-                let searchKey = allKeys.find(k => k.includes('productSearch') && k.includes('OrderByPriceASC'));
-                if (!searchKey) searchKey = allKeys.find(k => k.includes('productSearch'));
-
-                const productsRef = (stateObj[searchKey]?.products || []);
-                log(`Lista oficial tem ${productsRef.length} referências.`);
+                if (allProducts.length === 0) throw new Error("Nenhum produto encontrado na API.");
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                const processedProducts = productsRef.map((pRef, idx) => {
+                const processed = allProducts.map(p => {
                     try {
-                        const product = stateObj[pRef.id];
-                        if (!product) return null;
-
-                        // Localizar Item
-                        const itemKeys = allKeys.filter(k => k.startsWith(pRef.id + ".items"));
-                        if (itemKeys.length === 0) return null;
+                        const item = p.items[0];
+                        const seller = item.sellers[0];
+                        const offer = seller.commertialOffer;
                         
-                        const itemRef = stateObj[itemKeys[0]];
-                        const item = itemRef.id ? stateObj[itemRef.id] : itemRef;
-
-                        // Localizar Oferta
-                        const sellerKey = allKeys.find(k => k.startsWith(itemKeys[0] + ".sellers") || (item.id && k.startsWith(item.id + ".sellers")));
-                        if (!sellerKey) return null;
-
-                        const sellers = stateObj[sellerKey];
-                        const seller = sellers[0].id ? stateObj[sellers[0].id] : sellers[0];
-                        
-                        const offer = seller.commertialOffer.id ? stateObj[seller.commertialOffer.id] : seller.commertialOffer;
-
+                        // Busca o melhor preço à vista nas parcelas
                         let price = offer.spotPrice || offer.Price || 0;
                         let fullPrice = offer.Price || price;
                         let installments = 10;
-
-                        // Parcelas
-                        const instKey = allKeys.find(k => k.startsWith(offer.id ? offer.id : "" + ".Installments") || k.includes(offer.id ? offer.id : "NOID" + ".Installments"));
-                        if (instKey) {
-                            const list = stateObj[instKey];
-                            if (Array.isArray(list)) {
-                                list.forEach(ir => {
-                                    const inst = ir.id ? stateObj[ir.id] : ir;
-                                    if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) installments = Math.max(installments, inst.NumberOfInstallments);
-                                    if (inst.NumberOfInstallments === 1 && inst.Value < price && inst.Value > 0) price = inst.Value;
-                                });
-                            }
+                        
+                        if (offer.Installments) {
+                            offer.Installments.forEach(inst => {
+                                if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) {
+                                    installments = Math.max(installments, inst.NumberOfInstallments);
+                                }
+                                if (inst.NumberOfInstallments === 1 && inst.Value < price && inst.Value > 0) {
+                                    price = inst.Value;
+                                }
+                            });
                         }
-
+                        
                         return {
-                            name: product.productName || product.name,
-                            image: (item.images && item.images[0]) ? (stateObj[item.images[0].id]?.imageUrl || item.images[0].imageUrl) : "",
+                            name: p.productName,
+                            image: item.images[0]?.imageUrl || "",
                             priceCash: price,
                             priceFull: fullPrice,
                             installments: installments,
-                            link: `https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}`
+                            link: p.link
                         };
-                    } catch (e) { 
-                        if (idx === 0) log(`Erro no primeiro item: ${e.message}`, "yellow");
-                        return null; 
-                    }
-                }).filter(p => p !== null);
+                    } catch (e) { return null; }
+                }).filter(p => p !== null && p.priceCash > 0);
 
-                processedProducts.sort((a, b) => a.priceCash - b.priceCash);
-                status.innerText = `SUCESSO! ${processedProducts.length} PRODUTOS ENCONTRADOS.`;
+                // Reordena final pelo preço à vista real
+                processed.sort((a, b) => a.priceCash - b.priceCash);
+                
+                status.innerText = `SUCESSO! ${processed.length} PRODUTOS RENDERIZADOS.`;
 
-                processedProducts.forEach(p => {
+                processed.forEach(p => {
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.innerHTML = `
