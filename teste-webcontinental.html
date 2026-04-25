@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste WebContinental - API REST Extraction</title>
+    <title>Teste WebContinental - Sincronização Total</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -154,7 +154,7 @@
 <body>
     <div class="container">
         <h1>Renderizador WebContinental</h1>
-        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:52</div>
+        <div class="version" id="version-tag">ÚLTIMA ATUALIZAÇÃO: 25/04/2026 01:56</div>
         <div class="input-group">
             <input type="text" id="link-input" placeholder="Cole o link da WebContinental aqui..." value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
             <button onclick="renderCards()">RENDERIZAR CARDS</button>
@@ -183,66 +183,81 @@
             
             grid.innerHTML = "";
             debug.innerHTML = "";
-            status.innerText = "CAPTURANDO O QUE VOCÊ VÊ NA TELA...";
+            status.innerText = "SINCRONIZANDO COM O LINK...";
             status.style.color = "#00f2fe";
 
             try {
                 const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
-                
-                let path = "";
-                try {
-                    const urlObj = new URL(urlInput);
-                    path = urlObj.pathname;
-                } catch(e) {
-                    path = urlInput.split('webcontinental.com.br')[1] || urlInput;
-                    path = path.split('?')[0];
-                }
-                
-                log(`Sincronizando com: ${path}`);
-                
-                // Busca apenas os primeiros 50 (para cobrir os 40 do site)
-                const apiUrl = `https://www.webcontinental.com.br/api/catalog_system/pub/products/search${path}?O=OrderByPriceASC&_from=0&_to=49`;
-                const resp = await fetch(PROXY + encodeURIComponent(apiUrl));
-                if (!resp.ok) throw new Error("Erro na comunicação com o site.");
-                
-                const data = await resp.json();
-                log(`Carregados ${data.length} produtos do topo.`);
+                const resp = await fetch(PROXY + encodeURIComponent(urlInput), { cache: 'no-store' });
+                const html = await resp.text();
+
+                const marker = '__STATE__">';
+                const idx = html.indexOf(marker);
+                if (idx === -1) throw new Error("Erro ao acessar o código da página.");
+
+                let jsonStr = html.substring(idx);
+                const scriptStart = jsonStr.indexOf('<script>');
+                const scriptEnd = jsonStr.indexOf('</' + 'script>');
+                jsonStr = jsonStr.substring(scriptStart + 8, scriptEnd).trim();
+                const stateObj = JSON.parse(jsonStr);
+                const allKeys = Object.keys(stateObj);
+
+                log(`Código carregado: ${allKeys.length} chaves.`);
+
+                // BUSCA PELA LISTA FILTRADA (Exatamente o que está no link)
+                // O VTEX IO guarda a lista do link em uma chave complexa que contém os filtros
+                let searchKey = allKeys.find(k => k.includes('productSearch') && k.includes('OrderByPriceASC'));
+                if (!searchKey) searchKey = allKeys.find(k => k.includes('productSearch'));
+
+                const productsRef = (stateObj[searchKey]?.products || []);
+                log(`Localizados ${productsRef.length} produtos filtrados.`);
 
                 const fmtBR = (v) => "R$ " + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                const processed = data.map(p => {
+                const processed = productsRef.map((pRef) => {
                     try {
-                        const item = p.items[0];
-                        const seller = item.sellers[0];
-                        const offer = seller.commertialOffer;
+                        const product = stateObj[pRef.id];
                         
+                        // Localiza o SKU (Item)
+                        const itemKey = allKeys.find(k => k.startsWith(pRef.id + ".items") || k.startsWith("$" + pRef.id + ".items"));
+                        const itemData = stateObj[itemKey];
+                        const item = itemData.id ? stateObj[itemData.id] : itemData;
+
+                        // Localiza Vendedor e Oferta
+                        const sellerKey = allKeys.find(k => k.startsWith(itemKey + ".sellers") || (item.id && k.startsWith(item.id + ".sellers")));
+                        const sellers = stateObj[sellerKey];
+                        const seller = sellers[0].id ? stateObj[sellers[0].id] : sellers[0];
+                        const offer = seller.commertialOffer.id ? stateObj[seller.commertialOffer.id] : seller.commertialOffer;
+
                         let price = offer.spotPrice || offer.Price || 0;
                         let fullPrice = offer.Price || price;
                         let installments = 10;
-                        
-                        if (offer.Installments) {
-                            offer.Installments.forEach(inst => {
-                                if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) {
-                                    installments = Math.max(installments, inst.NumberOfInstallments);
-                                }
-                                if (inst.NumberOfInstallments === 1 && inst.Value < price && inst.Value > 0) {
-                                    price = inst.Value;
-                                }
-                            });
+
+                        // Busca parcelas
+                        const instKey = allKeys.find(k => k.startsWith(offer.id + ".Installments") || k.includes(offer.id + ".Installments"));
+                        if (instKey) {
+                            const list = stateObj[instKey];
+                            if (Array.isArray(list)) {
+                                list.forEach(ir => {
+                                    const inst = ir.id ? stateObj[ir.id] : ir;
+                                    if (inst.InterestRate === 0 && inst.NumberOfInstallments > 1) installments = Math.max(installments, inst.NumberOfInstallments);
+                                    if (inst.NumberOfInstallments === 1 && inst.Value < price && inst.Value > 0) price = inst.Value;
+                                });
+                            }
                         }
-                        
+
                         return {
-                            name: p.productName,
-                            image: item.images[0]?.imageUrl || "",
+                            name: product.productName || product.name,
+                            image: (item.images && item.images[0]) ? (stateObj[item.images[0].id]?.imageUrl || item.images[0].imageUrl) : "",
                             priceCash: price,
                             priceFull: fullPrice,
                             installments: installments,
-                            link: p.link
+                            link: `https://www.webcontinental.com.br/${product.linkText}/p?skuId=${item.itemId}`
                         };
                     } catch (e) { return null; }
                 }).filter(p => p !== null);
 
-                status.innerText = `SUCESSO! EXIBINDO ${processed.length} PRODUTOS (IGUAL AO SITE).`;
+                status.innerText = `SUCESSO! ${processed.length} PRODUTOS ENCONTRADOS NO LINK.`;
 
                 processed.forEach(p => {
                     const card = document.createElement('div');
