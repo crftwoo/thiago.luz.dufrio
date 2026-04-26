@@ -615,7 +615,7 @@
     }
 
     // Mostrar automaticamente no desktop ao passar o mouse
-    document.addEventListener('DOMContentLoaded', () => {
+    function initUpdateUI() {
       const updateLabel = document.querySelector('[onclick="toggleUpdateInfo()"]');
       if (updateLabel) {
         updateLabel.addEventListener('mouseenter', () => {
@@ -629,6 +629,11 @@
           }
         });
       }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadLastUpdate();
+      initUpdateUI();
     });
 
     // Dados de atualizações embutidos
@@ -671,8 +676,6 @@
         console.error('Erro ao carregar atualizações:', e);
       }
     }
-
-    loadLastUpdate();
 
   </script>
 </body>
