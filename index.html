@@ -523,13 +523,13 @@
     <div class="meta-footer">
       <div><span class="status-dot"></span> Sistemas Operacionais e Online<br><span style="font-size: 14px; opacity: 0.8; display: block; margin-top: 5px;">Criado em 16/09/2024 por Thiago Luz</span></div>
       <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
-        <div class="tooltip" style="cursor: help; display: inline-block;">
+        <div style="cursor: pointer; display: inline-block;" onclick="toggleUpdateInfo()">
           <span style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase;">📦 Última atualização</span>
-          <div class="tooltiptext" style="width: 320px; bottom: 130%; left: 50%; transform: translateX(-50%);">
-            <div id="update-title" style="color: #4facfe; font-weight: 800; margin-bottom: 6px; font-size: 12px;">--</div>
-            <div id="update-desc" style="color: var(--text-main); font-size: 12px; line-height: 1.4; text-align: left; margin-bottom: 8px;">Carregando...</div>
-            <div id="update-datetime" style="color: var(--text-muted); font-size: 11px; text-align: right;">--</div>
-          </div>
+        </div>
+        <div id="update-info-content" style="display: none; margin-top: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+          <div id="update-title" style="color: #4facfe; font-weight: 800; margin-bottom: 6px; font-size: 12px;">--</div>
+          <div id="update-desc" style="color: var(--text-main); font-size: 12px; line-height: 1.4; margin-bottom: 8px;">Carregando...</div>
+          <div id="update-datetime" style="color: var(--text-muted); font-size: 11px; text-align: right;">--</div>
         </div>
       </div>
     </div>
@@ -606,6 +606,31 @@
     });
 
     // Carregar e exibir última atualização
+    let updateInfoVisible = false;
+
+    function toggleUpdateInfo() {
+      const content = document.getElementById('update-info-content');
+      updateInfoVisible = !updateInfoVisible;
+      content.style.display = updateInfoVisible ? 'block' : 'none';
+    }
+
+    // Mostrar automaticamente no desktop ao passar o mouse
+    document.addEventListener('DOMContentLoaded', () => {
+      const updateLabel = document.querySelector('[onclick="toggleUpdateInfo()"]');
+      if (updateLabel) {
+        updateLabel.addEventListener('mouseenter', () => {
+          if (window.innerWidth > 768) {
+            document.getElementById('update-info-content').style.display = 'block';
+          }
+        });
+        updateLabel.addEventListener('mouseleave', () => {
+          if (window.innerWidth > 768) {
+            document.getElementById('update-info-content').style.display = 'none';
+          }
+        });
+      }
+    });
+
     // Dados de atualizações embutidos
     const updatesData = {
       "updates": [
