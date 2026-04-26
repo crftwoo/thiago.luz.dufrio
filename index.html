@@ -53,7 +53,18 @@
       max-width: 1400px;
       margin: 0 auto;
       padding: 60px 40px;
-      zoom: 0.8;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 30px 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .dashboard-container {
+        padding: 20px 12px;
+      }
     }
 
     /* Header Novo e Futurista */
@@ -62,6 +73,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 60px;
+      gap: 20px;
     }
     .header-text h1 {
       font-size: 42px;
@@ -81,6 +93,41 @@
       object-fit: contain;
       filter: invert(1) brightness(1.2);
       mix-blend-mode: screen;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 40px;
+      }
+      .header-text h1 {
+        font-size: 32px;
+      }
+      .header-text p {
+        font-size: 14px;
+      }
+      .logo-container {
+        width: 100%;
+        text-align: right;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        margin-bottom: 30px;
+      }
+      .header-text h1 {
+        font-size: 24px;
+        letter-spacing: -0.5px;
+      }
+      .header-text p {
+        font-size: 12px;
+      }
+      .logo-container img {
+        height: 32px;
+      }
     }
 
     /* Títulos de Seção Minimalistas */
@@ -95,12 +142,50 @@
       opacity: 0.8;
     }
 
+    @media (max-width: 768px) {
+      .section-title {
+        font-size: 12px;
+        margin-top: 35px;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .section-title {
+        font-size: 11px;
+        margin-top: 25px;
+        margin-bottom: 12px;
+      }
+    }
+
     .bento-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 20px;
       grid-auto-rows: minmax(180px, auto);
       margin-bottom: 50px;
+    }
+
+    @media (max-width: 1200px) {
+      .bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .bento-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 30px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .bento-grid {
+        gap: 10px;
+      }
     }
 
     /* Cards Ultrasleek */
@@ -118,6 +203,22 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      min-height: 200px;
+    }
+
+    @media (max-width: 768px) {
+      .bento-card {
+        padding: 20px;
+        border-radius: 16px;
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .bento-card {
+        padding: 16px;
+        border-radius: 12px;
+      }
     }
     
     .bento-card::before {
@@ -162,6 +263,7 @@
       background: rgba(255, 255, 255, 0.05);
       color: var(--card-color);
       transition: all 0.4s ease;
+      flex-shrink: 0;
     }
     .bento-card:hover .icon-box {
       background: var(--card-color);
@@ -173,6 +275,30 @@
       width: 24px; height: 24px;
       stroke: currentColor;
       stroke-width: 2.5;
+    }
+
+    @media (max-width: 768px) {
+      .icon-box {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+      }
+      .icon-box svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+      }
+      .icon-box svg {
+        width: 18px;
+        height: 18px;
+      }
     }
 
     .badge {
@@ -203,6 +329,27 @@
       line-height: 1.5;
     }
 
+    @media (max-width: 768px) {
+      .card-title {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+      .card-desc {
+        font-size: 12px;
+        line-height: 1.4;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card-title {
+        font-size: 14px;
+        letter-spacing: 0px;
+      }
+      .card-desc {
+        font-size: 11px;
+      }
+    }
+
     /* Especificidades Estilos do Bento Grid - Mantendo o Padrão de Tamanhos Diferentes */
     [data-id="gabinete"] { grid-column: span 2; grid-row: span 2; }
     [data-id="gabinete"] .card-title { font-size: 32px; margin-bottom: 20px; }
@@ -217,24 +364,11 @@
     [data-id="precos-vivo"] { grid-column: span 2; }
     [data-id="precificacao"] { grid-column: span 2; }
     [data-id="scraper"] { grid-column: span 2; }
-    [data-id="scraper"] { grid-column: span 2; }
+    [data-id="scraper-teste"] { grid-column: span 2; }
 
     [data-id="cotacao"] { grid-column: span 1; }
     [data-id="extracao"] { grid-column: span 2; }
     [data-id="download"] { grid-column: span 1; }
-
-    /* Ajuste de responsividade */
-    @media (max-width: 1200px) {
-      .bento-grid { grid-template-columns: repeat(2, 1fr); }
-      [data-id="gabinete"] { grid-column: span 2; grid-row: span 1; }
-      [data-id="checklist"], [data-id="corte"], [data-id="comparador"], [data-id="precos-vivo"], [data-id="precificacao"], [data-id="scraper"], [data-id="extracao"] { grid-column: span 1; }
-    }
-    @media (max-width: 700px) {
-      .bento-grid { grid-template-columns: 1fr; }
-      [data-id="gabinete"], [data-id="checklist"], [data-id="corte"], [data-id="comparador"], [data-id="precos-vivo"], [data-id="precificacao"], [data-id="scraper"], [data-id="extracao"], [data-id="cotacao"], [data-id="download"] { grid-column: span 1; }
-      .container { padding: 40px 20px; }
-      .header h1 { font-size: 38px; }
-    }
 
     /* Footer Meta Info */
     .meta-footer {
@@ -247,6 +381,20 @@
       flex-direction: column;
       align-items: center;
       gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .meta-footer {
+        margin-top: 50px;
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .meta-footer {
+        margin-top: 40px;
+        font-size: 12px;
+      }
     }
     .status-dot {
       display: inline-block;
@@ -315,75 +463,34 @@
       border-color: rgba(20, 20, 20, 0.95) transparent transparent transparent;
     }
 
-    /* Responsividade */
-    @media (max-width: 1000px) {
-      .bento-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        grid-template-areas: none !important;
-        display: flex;
-        flex-direction: column;
-      }
-    }
-
-    /* Otimização Específica Mobile */
     @media (max-width: 768px) {
-      .dashboard-container {
-        padding: 30px 20px;
-        zoom: 1 !important; /* Desativa o zoom no celular para não bugar a tela */
+      .tooltiptext {
+        width: 300px;
+        padding: 12px 16px;
+        font-size: 12px;
       }
-      
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
-        margin-bottom: 40px;
-      }
-      
-      .header-text h1 {
-        font-size: 30px;
-        letter-spacing: -1px;
-      }
-      
-      .header-text p {
-        font-size: 14px;
-      }
-      
-      .logo-container img {
-        height: 30px;
-      }
-      
-      [data-id="gabinete"] .card-title {
-        font-size: 24px;
-        margin-bottom: 12px;
-      }
-      
-      [data-id="gabinete"] .icon-box {
-        width: 50px;
-        height: 50px;
-      }
-      
-      [data-id="gabinete"] .icon-box svg {
-        width: 24px;
-        height: 24px;
-      }
-
-      .card-title {
-        font-size: 18px;
-      }
-
-      .bento-card {
-        padding: 24px;
-      }
-
-      .section-title {
-        margin-top: 40px;
-        font-size: 13px;
-      }
-
-      .meta-footer {
-        margin-top: 50px;
+      .tooltiptext strong {
+        font-size: 10px;
       }
     }
+
+    @media (max-width: 480px) {
+      .tooltiptext {
+        width: 250px;
+        padding: 10px 14px;
+        font-size: 11px;
+        bottom: 120%;
+      }
+      .tooltip:hover .tooltiptext {
+        bottom: 130%;
+      }
+      .tooltiptext strong {
+        font-size: 9px;
+        margin-bottom: 6px;
+      }
+    }
+
+    /* Responsividade */
   </style>
 </head>
 <body>
@@ -415,6 +522,16 @@
 
     <div class="meta-footer">
       <div><span class="status-dot"></span> Sistemas Operacionais e Online<br><span style="font-size: 14px; opacity: 0.8; display: block; margin-top: 5px;">Criado em 16/09/2024 por Thiago Luz</span></div>
+      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div style="cursor: pointer; display: inline-block;" onclick="toggleUpdateInfo()">
+          <span style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase;">📦 Última atualização</span>
+        </div>
+        <div id="update-info-content" style="display: none; margin-top: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+          <div id="update-title" style="color: #4facfe; font-weight: 800; margin-bottom: 6px; font-size: 12px;">--</div>
+          <div id="update-desc" style="color: var(--text-main); font-size: 12px; line-height: 1.4; margin-bottom: 8px;">Carregando...</div>
+          <div id="update-datetime" style="color: var(--text-muted); font-size: 11px; text-align: right;">--</div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -441,7 +558,8 @@
       { nome: "COMPARADOR DE AR-CONDICIONADO", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#6366f1", slug: "comparador", category: "ar" },
       { nome: "PREÇOS AO VIVO", badge: "Em Produção", desc: "Visualiza em cards os produtos raspados pela extensão das abas abertas nas lojas.", arquivo: "precos-ao-vivo.html", icone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`, color: "#00e676", slug: "precos-vivo", category: "ar" },
       { nome: "PRECIFICAÇÃO SKU'S (SITE)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#0ea5e9", slug: "precificacao", category: "ar" },
-      
+      { nome: "SCRAPER EM TESTE", badge: "Teste", desc: "Bancada de testes para raspar um site único (WebContinental) e validar estratégias antes de integrar ao scraper oficial.", arquivo: "scraper-teste.html", icone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2v6l-3 3v3h12v-3l-3-3V2"/><path d="M6 14h12l-2 8H8l-2-8z"/></svg>`, color: "#f59e0b", slug: "scraper-teste", category: "ar" },
+
       // Outras
       { nome: "COTAÇÃO EXPRESS", desc: "Orçamento rápido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#8b5cf6", slug: "cotacao", category: "outros" },
       { nome: "EXTRAÇÃO DE CÓDIGOS", desc: "Extração de códigos que constam quantidade em estoque.", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", slug: "extracao", category: "outros" },
@@ -471,7 +589,7 @@
       card.dataset.id = f.slug;
       card.style.setProperty('--card-color', f.color);
       card.onclick = () => openTool(idx);
-      
+
       card.innerHTML = `
         <div class="card-top">
           <div class="icon-box">${f.icone}</div>
@@ -482,12 +600,83 @@
           <div class="card-desc">${f.desc}</div>
         </div>
       `;
-      
+
       if(f.category === 'camara') gridC.appendChild(card);
       else if(f.category === 'ar') gridA.appendChild(card);
       else gridO.appendChild(card);
     });
 
+    // Carregar e exibir última atualização
+    let updateInfoVisible = false;
+
+    function toggleUpdateInfo() {
+      const content = document.getElementById('update-info-content');
+      updateInfoVisible = !updateInfoVisible;
+      content.style.display = updateInfoVisible ? 'block' : 'none';
+    }
+
+    // Mostrar automaticamente no desktop ao passar o mouse
+    function initUpdateUI() {
+      const updateLabel = document.querySelector('[onclick="toggleUpdateInfo()"]');
+      if (updateLabel) {
+        updateLabel.addEventListener('mouseenter', () => {
+          if (window.innerWidth > 768) {
+            document.getElementById('update-info-content').style.display = 'block';
+          }
+        });
+        updateLabel.addEventListener('mouseleave', () => {
+          if (window.innerWidth > 768) {
+            document.getElementById('update-info-content').style.display = 'none';
+          }
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadLastUpdate();
+      initUpdateUI();
+    });
+
+    // Dados de atualizações embutidos
+    const updatesData = {
+      "updates": [
+        {
+          "date": "26/04/2026",
+          "time": "00:09",
+          "title": "Otimizar Scraper e Índex para Mobile",
+          "description": "Adaptado scraper e índex para mobile com grid responsivo, fonts dinâmicas, padding inteligente e breakpoints para tablet e mobile pequeno."
+        },
+        {
+          "date": "25/04/2026",
+          "time": "21:46",
+          "title": "Redesenhar Atualização com Tooltip",
+          "description": "Status de atualização agora é um badge discreto com tooltip ao invés de card grande."
+        },
+        {
+          "date": "25/04/2026",
+          "time": "21:30",
+          "title": "Limpeza e Melhorias no Scraper",
+          "description": "Removidos 7 arquivos desnecessários de teste e cache. Corrigido problema de busca de Dufrio normalizando ciclo."
+        }
+      ]
+    };
+
+    async function loadLastUpdate() {
+      try {
+        const data = updatesData;
+        if (data.updates && data.updates.length > 0) {
+          const latest = data.updates[0];
+          document.getElementById('update-title').textContent = latest.title;
+          document.getElementById('update-desc').textContent = latest.description;
+          document.getElementById('update-datetime').innerHTML = `
+            <div style="font-weight: 600; color: #4facfe; margin-bottom: 4px;">📅 ${latest.date}</div>
+            <div style="font-weight: 700; color: #00e676;">⏰ ${latest.time}</div>
+          `;
+        }
+      } catch(e) {
+        console.error('Erro ao carregar atualizações:', e);
+      }
+    }
 
   </script>
 </body>

@@ -57,7 +57,6 @@
     .store-badge.store-dufrio { background: linear-gradient(135deg, rgba(16,30,100,0.95), rgba(79,172,254,0.2)); border-color: rgba(79,172,254,0.3); }
     .store-badge.store-frigelar { background: linear-gradient(135deg, rgba(0,89,36,0.95), rgba(0,230,118,0.2)); border-color: rgba(0,230,118,0.3); }
     .store-badge.store-leveros { background: linear-gradient(135deg, #ff6b00, #ff9e00); border-color: #ff9e00; }
-    .store-badge.store-webcontinental { background: linear-gradient(135deg, #0056b3, #00aaff); border-color: #00aaff; }
 
     /* FOTO */
     .product-img-wrap { width: 100%; aspect-ratio: 1.1/1; background: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; border-bottom: 1px solid var(--card-border); }
@@ -89,21 +88,100 @@
     .btn-link:hover { background: linear-gradient(135deg, rgba(79,172,254,0.25), rgba(167,139,250,0.25)); border-color: rgba(79,172,254,0.5); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(79,172,254,0.15); }
 
     @media (max-width: 768px) {
-      .container { padding: 60px 14px 80px; }
-      .tipo-btn { width: 100%; flex-direction: row; }
-      .tipo-btn img { width: 90px; }
-      .option-btn { padding: 12px 18px; font-size: 11px; }
-      .products-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .product-title { font-size: 13px; }
-      .price-vista { font-size: 17px; }
-      .discount-badge { font-size: 9px; }
-      .price-install { font-size: 11px; }
-      #selection-summary { padding: 12px 16px; }
-      .filter-row { gap: 8px; }
-      .filter-btn { font-size: 10px; padding: 6px 12px; }
+      .container { padding: 50px 16px 60px; }
+
+      .btn-back { top: 12px; left: 12px; padding: 5px 10px; font-size: 8px; }
+      .btn-back svg { width: 10px; height: 10px; }
+
+      .page-header { margin-bottom: 30px; }
+      .page-header h1 { font-size: 24px; letter-spacing: -1px; margin-bottom: 6px; }
+      .page-header p { font-size: 9px; padding-bottom: 16px; }
+
+      h2 { font-size: 13px; margin-top: 16px; margin-bottom: 10px; }
+
+      .options-grid { gap: 10px; }
+      .option-btn { padding: 10px 16px; font-size: 10px; }
+      .tipo-btn { width: 100%; flex-direction: row; padding: 16px 12px; gap: 10px; }
+      .tipo-btn img { width: 70px; }
+      .tipo-btn span { font-size: 12px; }
+
+      .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
+      .product-card { border-radius: 12px; }
+      .product-title { font-size: 12px; margin-bottom: 10px; }
+      .product-img-wrap { aspect-ratio: 1/1; }
+      .price-vista { font-size: 16px; }
+      .discount-badge { font-size: 8px; padding: 2px 8px; }
+      .price-install { font-size: 10px; }
+
+      .store-badge { font-size: 8px; padding: 2px 8px; }
+
+      #selection-summary { padding: 12px 16px; flex-direction: column; gap: 10px; }
+      .summary-text { font-size: 11px; }
+      .summary-text span { padding: 4px 10px; font-size: 10px; }
+      .btn-reset { padding: 8px 16px; font-size: 10px; }
+
+      #filters-section { padding: 16px; gap: 12px; }
+      .filter-group h3 { font-size: 10px; margin-bottom: 8px; }
+      .filter-row { gap: 6px; }
+      .filter-btn { padding: 6px 12px; font-size: 9px; border-radius: 16px; }
+
+      .sync-status { bottom: 16px; right: 16px; padding: 8px 14px; font-size: 9px; }
+      .sync-dot { width: 6px; height: 6px; }
     }
-    @media (max-width: 480px) { .products-grid { grid-template-columns: 1fr 1fr; gap: 8px; } .option-btn { width: auto; } }
-    @media (max-width: 360px) { .products-grid { grid-template-columns: 1fr; } }
+
+    @media (max-width: 480px) {
+      .container { padding: 40px 12px 50px; }
+
+      .btn-back { top: 10px; left: 10px; padding: 4px 8px; font-size: 7px; }
+      .btn-back svg { width: 9px; height: 9px; }
+
+      .page-header { margin-bottom: 24px; }
+      .page-header h1 { font-size: 18px; letter-spacing: 0px; margin-bottom: 4px; }
+      .page-header p { font-size: 8px; padding-bottom: 12px; letter-spacing: 0.5px; }
+
+      h2 { font-size: 11px; margin-top: 14px; margin-bottom: 8px; letter-spacing: 0px; }
+
+      .options-grid { gap: 8px; }
+      .option-btn { padding: 8px 12px; font-size: 9px; }
+      .tipo-btn { padding: 12px 8px; gap: 8px; }
+      .tipo-btn img { width: 55px; }
+      .tipo-btn span { font-size: 11px; }
+
+      .products-grid { grid-template-columns: 1fr; gap: 8px; }
+      .product-card { border-radius: 10px; }
+      .product-info { padding: 14px 10px 8px; min-height: 120px; }
+      .product-title { font-size: 11px; margin-bottom: 8px; }
+      .product-img-wrap { aspect-ratio: 1/1; border-bottom: none; }
+      .img-overlay span { font-size: 9px; padding: 6px 12px; }
+
+      .prices-wrap { padding: 10px; gap: 4px; border-radius: 10px; }
+      .price-vista { font-size: 14px; gap: 3px; }
+      .discount-badge { font-size: 7px; padding: 2px 6px; }
+      .price-install { font-size: 9px; line-height: 1.3; }
+
+      .card-footer { padding: 8px 10px 10px; }
+      .btn-link { padding: 8px; font-size: 8px; border-radius: 8px; }
+
+      .store-badge { font-size: 7px; padding: 2px 6px; top: 8px; left: 8px; }
+      .copy-hint { font-size: 7px; top: 6px; right: 6px; }
+
+      #selection-summary { padding: 10px 12px; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+      .summary-text { font-size: 10px; }
+      .summary-text span { padding: 3px 8px; font-size: 9px; }
+      .btn-reset { padding: 6px 12px; font-size: 9px; }
+
+      #filters-section { padding: 12px; gap: 10px; margin-bottom: 20px; }
+      .filter-group h3 { font-size: 9px; margin-bottom: 6px; }
+      .filter-row { gap: 5px; }
+      .filter-btn { padding: 5px 10px; font-size: 8px; border-radius: 14px; }
+
+      .sync-status { bottom: 12px; right: 12px; padding: 6px 10px; font-size: 8px; }
+      .sync-dot { width: 5px; height: 5px; }
+
+      #loading-results { padding: 30px; }
+      .spinner { width: 28px; height: 28px; border-width: 2px; }
+      #loading-msg { font-size: 10px; }
+    }
 
     /* SUMMARY BAR */
     #selection-summary { width: 100%; background: var(--card-bg); border: 1px solid var(--card-border); padding: 16px 24px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; backdrop-filter: blur(12px); flex-wrap: wrap; gap: 14px; }
@@ -121,7 +199,6 @@
     .filter-btn.active { background: rgba(79,172,254,0.2); border-color: rgba(79,172,254,0.5); color: var(--blue); box-shadow: 0 0 10px rgba(79,172,254,0.2); }
     .filter-btn.store-frigelar.active { background: rgba(0,230,118,0.2); border-color: rgba(0,230,118,0.5); color: var(--green); box-shadow: 0 0 10px rgba(0,230,118,0.2); }
     .filter-btn.store-leveros.active { background: rgba(255,107,0,0.2); border-color: rgba(255,107,0,0.5); color: #ff6b00; box-shadow: 0 0 10px rgba(255,107,0,0.2); }
-    .filter-btn.store-webcontinental.active { background: rgba(0,86,179,0.2); border-color: rgba(0,86,179,0.5); color: #00aaff; box-shadow: 0 0 10px rgba(0,86,179,0.2); }
 
     /* SYNC STATUS */
     .sync-status { position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: rgba(18,18,28,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); padding: 10px 18px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: all 0.4s ease; cursor: default; }
@@ -135,10 +212,7 @@
 <body>
   <div id="sync-status" class="sync-status loading">
     <div class="sync-dot"></div>
-    <div style="display:flex; flex-direction:column; gap:2px;">
-      <span id="sync-text">Conectando</span>
-      <span id="update-text" style="font-size:8px; opacity:0.5; letter-spacing:0.5px; white-space:nowrap;">Atualizado: --/--/--</span>
-    </div>
+    <span id="sync-text">Conectando</span>
   </div>
   <div style="position:fixed;inset:0;background:#050505;z-index:-2;pointer-events:none;"></div>
   <div class="aurora a1"></div>
@@ -196,8 +270,9 @@
       <div class="products-grid" id="results-grid"></div>
     </div>
   </div>
+  
+  <script src="ultimo_log.js" onerror="window.LATEST_LOG = null;"></script>
   <script>
-    const LAST_UPDATE = "24/04/2026 15:30";
     const IMAGES = {"Hiwall":"img/hi_wall.png","Hi Wall":"img/hi_wall.png","Piso Teto":"img/piso_teto.png","Cassete":"img/cassete.png"};
     let sheetData = [], selection = {tipo:"",btu:"",ciclo:""};
     const CACHE_KEY = "scraper_sheet_data_v1";
@@ -217,9 +292,9 @@
       
       const syncStatus = document.getElementById("sync-status");
       const syncText = document.getElementById("sync-text");
-      document.getElementById("update-text").innerText = "Atualizado: " + LAST_UPDATE;
 
       // 2. Carrega a planilha em segundo plano
+
       sheetLoadPromise = (async () => {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
@@ -381,7 +456,10 @@
 
     async function scrapeDufrio(url) {
       try {
+        console.log("🔗 Dufrio URL original da planilha:", url);
         const f = parseDufrioFilters(url);
+        console.log("📦 Filtros extraídos:", f);
+
         let categoryUrl = "https://www.dufrio.com.br/ar-condicionado/" + f.categoria;
         let queryParams = [];
         if (f.capacidades.length > 0) {
@@ -390,21 +468,23 @@
         if (f.ciclo) queryParams.push(`ec_ciclo=${encodeURIComponent(f.ciclo)}`);
         queryParams.push('product_list_dir=asc');
         queryParams.push('product_list_order=price');
-        
+
         const fullUrl = categoryUrl + "?" + queryParams.join("&");
+        console.log("🎯 URL final Dufrio:", fullUrl);
         const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl);
-        
+
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         const html = await resp.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
-        
+
         const items = Array.from(doc.querySelectorAll('.product-item'));
-        return items.map(card => {
+        console.log(`📊 Dufrio: encontrados ${items.length} items brutos`);
+        const result = items.map(card => {
            const titleEl = card.querySelector('a.product-item-link');
            if (!titleEl) return null;
            const title = titleEl.innerText.trim();
-           
+
            const imgEl = card.querySelector('img.product-image-photo, img.product-image');
            let image = "";
            if (imgEl) {
@@ -414,7 +494,7 @@
                    if (sourceEl && sourceEl.srcset) image = sourceEl.srcset.split(',')[0].split(' ')[0];
                }
            }
-           
+
            let spotLine = "";
            const spotPriceEl = card.querySelector('.spot-price');
            if (spotPriceEl) spotLine = spotPriceEl.innerText.replace(/\s+/g, ' ').trim();
@@ -430,25 +510,27 @@
                    if (labelToUse) spotLine += ' ' + labelToUse.innerText.replace(/\s+/g, ' ').trim();
                }
            }
-           
+
            let installLine = "";
            const ps = card.querySelectorAll('p');
            ps.forEach(p => {
                const pText = p.innerText.toLowerCase();
                if (pText.includes('ou r$') && (pText.includes('em') || pText.includes('x'))) {
-                   installLine = p.innerText.replace(/\s+/g, ' ').replace(/\u00A0/g, ' ').trim();
+                   installLine = p.innerText.replace(/\s+/g, ' ').replace(/ /g, ' ').trim();
                }
            });
-           
+
            if (!spotLine) return null; // Filtra produtos esgotados (Avise-me)
-           
+
            let linkHref = titleEl.getAttribute('href');
            if(!linkHref) linkHref = "";
            const finalLink = linkHref.startsWith('http') ? linkHref : "https://www.dufrio.com.br" + linkHref;
-           
+
            return { title, image, spot: spotLine, install: installLine, link: finalLink, discount: 0 };
         }).filter(Boolean);
-      } catch(e) { console.error("Dufrio erro:", e); return []; }
+        console.log(`✅ Dufrio: ${result.length} produtos após filtro`);
+        return result;
+      } catch(e) { console.error("❌ Dufrio erro:", e); return []; }
     }
 
     async function scrapeFrigelar(url) {
@@ -592,11 +674,13 @@
       } catch(e) { console.error("Leveros erro:", e); return []; }
     }
 
+
+
     async function startScraping() {
       try {
         document.getElementById("selection-summary").style.display = "none";
         document.getElementById("filters-section").style.display = "none";
-        
+
         allFetchedProducts = [];
         activeFilters = { lojas: [], marcas: [], btus: [], ciclos: [] };
 
@@ -604,13 +688,26 @@
           document.getElementById("loading-msg").innerText = "SINCRONIZANDO PLANILHA...";
           await sheetLoadPromise;
         }
-        
-        const links = sheetData.filter(i => 
-          i.Tipo === selection.tipo && 
-          i.BTUs === selection.btu && 
-          i.Ciclo === selection.ciclo
-        );
-        
+
+        // Normaliza ciclo: remove "só" e lowercase
+        const normalizeCiclo = (c) => {
+          const normalized = String(c || "").toLowerCase().trim().replace(/^só\s+/, "");
+          return normalized;
+        };
+        const cicloNormalizado = normalizeCiclo(selection.ciclo);
+        console.log("🔍 Buscando:", { tipo: selection.tipo, btu: selection.btu, ciclo: selection.ciclo, cicloNorm: cicloNormalizado });
+
+        const links = sheetData.filter(i => {
+          const cicloSheet = normalizeCiclo(i.Ciclo);
+          const match = i.Tipo === selection.tipo &&
+                       i.BTUs === selection.btu &&
+                       cicloSheet === cicloNormalizado;
+          if (match) console.log("✅ Link encontrado:", { Tipo: i.Tipo, BTUs: i.BTUs, Ciclo: i.Ciclo, Site: i.Site });
+          return match;
+        });
+
+        console.log("📋 Links encontrados:", links.length);
+
         const dufrioLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "dufrio");
         const frigelarLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "frigelar");
         const leverosLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "leveros");
@@ -643,7 +740,6 @@
           );
         }
 
-        
         const resultsArrays = await Promise.all(scrapePromises);
         
         resultsArrays.forEach(products => {
@@ -680,12 +776,20 @@
           marca = m; break;
         }
       }
-      let btu = "Outros";
-      const btuMatch = p.title.match(/\b(\d{4,5})\s*BTU/i) || p.title.match(/\b(\d{4,5})\b/);
+      let btu = "";
+      // Remove pontos para facilitar o match (ex: 9.000 -> 9000)
+      const titleClean = p.title.replace(/\./g, "");
+      const btuMatch = titleClean.match(/\b(\d{4,5})\s*BTU/i) || titleClean.match(/\b(\d{4,5})\b/);
       if (btuMatch) {
         let bNum = btuMatch[1];
         btu = bNum.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " BTUs";
+      } else if (selection && selection.btu) {
+        // Fallback para o que o usuário escolheu
+        btu = selection.btu.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " BTUs";
+      } else {
+        btu = "Outros"; // Apenas caso extremo
       }
+      
       let ciclo = "Só Frio";
       if (p.title.toLowerCase().includes("quente")) ciclo = "Quente/Frio";
       p.marca = marca; p.btu = btu; p.ciclo = ciclo;
@@ -718,7 +822,6 @@
             if (item.toLowerCase() === "frigelar") btn.classList.add("store-frigelar");
             if (item.toLowerCase() === "dufrio") btn.classList.add("store-dufrio");
             if (item.toLowerCase() === "leveros") btn.classList.add("store-leveros");
-            if (item.toLowerCase() === "webcontinental") btn.classList.add("store-webcontinental");
         }
         btn.innerText = item;
         btn.onclick = () => toggleFilter(btn, type, item);
@@ -763,7 +866,6 @@
       if (store.toLowerCase() === "frigelar") badge.classList.add("store-frigelar");
       if (store.toLowerCase() === "dufrio") badge.classList.add("store-dufrio");
       if (store.toLowerCase() === "leveros") badge.classList.add("store-leveros");
-      if (store.toLowerCase() === "webcontinental") badge.classList.add("store-webcontinental");
       badge.textContent = store;
 
       const imgWrap = document.createElement("div"); imgWrap.className = "product-img-wrap";

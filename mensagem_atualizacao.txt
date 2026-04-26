@@ -1,1 +1,0 @@
-WebContinental integrada via API Direta (VTEX IO) - Sem necessidade de Proxy.
