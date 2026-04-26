@@ -57,8 +57,6 @@
     .store-badge.store-dufrio { background: linear-gradient(135deg, rgba(16,30,100,0.95), rgba(79,172,254,0.2)); border-color: rgba(79,172,254,0.3); }
     .store-badge.store-frigelar { background: linear-gradient(135deg, rgba(0,89,36,0.95), rgba(0,230,118,0.2)); border-color: rgba(0,230,118,0.3); }
     .store-badge.store-leveros { background: linear-gradient(135deg, #ff6b00, #ff9e00); border-color: #ff9e00; }
-    .store-badge.store-webcontinental { background: linear-gradient(135deg, rgba(8,75,135,0.95), rgba(34,211,238,0.25)); border-color: rgba(34,211,238,0.4); }
-    .store-badge.store-webcontinental { background: linear-gradient(135deg, #0056b3, #00aaff); border-color: #00aaff; }
 
     /* FOTO */
     .product-img-wrap { width: 100%; aspect-ratio: 1.1/1; background: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; border-bottom: 1px solid var(--card-border); }
@@ -201,8 +199,6 @@
     .filter-btn.active { background: rgba(79,172,254,0.2); border-color: rgba(79,172,254,0.5); color: var(--blue); box-shadow: 0 0 10px rgba(79,172,254,0.2); }
     .filter-btn.store-frigelar.active { background: rgba(0,230,118,0.2); border-color: rgba(0,230,118,0.5); color: var(--green); box-shadow: 0 0 10px rgba(0,230,118,0.2); }
     .filter-btn.store-leveros.active { background: rgba(255,107,0,0.2); border-color: rgba(255,107,0,0.5); color: #ff6b00; box-shadow: 0 0 10px rgba(255,107,0,0.2); }
-    .filter-btn.store-webcontinental.active { background: rgba(34,211,238,0.18); border-color: rgba(34,211,238,0.5); color: #22d3ee; box-shadow: 0 0 10px rgba(34,211,238,0.2); }
-    .filter-btn.store-webcontinental.active { background: rgba(0,86,179,0.2); border-color: rgba(0,86,179,0.5); color: #00aaff; box-shadow: 0 0 10px rgba(0,86,179,0.2); }
 
     /* SYNC STATUS */
     .sync-status { position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: rgba(18,18,28,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); padding: 10px 18px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: all 0.4s ease; cursor: default; }
@@ -678,13 +674,6 @@
       } catch(e) { console.error("Leveros erro:", e); return []; }
     }
 
-    async function scrapeWebContinental(url) {
-      // Temporariamente removido para testes na ferramenta externa
-      return [];
-    }
-
-
-
 
 
     async function startScraping() {
@@ -722,7 +711,6 @@
         const dufrioLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "dufrio");
         const frigelarLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "frigelar");
         const leverosLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "leveros");
-        const webContinentalLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim().replace(/\s+/g,'') === "webcontinental");
         
         document.getElementById("loading-msg").innerText = "BUSCANDO LOJAS...";
         
@@ -751,15 +739,6 @@
             })
           );
         }
-
-        if (webContinentalLink && webContinentalLink.Link) {
-          scrapePromises.push(
-            scrapeWebContinental(webContinentalLink.Link).then(products => {
-              return products.map(p => ({...p, storeName: "WebContinental"}));
-            })
-          );
-        }
-
 
         const resultsArrays = await Promise.all(scrapePromises);
         
@@ -843,8 +822,6 @@
             if (item.toLowerCase() === "frigelar") btn.classList.add("store-frigelar");
             if (item.toLowerCase() === "dufrio") btn.classList.add("store-dufrio");
             if (item.toLowerCase() === "leveros") btn.classList.add("store-leveros");
-            if (item.toLowerCase() === "webcontinental") btn.classList.add("store-webcontinental");
-            if (item.toLowerCase() === "webcontinental") btn.classList.add("store-webcontinental");
         }
         btn.innerText = item;
         btn.onclick = () => toggleFilter(btn, type, item);
@@ -889,8 +866,6 @@
       if (store.toLowerCase() === "frigelar") badge.classList.add("store-frigelar");
       if (store.toLowerCase() === "dufrio") badge.classList.add("store-dufrio");
       if (store.toLowerCase() === "leveros") badge.classList.add("store-leveros");
-      if (store.toLowerCase() === "webcontinental") badge.classList.add("store-webcontinental");
-      if (store.toLowerCase() === "webcontinental") badge.classList.add("store-webcontinental");
       badge.textContent = store;
 
       const imgWrap = document.createElement("div"); imgWrap.className = "product-img-wrap";
