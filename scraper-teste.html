@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Scraper em Teste - WebContinental</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base: #050505;
+      --card-bg: rgba(20, 20, 20, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #ffffff;
+      --text-muted: #888888;
+      --accent: #f59e0b;
+      --green: #10b981;
+      --font-outfit: 'Outfit', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-outfit);
+      min-height: 100vh;
+      background: var(--bg-base);
+      color: var(--text-main);
+      overflow-x: hidden;
+    }
+
+    .aurora {
+      position: fixed;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: -1;
+      opacity: 0.2;
+      animation: auroraAnim 18s infinite alternate ease-in-out;
+    }
+    .aurora-1 { background: #f59e0b; top: -10%; left: -10%; }
+    .aurora-2 { background: #8b5cf6; bottom: -10%; right: -5%; animation-duration: 22s; }
+
+    @keyframes auroraAnim {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.3) translate(50px, -50px); }
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .back-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--text-main); }
+
+    .badge-test {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 30px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 32px;
+    }
+
+    .form-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 280px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text-main);
+      font-family: var(--font-outfit);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    button.primary {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-family: var(--font-outfit);
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 140px;
+    }
+    button.primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+    }
+    button.primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: rgba(20, 20, 20, 0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--text-muted);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .status-bar .counter {
+      color: var(--green);
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .status-bar .strategy {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .status-bar .strategy b { color: var(--accent); }
+
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .error-box b { color: #ef4444; display: block; margin-bottom: 4px; font-size: 14px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .product-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .product-img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .product-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .product-name {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      min-height: 50px;
+      color: var(--text-main);
+    }
+
+    .product-price-cash {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--green);
+      letter-spacing: -0.5px;
+    }
+
+    .product-price-installment {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .product-link {
+      display: block;
+      text-align: center;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent);
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-top: 8px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      transition: all 0.2s;
+    }
+    .product-link:hover {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .debug-toggle {
+      margin-top: 32px;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      user-select: none;
+    }
+    .debug-toggle:hover { color: var(--text-main); }
+
+    .debug-log {
+      display: none;
+      margin-top: 12px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #a3e635;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .debug-log.open { display: block; }
+
+    @media (max-width: 768px) {
+      .container { padding: 24px 14px 60px; }
+      h1 { font-size: 26px; }
+      .subtitle { font-size: 13px; }
+      input[type="text"] { min-width: 100%; }
+      button.primary { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="aurora aurora-1"></div>
+  <div class="aurora aurora-2"></div>
+
+  <div class="container">
+    <div class="top-bar">
+      <a href="index.html" class="back-link">&larr; Voltar ao Hub</a>
+      <span class="badge-test">Em Teste</span>
+    </div>
+
+    <h1>Scraper em Teste</h1>
+    <p class="subtitle">Ferramenta de teste para extrair produtos da WebContinental e validar estratégias de scraping antes de integrar ao scraper oficial.</p>
+
+    <div class="form-card">
+      <label for="urlInput">URL para Raspar</label>
+      <div class="input-row">
+        <input type="text" id="urlInput" value="https://www.webcontinental.com.br/climatizacao/ar-condicionado/ar-condicionado-split-hi-wall/9000-btus/inverter?initialMap=c&initialQuery=climatizacao&map=category-1,category-2,category-3,capacidade-btus,tecnologia&order=OrderByPriceASC">
+        <button class="primary" id="btnScrape" onclick="scrape()">Raspar</button>
+      </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+      <div id="statusText">Pronto. Cole uma URL e clique em <b style="color:#fff">Raspar</b>.</div>
+      <div class="strategy" id="strategyText"></div>
+      <div><span class="counter" id="counter">0</span> produtos</div>
+    </div>
+
+    <div id="errorContainer"></div>
+    <div id="results" class="grid"></div>
+    <div id="emptyState" class="empty" style="display:none">Nenhum produto encontrado. Verifique o console (F12) para detalhes.</div>
+
+    <div class="debug-toggle" onclick="toggleDebug()">▶ Mostrar log de debug</div>
+    <div class="debug-log" id="debugLog"></div>
+  </div>
+
+  <script>
+    // ============================================================
+    // SCRAPER EM TESTE - WebContinental
+    // Estratégias de extração em ordem de preferência:
+    //   1. JSON-LD (schema.org ItemList / Product) - mais confiável
+    //   2. Estado VTEX embutido em <script> (__RUNTIME__, __STATE__)
+    //   3. Seletores VTEX comuns (vtex-product-summary-*)
+    //   4. Fallback genérico
+    // ============================================================
+
+    const PROXY = "https://corsproxy.io/?";
+
+    function log(msg, data) {
+      const ts = new Date().toLocaleTimeString();
+      const line = `[${ts}] ${msg}`;
+      const debugBox = document.getElementById('debugLog');
+      debugBox.textContent += line + (data !== undefined ? ' ' + JSON.stringify(data).slice(0, 200) : '') + '\n';
+      debugBox.scrollTop = debugBox.scrollHeight;
+      if (data !== undefined) console.log(msg, data);
+      else console.log(msg);
+    }
+
+    function toggleDebug() {
+      const box = document.getElementById('debugLog');
+      const toggle = document.querySelector('.debug-toggle');
+      box.classList.toggle('open');
+      toggle.innerHTML = box.classList.contains('open') ? '▼ Esconder log de debug' : '▶ Mostrar log de debug';
+    }
+
+    function setError(title, detail) {
+      document.getElementById('errorContainer').innerHTML =
+        `<div class="error-box"><b>${title}</b>${detail || ''}</div>`;
+    }
+    function clearError() {
+      document.getElementById('errorContainer').innerHTML = '';
+    }
+
+    function setStatus(text, strategy) {
+      document.getElementById('statusText').innerHTML = text;
+      document.getElementById('strategyText').innerHTML = strategy ? `Estratégia: <b>${strategy}</b>` : '';
+    }
+
+    function fmtPrice(value) {
+      if (value === null || value === undefined || isNaN(value)) return '';
+      return 'R$ ' + Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function buildInstallment(price) {
+      if (!price || isNaN(price)) return '';
+      const n = 10;
+      const each = price / n;
+      return `ou ${fmtPrice(price)} em ${n}x de ${fmtPrice(each)}`;
+    }
+
+    // ----- ESTRATÉGIA 1: JSON-LD -----
+    function tryJsonLd(doc) {
+      const scripts = Array.from(doc.querySelectorAll('script[type="application/ld+json"]'));
+      log(`JSON-LD: ${scripts.length} blocos encontrados`);
+      const products = [];
+
+      for (const s of scripts) {
+        try {
+          const data = JSON.parse(s.textContent);
+          const arr = Array.isArray(data) ? data : [data];
+          for (const item of arr) {
+            // ItemList contendo produtos
+            if (item['@type'] === 'ItemList' && Array.isArray(item.itemListElement)) {
+              for (const el of item.itemListElement) {
+                const p = el.item || el;
+                if (p['@type'] === 'Product' || p.name) {
+                  products.push(extractProductFromLd(p));
+                }
+              }
+            }
+            // Product direto
+            if (item['@type'] === 'Product') {
+              products.push(extractProductFromLd(item));
+            }
+          }
+        } catch (e) {
+          log('JSON-LD: erro de parse em um bloco', e.message);
+        }
+      }
+      return products.filter(p => p && p.name);
+    }
+
+    function extractProductFromLd(p) {
+      let price = null;
+      if (p.offers) {
+        const offer = Array.isArray(p.offers) ? p.offers[0] : p.offers;
+        if (offer.price) price = parseFloat(offer.price);
+        else if (offer.lowPrice) price = parseFloat(offer.lowPrice);
+        else if (offer.priceSpecification && offer.priceSpecification.price)
+          price = parseFloat(offer.priceSpecification.price);
+      }
+      let image = '';
+      if (p.image) image = Array.isArray(p.image) ? p.image[0] : p.image;
+      if (typeof image === 'object' && image.url) image = image.url;
+
+      let url = p.url || (p.offers && (Array.isArray(p.offers) ? p.offers[0].url : p.offers.url)) || '';
+
+      return {
+        name: p.name || '',
+        image,
+        priceCash: price,
+        priceInstallment: buildInstallment(price),
+        url
+      };
+    }
+
+    // ----- ESTRATÉGIA 2: Estado VTEX embutido -----
+    function tryVtexState(doc, html) {
+      // Procura __RUNTIME__ ou __STATE__ inline
+      const stateMatch = html.match(/__RUNTIME__\s*=\s*(\{[\s\S]*?\});\s*window\./);
+      if (stateMatch) {
+        log('VTEX state encontrado em __RUNTIME__');
+      }
+      // Não é trivial extrair produtos do __RUNTIME__ sem conhecer a estrutura exata.
+      // Esta função fica como ponto de extensão futura.
+      return [];
+    }
+
+    // ----- ESTRATÉGIA 3: Seletores VTEX comuns -----
+    function tryVtexSelectors(doc) {
+      const selectors = [
+        '[class*="vtex-product-summary"][class*="container"]',
+        'article[class*="product-summary"]',
+        '[class*="productCard"]',
+        '.shelf-item',
+        '[data-product-id]'
+      ];
+
+      for (const sel of selectors) {
+        const cards = doc.querySelectorAll(sel);
+        if (cards.length > 0) {
+          log(`Seletor VTEX: "${sel}" achou ${cards.length} cards`);
+          const products = Array.from(cards).map(extractProductFromCard).filter(p => p && p.name);
+          if (products.length > 0) return products;
+        }
+      }
+      return [];
+    }
+
+    function extractProductFromCard(card) {
+      const name = (card.querySelector('h1, h2, h3, [class*="productBrand"], [class*="product-name"], [class*="productName"]') || {}).textContent || '';
+      const img = card.querySelector('img');
+      const image = img ? (img.src || img.getAttribute('data-src') || '') : '';
+      const link = card.querySelector('a[href]');
+      const url = link ? link.href : '';
+
+      const priceText = (card.querySelector('[class*="sellingPrice"], [class*="price-best"], [class*="currencyContainer"]') || {}).textContent || '';
+      const priceMatch = priceText.replace(/\s+/g, ' ').match(/(\d+(?:\.\d{3})*(?:,\d{2})?)/);
+      let priceCash = null;
+      if (priceMatch) {
+        priceCash = parseFloat(priceMatch[1].replace(/\./g, '').replace(',', '.'));
+      }
+
+      return {
+        name: name.trim(),
+        image,
+        priceCash,
+        priceInstallment: buildInstallment(priceCash),
+        url
+      };
+    }
+
+    // ----- RENDERIZAÇÃO -----
+    function render(products) {
+      const grid = document.getElementById('results');
+      grid.innerHTML = '';
+      document.getElementById('counter').textContent = products.length;
+
+      if (products.length === 0) {
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+      }
+      document.getElementById('emptyState').style.display = 'none';
+
+      products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          ${p.image ? `<img class="product-img" src="${p.image}" alt="${escape(p.name)}" onerror="this.style.display='none'">` : ''}
+          <div class="product-body">
+            <div class="product-name">${escape(p.name)}</div>
+            ${p.priceCash ? `<div class="product-price-cash">${fmtPrice(p.priceCash)}</div>` : ''}
+            ${p.priceInstallment ? `<div class="product-price-installment">${escape(p.priceInstallment)}</div>` : ''}
+            ${p.url ? `<a href="${p.url}" target="_blank" rel="noopener" class="product-link">Abrir no Site</a>` : ''}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function escape(s) {
+      return String(s || '').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // ----- ORQUESTRAÇÃO -----
+    async function scrape() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) { setError('URL vazia', 'Informe uma URL para raspar.'); return; }
+
+      clearError();
+      document.getElementById('results').innerHTML = '';
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('counter').textContent = '0';
+      document.getElementById('debugLog').textContent = '';
+
+      const btn = document.getElementById('btnScrape');
+      btn.disabled = true;
+      setStatus('<span class="spinner"></span>Buscando página via proxy...', '');
+
+      log('🚀 Iniciando scrape', url);
+
+      try {
+        const proxyUrl = PROXY + encodeURIComponent(url);
+        log('Proxy URL', proxyUrl);
+
+        const t0 = performance.now();
+        const resp = await fetch(proxyUrl, { cache: 'no-store' });
+        log(`HTTP ${resp.status} em ${Math.round(performance.now() - t0)}ms`);
+
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status} ao buscar a página.`);
+        }
+
+        const html = await resp.text();
+        log(`HTML recebido: ${html.length} chars`);
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        setStatus('<span class="spinner"></span>Analisando HTML...', 'JSON-LD');
+        let products = tryJsonLd(doc);
+        let strategy = 'JSON-LD';
+
+        if (products.length === 0) {
+          log('JSON-LD não retornou produtos. Tentando seletores VTEX...');
+          setStatus('<span class="spinner"></span>Tentando seletores VTEX...', 'VTEX selectors');
+          products = tryVtexSelectors(doc);
+          strategy = 'Seletores VTEX';
+        }
+
+        if (products.length === 0) {
+          log('Seletores VTEX falharam. Tentando estado VTEX inline...');
+          products = tryVtexState(doc, html);
+          strategy = 'VTEX state';
+        }
+
+        log(`✅ Total: ${products.length} produtos via ${strategy}`);
+        render(products);
+        setStatus(
+          products.length > 0
+            ? `Concluído. <b style="color:#fff">${products.length}</b> produtos extraídos.`
+            : 'Nenhum produto encontrado. Site pode renderizar via JS no cliente — abra o console para detalhes.',
+          strategy
+        );
+      } catch (e) {
+        log('❌ ERRO', e.message);
+        setError('Falha ao raspar', e.message);
+        setStatus('Falha. Veja o erro acima e o log de debug.', '');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
