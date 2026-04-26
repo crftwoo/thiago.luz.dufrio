@@ -366,127 +366,217 @@
 
   <script>
     // ============================================================
-    // SCRAPER EM TESTE - WebContinental
-    // Estratégias de extração em ordem de preferência:
-    //   1. JSON-LD (schema.org ItemList / Product) - mais confiável
-    //   2. Estado VTEX embutido em <script> (__RUNTIME__, __STATE__)
-    //   3. Seletores VTEX comuns (vtex-product-summary-*)
-    //   4. Fallback genérico
+    // SCRAPER EM TESTE - WebContinental (VTEX)
+    //
+    // Estratégias aprendidas dos scrapers que já funcionam:
+    //   • Frigelar  → API JSON oficial é mais confiável que HTML
+    //   • Dufrio    → cadeia de fallbacks (img/preço) p/ resiliência
+    //   • Leveros   → regex p/ extrair "Nx de R$ Y,YY" das parcelas
+    //   • Worker    → spoof de Origin/Referer destrava APIs VTEX
+    //
+    // WebContinental usa VTEX (params `initialMap`/`map=category-N`).
+    // VTEX expõe Catalog API pública /api/catalog_system/pub/products/search
+    // que retorna JSON com tudo pronto — mesma ideia do scraper da Frigelar.
+    //
+    // Cadeia de tentativas:
+    //   1. VTEX Catalog API   (JSON, sem precisar de spoof)
+    //   2. JSON-LD na HTML    (schema.org ItemList/Product)
+    //   3. Seletores VTEX     (HTML SSR, padrão Dufrio/Leveros)
+    //
+    // Se o proxy padrão (corsproxy.io) falhar, tenta o worker
+    // frigelar-proxy.crftwo.workers.dev — que faz spoof de Origin
+    // (esse mesmo worker já foi preparado pra WebContinental
+    //  segundo o comentário em worker-novo.js).
     // ============================================================
 
-    const PROXY = "https://corsproxy.io/?";
+    const PROXY_DEFAULT = "https://corsproxy.io/?";
+    const PROXY_WORKER  = "https://frigelar-proxy.crftwo.workers.dev/?url=";
 
     function log(msg, data) {
       const ts = new Date().toLocaleTimeString();
-      const line = `[${ts}] ${msg}`;
       const debugBox = document.getElementById('debugLog');
-      debugBox.textContent += line + (data !== undefined ? ' ' + JSON.stringify(data).slice(0, 200) : '') + '\n';
+      debugBox.textContent += `[${ts}] ${msg}` +
+        (data !== undefined ? ' ' + JSON.stringify(data).slice(0, 250) : '') + '\n';
       debugBox.scrollTop = debugBox.scrollHeight;
-      if (data !== undefined) console.log(msg, data);
-      else console.log(msg);
+      if (data !== undefined) console.log(msg, data); else console.log(msg);
     }
 
     function toggleDebug() {
       const box = document.getElementById('debugLog');
       const toggle = document.querySelector('.debug-toggle');
       box.classList.toggle('open');
-      toggle.innerHTML = box.classList.contains('open') ? '▼ Esconder log de debug' : '▶ Mostrar log de debug';
+      toggle.innerHTML = box.classList.contains('open')
+        ? '▼ Esconder log de debug' : '▶ Mostrar log de debug';
     }
 
     function setError(title, detail) {
       document.getElementById('errorContainer').innerHTML =
         `<div class="error-box"><b>${title}</b>${detail || ''}</div>`;
     }
-    function clearError() {
-      document.getElementById('errorContainer').innerHTML = '';
-    }
+    function clearError() { document.getElementById('errorContainer').innerHTML = ''; }
 
     function setStatus(text, strategy) {
       document.getElementById('statusText').innerHTML = text;
-      document.getElementById('strategyText').innerHTML = strategy ? `Estratégia: <b>${strategy}</b>` : '';
+      document.getElementById('strategyText').innerHTML =
+        strategy ? `Estratégia: <b>${strategy}</b>` : '';
     }
 
-    function fmtPrice(value) {
-      if (value === null || value === undefined || isNaN(value)) return '';
-      return 'R$ ' + Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    function fmtPrice(v) {
+      if (v === null || v === undefined || isNaN(v)) return '';
+      return 'R$ ' + Number(v).toLocaleString('pt-BR',
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    function buildInstallment(price) {
-      if (!price || isNaN(price)) return '';
-      const n = 10;
-      const each = price / n;
-      return `ou ${fmtPrice(price)} em ${n}x de ${fmtPrice(each)}`;
+    function escape(s) {
+      return String(s || '').replace(/[<>&"']/g,
+        c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
-    // ----- ESTRATÉGIA 1: JSON-LD -----
+    // Fetch com fallback de proxy: tenta corsproxy.io, se falhar usa o worker
+    async function fetchViaProxy(targetUrl, expectJson = false) {
+      const tryProxy = async (proxyBase, label) => {
+        const u = proxyBase + encodeURIComponent(targetUrl);
+        log(`→ ${label}`, u);
+        const t0 = performance.now();
+        const resp = await fetch(u, { cache: 'no-store' });
+        log(`← ${label} HTTP ${resp.status} em ${Math.round(performance.now()-t0)}ms`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const text = await resp.text();
+        log(`  payload: ${text.length} chars`);
+        if (expectJson) {
+          try { return { text, json: JSON.parse(text) }; }
+          catch(e) { throw new Error('Resposta não é JSON válido'); }
+        }
+        return { text };
+      };
+      try { return await tryProxy(PROXY_DEFAULT, 'corsproxy.io'); }
+      catch (e1) {
+        log(`corsproxy.io falhou (${e1.message}). Tentando worker...`);
+        return await tryProxy(PROXY_WORKER, 'worker (Origin spoof)');
+      }
+    }
+
+    // ----- DETECÇÃO E TRADUÇÃO DA URL VTEX -----
+    // Ex.: /climatizacao/ar-condicionado/.../9000-btus/inverter
+    //      ?map=category-1,category-2,category-3,capacidade-btus,tecnologia
+    // → API: /api/catalog_system/pub/products/search/<path>
+    //        ?map=c,c,c,capacidade-btus,tecnologia
+    function buildVtexCatalogUrl(originalUrl) {
+      const u = new URL(originalUrl);
+      const segments = u.pathname.split('/').filter(Boolean);
+      const ioMap = u.searchParams.get('map') || u.searchParams.get('initialMap') || '';
+      // VTEX Catalog API: cada "category-N" vira "c". Outros facets ficam iguais.
+      const apiMap = ioMap.split(',')
+        .map(s => /^category-?\d*$/i.test(s.trim()) ? 'c' : s.trim())
+        .filter(Boolean)
+        .join(',');
+      const order = u.searchParams.get('order') || u.searchParams.get('O') || '';
+      let api = `${u.origin}/api/catalog_system/pub/products/search/${segments.join('/')}`;
+      const qs = [];
+      if (apiMap) qs.push(`map=${apiMap}`);
+      if (order)  qs.push(`O=${order}`);
+      qs.push('_from=0', '_to=49'); // pega até 50 produtos (limite da API pública)
+      return api + '?' + qs.join('&');
+    }
+
+    // ----- ESTRATÉGIA 1: VTEX CATALOG API (JSON) -----
+    async function tryVtexCatalogApi(originalUrl) {
+      const apiUrl = buildVtexCatalogUrl(originalUrl);
+      log('🎯 VTEX Catalog API URL:', apiUrl);
+      const { json } = await fetchViaProxy(apiUrl, true);
+      if (!Array.isArray(json)) {
+        log('Resposta da Catalog API não é array', typeof json);
+        return [];
+      }
+      log(`✅ VTEX Catalog API: ${json.length} produtos brutos`);
+      return json.map(extractFromVtexProduct).filter(p => p && p.name && p.priceCash);
+    }
+
+    function extractFromVtexProduct(p) {
+      // Inspirado no scrapeFrigelar: pega o primeiro item/seller, calcula desconto,
+      // monta string de parcelas como Leveros faz.
+      const item   = (p.items   && p.items[0])   || {};
+      const seller = (item.sellers && item.sellers.find(s => s.sellerDefault)) ||
+                     (item.sellers && item.sellers[0]) || {};
+      const offer  = seller.commertialOffer || {};
+
+      // Preço: Price = à vista (com desconto PIX se houver),
+      //        ListPrice / PriceWithoutDiscount = preço cheio parcelado
+      const priceCash   = offer.Price ?? null;
+      const priceListed = offer.ListPrice ?? offer.PriceWithoutDiscount ?? null;
+
+      if (!priceCash) return null; // descarta esgotado/sem preço (igual Dufrio faz)
+
+      // Melhor plano de parcelamento: maior nº de parcelas SEM JUROS (igual Frigelar)
+      const insts = offer.Installments || [];
+      const semJuros = insts.filter(i => i.InterestRate === 0);
+      const best = (semJuros.length ? semJuros : insts)
+        .slice().sort((a, b) => b.NumberOfInstallments - a.NumberOfInstallments)[0];
+
+      let priceInstallment = '';
+      if (best && best.NumberOfInstallments > 1) {
+        const total = best.NumberOfInstallments * best.Value;
+        priceInstallment =
+          `ou ${fmtPrice(total)} em ${best.NumberOfInstallments}x de ${fmtPrice(best.Value)}` +
+          (best.InterestRate === 0 ? ' sem juros' : '');
+      }
+
+      // Imagem: VTEX retorna lista de imagens; pega a primeira (cadeia de fallback)
+      const image =
+        (item.images && item.images[0] &&
+          (item.images[0].imageUrl || item.images[0].imageUrl?.startsWith?.('//')
+            ? 'https:' + item.images[0].imageUrl
+            : item.images[0].imageUrl)) || '';
+
+      return {
+        name: p.productName || (item.name || ''),
+        image,
+        priceCash,
+        priceListed,
+        priceInstallment,
+        url: p.link || ''
+      };
+    }
+
+    // ----- ESTRATÉGIA 2: JSON-LD na HTML SSR -----
     function tryJsonLd(doc) {
       const scripts = Array.from(doc.querySelectorAll('script[type="application/ld+json"]'));
       log(`JSON-LD: ${scripts.length} blocos encontrados`);
-      const products = [];
-
+      const out = [];
       for (const s of scripts) {
         try {
           const data = JSON.parse(s.textContent);
           const arr = Array.isArray(data) ? data : [data];
           for (const item of arr) {
-            // ItemList contendo produtos
             if (item['@type'] === 'ItemList' && Array.isArray(item.itemListElement)) {
               for (const el of item.itemListElement) {
                 const p = el.item || el;
-                if (p['@type'] === 'Product' || p.name) {
-                  products.push(extractProductFromLd(p));
-                }
+                if (p['@type'] === 'Product' || p.name) out.push(extractFromLd(p));
               }
             }
-            // Product direto
-            if (item['@type'] === 'Product') {
-              products.push(extractProductFromLd(item));
-            }
+            if (item['@type'] === 'Product') out.push(extractFromLd(item));
           }
-        } catch (e) {
-          log('JSON-LD: erro de parse em um bloco', e.message);
-        }
+        } catch(e) { log('JSON-LD: parse falhou em um bloco', e.message); }
       }
-      return products.filter(p => p && p.name);
+      return out.filter(p => p && p.name && p.priceCash);
     }
 
-    function extractProductFromLd(p) {
-      let price = null;
+    function extractFromLd(p) {
+      let priceCash = null;
       if (p.offers) {
-        const offer = Array.isArray(p.offers) ? p.offers[0] : p.offers;
-        if (offer.price) price = parseFloat(offer.price);
-        else if (offer.lowPrice) price = parseFloat(offer.lowPrice);
-        else if (offer.priceSpecification && offer.priceSpecification.price)
-          price = parseFloat(offer.priceSpecification.price);
+        const o = Array.isArray(p.offers) ? p.offers[0] : p.offers;
+        priceCash = parseFloat(o.price || o.lowPrice ||
+          (o.priceSpecification && o.priceSpecification.price) || 0) || null;
       }
-      let image = '';
-      if (p.image) image = Array.isArray(p.image) ? p.image[0] : p.image;
-      if (typeof image === 'object' && image.url) image = image.url;
-
-      let url = p.url || (p.offers && (Array.isArray(p.offers) ? p.offers[0].url : p.offers.url)) || '';
-
-      return {
-        name: p.name || '',
-        image,
-        priceCash: price,
-        priceInstallment: buildInstallment(price),
-        url
-      };
+      let image = p.image;
+      if (Array.isArray(image)) image = image[0];
+      if (image && typeof image === 'object') image = image.url;
+      const url = p.url ||
+        (p.offers && (Array.isArray(p.offers) ? p.offers[0].url : p.offers.url)) || '';
+      return { name: p.name || '', image: image || '', priceCash, priceInstallment: '', url };
     }
 
-    // ----- ESTRATÉGIA 2: Estado VTEX embutido -----
-    function tryVtexState(doc, html) {
-      // Procura __RUNTIME__ ou __STATE__ inline
-      const stateMatch = html.match(/__RUNTIME__\s*=\s*(\{[\s\S]*?\});\s*window\./);
-      if (stateMatch) {
-        log('VTEX state encontrado em __RUNTIME__');
-      }
-      // Não é trivial extrair produtos do __RUNTIME__ sem conhecer a estrutura exata.
-      // Esta função fica como ponto de extensão futura.
-      return [];
-    }
-
-    // ----- ESTRATÉGIA 3: Seletores VTEX comuns -----
+    // ----- ESTRATÉGIA 3: Seletores VTEX no HTML (padrão Dufrio/Leveros) -----
     function tryVtexSelectors(doc) {
       const selectors = [
         '[class*="vtex-product-summary"][class*="container"]',
@@ -495,37 +585,66 @@
         '.shelf-item',
         '[data-product-id]'
       ];
-
       for (const sel of selectors) {
         const cards = doc.querySelectorAll(sel);
         if (cards.length > 0) {
-          log(`Seletor VTEX: "${sel}" achou ${cards.length} cards`);
-          const products = Array.from(cards).map(extractProductFromCard).filter(p => p && p.name);
-          if (products.length > 0) return products;
+          log(`Seletor VTEX "${sel}" achou ${cards.length} cards`);
+          const out = Array.from(cards).map(extractFromHtmlCard).filter(p => p && p.name);
+          if (out.length > 0) return out;
         }
       }
       return [];
     }
 
-    function extractProductFromCard(card) {
-      const name = (card.querySelector('h1, h2, h3, [class*="productBrand"], [class*="product-name"], [class*="productName"]') || {}).textContent || '';
+    // Imitando Dufrio: cadeia de fallback p/ imagem (src → data-src → <source srcset>)
+    function pickImage(card) {
       const img = card.querySelector('img');
-      const image = img ? (img.src || img.getAttribute('data-src') || '') : '';
-      const link = card.querySelector('a[href]');
-      const url = link ? link.href : '';
-
-      const priceText = (card.querySelector('[class*="sellingPrice"], [class*="price-best"], [class*="currencyContainer"]') || {}).textContent || '';
-      const priceMatch = priceText.replace(/\s+/g, ' ').match(/(\d+(?:\.\d{3})*(?:,\d{2})?)/);
-      let priceCash = null;
-      if (priceMatch) {
-        priceCash = parseFloat(priceMatch[1].replace(/\./g, '').replace(',', '.'));
+      if (!img) return '';
+      let src = img.getAttribute('src') || img.getAttribute('data-src') || '';
+      if (!src || src.startsWith('data:image')) {
+        const source = card.querySelector('source');
+        if (source && source.srcset) src = source.srcset.split(',')[0].split(' ')[0];
       }
+      return src;
+    }
+
+    // Imitando Leveros: regex p/ extrair "Nx de R$ Y,YY" do texto de parcelamento
+    function parseInstallmentText(rawText) {
+      if (!rawText) return '';
+      const m = rawText.replace(/\s+/g, ' ').match(/(\d+)\s*x\s+de\s+R\$\s*([\d.,]+)/i);
+      if (!m) return rawText.replace(/\s+/g, ' ').trim();
+      const parcelas = parseInt(m[1], 10);
+      const valorParcela = parseFloat(m[2].replace(/\./g, '').replace(',', '.'));
+      const total = (parcelas * valorParcela).toLocaleString('pt-BR',
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return `ou R$ ${total} em ${parcelas}x de R$ ${m[2]}`;
+    }
+
+    function extractFromHtmlCard(card) {
+      const nameEl = card.querySelector(
+        'h1, h2, h3, [class*="productBrand"], [class*="product-name"], [class*="productName"]'
+      );
+      const name = nameEl ? nameEl.textContent.trim() : '';
+      if (!name) return null;
+
+      const image = pickImage(card);
+      const link  = card.querySelector('a[href]');
+      const url   = link ? link.href : '';
+
+      const priceText = (card.querySelector(
+        '[class*="sellingPrice"], [class*="price-best"], [class*="currencyContainer"]'
+      ) || {}).textContent || '';
+      const m = priceText.replace(/\s+/g, ' ').match(/(\d+(?:\.\d{3})*(?:,\d{2})?)/);
+      const priceCash = m ? parseFloat(m[1].replace(/\./g, '').replace(',', '.')) : null;
+      if (!priceCash) return null; // descarta esgotado (padrão Dufrio)
+
+      const installRaw = (card.querySelector(
+        '[class*="installment"], [class*="Installment"]'
+      ) || {}).textContent || '';
 
       return {
-        name: name.trim(),
-        image,
-        priceCash,
-        priceInstallment: buildInstallment(priceCash),
+        name, image, priceCash,
+        priceInstallment: parseInstallmentText(installRaw),
         url
       };
     }
@@ -535,31 +654,26 @@
       const grid = document.getElementById('results');
       grid.innerHTML = '';
       document.getElementById('counter').textContent = products.length;
-
-      if (products.length === 0) {
-        document.getElementById('emptyState').style.display = 'block';
-        return;
-      }
-      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('emptyState').style.display = products.length ? 'none' : 'block';
 
       products.forEach(p => {
         const card = document.createElement('div');
         card.className = 'product-card';
+        const hasDiscount = p.priceListed && p.priceListed > p.priceCash;
+        const discountPct = hasDiscount
+          ? Math.round((p.priceListed - p.priceCash) / p.priceListed * 100) : 0;
+
         card.innerHTML = `
-          ${p.image ? `<img class="product-img" src="${p.image}" alt="${escape(p.name)}" onerror="this.style.display='none'">` : ''}
+          ${p.image ? `<img class="product-img" src="${escape(p.image)}" alt="${escape(p.name)}" loading="lazy" onerror="this.style.display='none'">` : ''}
           <div class="product-body">
             <div class="product-name">${escape(p.name)}</div>
-            ${p.priceCash ? `<div class="product-price-cash">${fmtPrice(p.priceCash)}</div>` : ''}
+            ${p.priceCash ? `<div class="product-price-cash">${fmtPrice(p.priceCash)}${hasDiscount ? ` <span style="font-size:11px;color:#f59e0b;font-weight:700">-${discountPct}%</span>` : ''}</div>` : ''}
             ${p.priceInstallment ? `<div class="product-price-installment">${escape(p.priceInstallment)}</div>` : ''}
-            ${p.url ? `<a href="${p.url}" target="_blank" rel="noopener" class="product-link">Abrir no Site</a>` : ''}
+            ${p.url ? `<a href="${escape(p.url)}" target="_blank" rel="noopener" class="product-link">Abrir no Site</a>` : ''}
           </div>
         `;
         grid.appendChild(card);
       });
-    }
-
-    function escape(s) {
-      return String(s || '').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
     // ----- ORQUESTRAÇÃO -----
@@ -575,60 +689,59 @@
 
       const btn = document.getElementById('btnScrape');
       btn.disabled = true;
-      setStatus('<span class="spinner"></span>Buscando página via proxy...', '');
-
       log('🚀 Iniciando scrape', url);
 
+      let products = [];
+      let strategy = '';
+
+      // 1. VTEX Catalog API (JSON)
       try {
-        const proxyUrl = PROXY + encodeURIComponent(url);
-        log('Proxy URL', proxyUrl);
-
-        const t0 = performance.now();
-        const resp = await fetch(proxyUrl, { cache: 'no-store' });
-        log(`HTTP ${resp.status} em ${Math.round(performance.now() - t0)}ms`);
-
-        if (!resp.ok) {
-          throw new Error(`HTTP ${resp.status} ao buscar a página.`);
-        }
-
-        const html = await resp.text();
-        log(`HTML recebido: ${html.length} chars`);
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-
-        setStatus('<span class="spinner"></span>Analisando HTML...', 'JSON-LD');
-        let products = tryJsonLd(doc);
-        let strategy = 'JSON-LD';
-
-        if (products.length === 0) {
-          log('JSON-LD não retornou produtos. Tentando seletores VTEX...');
-          setStatus('<span class="spinner"></span>Tentando seletores VTEX...', 'VTEX selectors');
-          products = tryVtexSelectors(doc);
-          strategy = 'Seletores VTEX';
-        }
-
-        if (products.length === 0) {
-          log('Seletores VTEX falharam. Tentando estado VTEX inline...');
-          products = tryVtexState(doc, html);
-          strategy = 'VTEX state';
-        }
-
-        log(`✅ Total: ${products.length} produtos via ${strategy}`);
-        render(products);
-        setStatus(
-          products.length > 0
-            ? `Concluído. <b style="color:#fff">${products.length}</b> produtos extraídos.`
-            : 'Nenhum produto encontrado. Site pode renderizar via JS no cliente — abra o console para detalhes.',
-          strategy
-        );
+        setStatus('<span class="spinner"></span>Tentando VTEX Catalog API...', 'VTEX Catalog API');
+        products = await tryVtexCatalogApi(url);
+        if (products.length > 0) strategy = 'VTEX Catalog API';
       } catch (e) {
-        log('❌ ERRO', e.message);
-        setError('Falha ao raspar', e.message);
-        setStatus('Falha. Veja o erro acima e o log de debug.', '');
-      } finally {
-        btn.disabled = false;
+        log('VTEX Catalog API falhou:', e.message);
       }
+
+      // 2. HTML + JSON-LD / seletores
+      if (products.length === 0) {
+        try {
+          setStatus('<span class="spinner"></span>Tentando JSON-LD / seletores HTML...', 'HTML fallback');
+          const { text: html } = await fetchViaProxy(url, false);
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+
+          products = tryJsonLd(doc);
+          if (products.length > 0) {
+            strategy = 'JSON-LD';
+          } else {
+            log('JSON-LD vazio. Tentando seletores VTEX no HTML...');
+            products = tryVtexSelectors(doc);
+            if (products.length > 0) strategy = 'Seletores VTEX (HTML)';
+          }
+        } catch (e) {
+          log('Fallback HTML falhou:', e.message);
+        }
+      }
+
+      btn.disabled = false;
+
+      if (products.length === 0) {
+        setError(
+          'Nenhum produto encontrado',
+          'O site provavelmente renderiza tudo no cliente e nenhuma das estratégias deu certo. ' +
+          'Abra o log de debug abaixo (ou o console) pra ver detalhes.'
+        );
+        setStatus('Falha. Veja o log abaixo.', '');
+        document.getElementById('emptyState').style.display = 'block';
+        return;
+      }
+
+      log(`✅ Concluído: ${products.length} produtos via ${strategy}`);
+      render(products);
+      setStatus(
+        `Concluído. <b style="color:#fff">${products.length}</b> produtos extraídos.`,
+        strategy
+      );
     }
   </script>
 </body>
