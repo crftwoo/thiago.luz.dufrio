@@ -503,85 +503,222 @@
       }
     }
 
-    // ----- DETECÇÃO E TRADUÇÃO DA URL VTEX -----
+    // ----- TRADUÇÃO DA URL VTEX p/ APIs -----
     // Ex.: /climatizacao/ar-condicionado/.../9000-btus/inverter
     //      ?map=category-1,category-2,category-3,capacidade-btus,tecnologia
-    // → API: /api/catalog_system/pub/products/search/<path>
-    //        ?map=c,c,c,capacidade-btus,tecnologia
-    function buildVtexCatalogUrl(originalUrl) {
+    function vtexUrlParts(originalUrl) {
       const u = new URL(originalUrl);
       const segments = u.pathname.split('/').filter(Boolean);
       const ioMap = u.searchParams.get('map') || u.searchParams.get('initialMap') || '';
-      // VTEX Catalog API: cada "category-N" vira "c". Outros facets ficam iguais.
+      // category-N → c (ambas APIs aceitam isso)
       const apiMap = ioMap.split(',')
         .map(s => /^category-?\d*$/i.test(s.trim()) ? 'c' : s.trim())
         .filter(Boolean)
         .join(',');
       const order = u.searchParams.get('order') || u.searchParams.get('O') || '';
-      let api = `${u.origin}/api/catalog_system/pub/products/search/${segments.join('/')}`;
+      const query = u.searchParams.get('initialQuery') || '';
+      return { origin: u.origin, segments, apiMap, order, query };
+    }
+
+    // ----- ESTRATÉGIA 1: VTEX INTELLIGENT SEARCH (JSON, moderno) -----
+    // Esse é o endpoint usado pelo VTEX IO. Ao contrário da Catalog API antiga,
+    // ele aceita especificações (capacidade-btus, tecnologia) misturadas com
+    // categorias no map sem retornar HTTP 400.
+    async function tryVtexIntelligentSearch(originalUrl) {
+      const { origin, segments, apiMap, order } = vtexUrlParts(originalUrl);
       const qs = [];
       if (apiMap) qs.push(`map=${apiMap}`);
       if (order)  qs.push(`O=${order}`);
-      qs.push('_from=0', '_to=49'); // pega até 50 produtos (limite da API pública)
-      return api + '?' + qs.join('&');
-    }
-
-    // ----- ESTRATÉGIA 1: VTEX CATALOG API (JSON) -----
-    async function tryVtexCatalogApi(originalUrl) {
-      const apiUrl = buildVtexCatalogUrl(originalUrl);
-      log('🎯 VTEX Catalog API URL:', apiUrl);
+      qs.push('count=50');
+      const apiUrl =
+        `${origin}/api/io/_v/api/intelligent-search/product_search/${segments.join('/')}?${qs.join('&')}`;
+      log('🎯 VTEX Intelligent Search URL:', apiUrl);
       const { json } = await fetchViaProxy(apiUrl, true);
-      if (!Array.isArray(json)) {
-        log('Resposta da Catalog API não é array', typeof json);
+      const products = json && (json.products || json.results || json);
+      if (!Array.isArray(products)) {
+        log('Resposta IS não é array', typeof products);
         return [];
       }
-      log(`✅ VTEX Catalog API: ${json.length} produtos brutos`);
+      log(`✅ Intelligent Search: ${products.length} produtos brutos`);
+      return products.map(extractFromVtexProduct).filter(p => p && p.name && p.priceCash);
+    }
+
+    // ----- ESTRATÉGIA 2: VTEX CATALOG API (JSON, legado) -----
+    // Quando a URL tem só categorias, a API antiga funciona. Com specifications
+    // (capacidade-btus, tecnologia) ela retorna 400 — então só uso os primeiros
+    // segmentos com map "c,c,c,...".
+    async function tryVtexCatalogApi(originalUrl) {
+      const { origin, segments, apiMap, order } = vtexUrlParts(originalUrl);
+      // Mantém só os segmentos correspondentes a "c" (categorias) — descarta specs
+      const mapEntries = apiMap.split(',');
+      const catSegments = [];
+      for (let i = 0; i < segments.length && i < mapEntries.length; i++) {
+        if (mapEntries[i] === 'c') catSegments.push(segments[i]);
+        else break;
+      }
+      if (catSegments.length === 0) {
+        log('Catalog API: nenhuma categoria detectada, pulando');
+        return [];
+      }
+      const catMap = catSegments.map(() => 'c').join(',');
+      const qs = [`map=${catMap}`];
+      if (order) qs.push(`O=${order}`);
+      qs.push('_from=0', '_to=49');
+      const apiUrl =
+        `${origin}/api/catalog_system/pub/products/search/${catSegments.join('/')}?${qs.join('&')}`;
+      log('🎯 VTEX Catalog API URL (só categorias):', apiUrl);
+      const { json } = await fetchViaProxy(apiUrl, true);
+      if (!Array.isArray(json)) return [];
+      log(`✅ Catalog API: ${json.length} produtos brutos`);
       return json.map(extractFromVtexProduct).filter(p => p && p.name && p.priceCash);
     }
 
+    // ----- ESTRATÉGIA 3: __STATE__ embutido no HTML (Apollo cache do VTEX IO) -----
+    // VTEX IO injeta o cache do Apollo Client no HTML como window.__STATE__ = {...}.
+    // Lá dentro tem entries "Product:sp-12345" com nome, preço, link, imagem, etc.
+    // Como a 1a tentativa do log já mostrou que o HTML vem completo (2.7MB), essa
+    // é geralmente a fonte mais rica para sites VTEX IO renderizados no servidor.
+    function tryVtexState(html) {
+      // Captura o conteúdo de window.__STATE__ = { ... };
+      // Usa parser tolerante porque o JSON é gigante e pode ter caracteres Unicode
+      const startMarker = 'window.__STATE__';
+      const idx = html.indexOf(startMarker);
+      if (idx === -1) {
+        log('__STATE__: marker não encontrado no HTML');
+        return [];
+      }
+      // Acha o '{' que abre o objeto após "window.__STATE__ = "
+      const openIdx = html.indexOf('{', idx);
+      if (openIdx === -1) return [];
+
+      // Walker de chaves para achar o '}' correspondente, ignorando os que estão dentro de strings
+      let depth = 0, inStr = false, esc = false, end = -1;
+      for (let i = openIdx; i < html.length; i++) {
+        const c = html[i];
+        if (inStr) {
+          if (esc) esc = false;
+          else if (c === '\\') esc = true;
+          else if (c === '"') inStr = false;
+          continue;
+        }
+        if (c === '"') inStr = true;
+        else if (c === '{') depth++;
+        else if (c === '}') { depth--; if (depth === 0) { end = i; break; } }
+      }
+      if (end === -1) {
+        log('__STATE__: não conseguiu fechar o objeto');
+        return [];
+      }
+      const jsonStr = html.slice(openIdx, end + 1);
+      log(`__STATE__: blob extraído, ${jsonStr.length} chars`);
+
+      let state;
+      try { state = JSON.parse(jsonStr); }
+      catch (e) { log('__STATE__ parse falhou:', e.message); return []; }
+
+      // Apollo cache: chaves no formato "Product:sp-12345"
+      const productKeys = Object.keys(state).filter(k => /^Product:/.test(k));
+      log(`__STATE__: ${productKeys.length} entradas Product:* no cache`);
+      if (productKeys.length === 0) return [];
+
+      // Resolve referências do Apollo: {"__ref": "Product:sp-12345"} → state["Product:sp-12345"]
+      const resolveRef = (val) => {
+        if (val && typeof val === 'object' && val.__ref && state[val.__ref]) {
+          return state[val.__ref];
+        }
+        return val;
+      };
+      const walk = (val) => {
+        if (Array.isArray(val)) return val.map(walk);
+        if (val && typeof val === 'object') {
+          if (val.__ref) return walk(resolveRef(val));
+          const out = {};
+          for (const k of Object.keys(val)) out[k] = walk(val[k]);
+          return out;
+        }
+        return val;
+      };
+
+      const products = [];
+      for (const key of productKeys) {
+        const raw = walk(state[key]);
+        if (!raw || !raw.productName) continue;
+        // Se items vier como referência ainda, Apollo guarda em chaves vizinhas
+        if (raw.items && Array.isArray(raw.items)) {
+          products.push(raw);
+        } else {
+          products.push(raw);
+        }
+      }
+      log(`__STATE__: ${products.length} produtos resolvidos`);
+      return products.map(extractFromVtexProduct).filter(p => p && p.name && p.priceCash);
+    }
+
     function extractFromVtexProduct(p) {
-      // Inspirado no scrapeFrigelar: pega o primeiro item/seller, calcula desconto,
-      // monta string de parcelas como Leveros faz.
-      const item   = (p.items   && p.items[0])   || {};
+      // Cobre 3 formatos: Catalog API, Intelligent Search e __STATE__ Apollo cache.
+      // Inspirado no scrapeFrigelar (escolhe seller/offer) e no Leveros (parcelas).
+      if (!p) return null;
+
+      const item   = (p.items && p.items[0]) || {};
       const seller = (item.sellers && item.sellers.find(s => s.sellerDefault)) ||
                      (item.sellers && item.sellers[0]) || {};
       const offer  = seller.commertialOffer || {};
 
-      // Preço: Price = à vista (com desconto PIX se houver),
-      //        ListPrice / PriceWithoutDiscount = preço cheio parcelado
-      const priceCash   = offer.Price ?? null;
-      const priceListed = offer.ListPrice ?? offer.PriceWithoutDiscount ?? null;
+      // Preço — tenta vários caminhos pq cada API formata diferente
+      let priceCash =
+        offer.Price ??
+        (p.priceRange && p.priceRange.sellingPrice && p.priceRange.sellingPrice.lowPrice) ??
+        p.price ??
+        null;
+      let priceListed =
+        offer.ListPrice ??
+        offer.PriceWithoutDiscount ??
+        (p.priceRange && p.priceRange.listPrice && p.priceRange.listPrice.highPrice) ??
+        p.listPrice ??
+        null;
 
-      if (!priceCash) return null; // descarta esgotado/sem preço (igual Dufrio faz)
+      if (!priceCash) return null;
 
-      // Melhor plano de parcelamento: maior nº de parcelas SEM JUROS (igual Frigelar)
-      const insts = offer.Installments || [];
-      const semJuros = insts.filter(i => i.InterestRate === 0);
+      // Parcelamento (maior nº de parcelas SEM JUROS, igual Frigelar)
+      const insts = offer.Installments || offer.installments || [];
+      const semJuros = insts.filter(i => (i.InterestRate ?? i.interestRate) === 0);
       const best = (semJuros.length ? semJuros : insts)
-        .slice().sort((a, b) => b.NumberOfInstallments - a.NumberOfInstallments)[0];
+        .slice().sort((a, b) =>
+          (b.NumberOfInstallments ?? b.numberOfInstallments) -
+          (a.NumberOfInstallments ?? a.numberOfInstallments))[0];
 
       let priceInstallment = '';
-      if (best && best.NumberOfInstallments > 1) {
-        const total = best.NumberOfInstallments * best.Value;
-        priceInstallment =
-          `ou ${fmtPrice(total)} em ${best.NumberOfInstallments}x de ${fmtPrice(best.Value)}` +
-          (best.InterestRate === 0 ? ' sem juros' : '');
+      if (best) {
+        const n = best.NumberOfInstallments ?? best.numberOfInstallments ?? 0;
+        const v = best.Value ?? best.value ?? 0;
+        const r = best.InterestRate ?? best.interestRate ?? 0;
+        if (n > 1 && v > 0) {
+          priceInstallment =
+            `ou ${fmtPrice(n * v)} em ${n}x de ${fmtPrice(v)}` +
+            (r === 0 ? ' sem juros' : '');
+        }
       }
 
-      // Imagem: VTEX retorna lista de imagens; pega a primeira (cadeia de fallback)
-      const image =
-        (item.images && item.images[0] &&
-          (item.images[0].imageUrl || item.images[0].imageUrl?.startsWith?.('//')
-            ? 'https:' + item.images[0].imageUrl
-            : item.images[0].imageUrl)) || '';
+      // Imagem (cadeia de fallback igual Dufrio)
+      let image = '';
+      const imgs = item.images || p.images || [];
+      if (imgs[0]) image = imgs[0].imageUrl || imgs[0].url || imgs[0];
+      if (typeof image === 'string' && image.startsWith('//')) image = 'https:' + image;
+
+      // Link
+      let url = p.link || p.linkText || '';
+      if (url && !url.startsWith('http')) {
+        url = 'https://www.webcontinental.com.br/' + url.replace(/^\//, '') +
+              (url.includes('/p') ? '' : '/p');
+      }
 
       return {
-        name: p.productName || (item.name || ''),
+        name: p.productName || p.name || item.name || '',
         image,
         priceCash,
         priceListed,
         priceInstallment,
-        url: p.link || ''
+        url
       };
     }
 
@@ -741,33 +878,47 @@
       let products = [];
       let strategy = '';
 
-      // 1. VTEX Catalog API (JSON)
+      // 1. VTEX Intelligent Search API (moderno, suporta especificações)
       try {
-        setStatus('<span class="spinner"></span>Tentando VTEX Catalog API...', 'VTEX Catalog API');
-        products = await tryVtexCatalogApi(url);
-        if (products.length > 0) strategy = 'VTEX Catalog API';
-      } catch (e) {
-        log('VTEX Catalog API falhou:', e.message);
-      }
+        setStatus('<span class="spinner"></span>VTEX Intelligent Search...', 'VTEX Intelligent Search');
+        products = await tryVtexIntelligentSearch(url);
+        if (products.length > 0) strategy = 'VTEX Intelligent Search';
+      } catch (e) { log('Intelligent Search falhou:', e.message); }
 
-      // 2. HTML + JSON-LD / seletores
+      // 2. VTEX Catalog API legada (só categorias, descarta specs)
       if (products.length === 0) {
         try {
-          setStatus('<span class="spinner"></span>Tentando JSON-LD / seletores HTML...', 'HTML fallback');
-          const { text: html } = await fetchViaProxy(url, false);
-          const doc = new DOMParser().parseFromString(html, 'text/html');
+          setStatus('<span class="spinner"></span>VTEX Catalog API...', 'VTEX Catalog API');
+          products = await tryVtexCatalogApi(url);
+          if (products.length > 0) strategy = 'VTEX Catalog API';
+        } catch (e) { log('Catalog API falhou:', e.message); }
+      }
 
-          products = tryJsonLd(doc);
+      // 3. HTML + estratégias de parsing (a HTML do WebContinental tem ~2.7MB e
+      //    contém o cache Apollo do VTEX IO embutido em window.__STATE__)
+      if (products.length === 0) {
+        try {
+          setStatus('<span class="spinner"></span>Baixando HTML para extrair __STATE__...', 'HTML + __STATE__');
+          const { text: html } = await fetchViaProxy(url, false);
+
+          // 3a. __STATE__ Apollo cache (mais rico em sites VTEX IO)
+          products = tryVtexState(html);
           if (products.length > 0) {
-            strategy = 'JSON-LD';
+            strategy = 'VTEX __STATE__ (Apollo cache)';
           } else {
-            log('JSON-LD vazio. Tentando seletores VTEX no HTML...');
-            products = tryVtexSelectors(doc);
-            if (products.length > 0) strategy = 'Seletores VTEX (HTML)';
+            // 3b. JSON-LD
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            products = tryJsonLd(doc);
+            if (products.length > 0) {
+              strategy = 'JSON-LD';
+            } else {
+              // 3c. Seletores VTEX no HTML
+              log('JSON-LD vazio. Tentando seletores VTEX no HTML...');
+              products = tryVtexSelectors(doc);
+              if (products.length > 0) strategy = 'Seletores VTEX (HTML)';
+            }
           }
-        } catch (e) {
-          log('Fallback HTML falhou:', e.message);
-        }
+        } catch (e) { log('Fallback HTML falhou:', e.message); }
       }
 
       btn.disabled = false;
