@@ -606,22 +606,44 @@
     });
 
     // Carregar e exibir última atualização
+    // Dados de atualizações embutidos
+    const updatesData = {
+      "updates": [
+        {
+          "date": "26/04/2026",
+          "time": "00:09",
+          "title": "Otimizar Scraper e Índex para Mobile",
+          "description": "Adaptado scraper e índex para mobile com grid responsivo, fonts dinâmicas, padding inteligente e breakpoints para tablet e mobile pequeno."
+        },
+        {
+          "date": "25/04/2026",
+          "time": "21:46",
+          "title": "Redesenhar Atualização com Tooltip",
+          "description": "Status de atualização agora é um badge discreto com tooltip ao invés de card grande."
+        },
+        {
+          "date": "25/04/2026",
+          "time": "21:30",
+          "title": "Limpeza e Melhorias no Scraper",
+          "description": "Removidos 7 arquivos desnecessários de teste e cache. Corrigido problema de busca de Dufrio normalizando ciclo."
+        }
+      ]
+    };
+
     async function loadLastUpdate() {
       try {
-        const response = await fetch('updates.json?t=' + new Date().getTime());
-        const data = await response.json();
+        const data = updatesData;
         if (data.updates && data.updates.length > 0) {
           const latest = data.updates[0];
           document.getElementById('update-title').textContent = latest.title;
           document.getElementById('update-desc').textContent = latest.description;
           document.getElementById('update-datetime').innerHTML = `
-            <div style="font-weight: 600; color: #4facfe;">${latest.date}</div>
-            <div>${latest.time}</div>
+            <div style="font-weight: 600; color: #4facfe; margin-bottom: 4px;">📅 ${latest.date}</div>
+            <div style="font-weight: 700; color: #00e676;">⏰ ${latest.time}</div>
           `;
         }
       } catch(e) {
         console.error('Erro ao carregar atualizações:', e);
-        document.getElementById('update-status').innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">Não foi possível carregar o histórico de atualizações</div>';
       }
     }
 
