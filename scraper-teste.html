@@ -320,12 +320,36 @@
     }
     .debug-log.open { display: block; }
 
+    .debug-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+    .copy-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      font-family: var(--font-outfit);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .copy-btn:active { background: rgba(255,255,255,0.15); }
+    .copy-btn.copied { background: var(--green); color: #000; border-color: var(--green); }
+
     @media (max-width: 768px) {
-      .container { padding: 24px 14px 60px; }
+      .container { padding: 24px 14px 140px; }
       h1 { font-size: 26px; }
       .subtitle { font-size: 13px; }
       input[type="text"] { min-width: 100%; }
       button.primary { width: 100%; }
+      .debug-log { font-size: 10px; max-height: 400px; }
     }
   </style>
 </head>
@@ -360,7 +384,10 @@
     <div id="results" class="grid"></div>
     <div id="emptyState" class="empty" style="display:none">Nenhum produto encontrado. Verifique o console (F12) para detalhes.</div>
 
-    <div class="debug-toggle" onclick="toggleDebug()">▶ Mostrar log de debug</div>
+    <div class="debug-actions">
+      <div class="debug-toggle" onclick="toggleDebug()">▶ Mostrar log de debug</div>
+      <button class="copy-btn" onclick="copyLog(this)">📋 Copiar log</button>
+    </div>
     <div class="debug-log" id="debugLog"></div>
   </div>
 
@@ -401,12 +428,32 @@
       if (data !== undefined) console.log(msg, data); else console.log(msg);
     }
 
-    function toggleDebug() {
+    function toggleDebug(forceOpen) {
       const box = document.getElementById('debugLog');
       const toggle = document.querySelector('.debug-toggle');
-      box.classList.toggle('open');
+      if (forceOpen === true) box.classList.add('open');
+      else if (forceOpen === false) box.classList.remove('open');
+      else box.classList.toggle('open');
       toggle.innerHTML = box.classList.contains('open')
         ? '▼ Esconder log de debug' : '▶ Mostrar log de debug';
+    }
+
+    async function copyLog(btn) {
+      const txt = document.getElementById('debugLog').textContent || '(log vazio)';
+      try {
+        await navigator.clipboard.writeText(txt);
+      } catch(e) {
+        // Fallback para mobile/contextos sem clipboard API
+        const ta = document.createElement('textarea');
+        ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch(_) {}
+        ta.remove();
+      }
+      const old = btn.textContent;
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1500);
     }
 
     function setError(title, detail) {
@@ -728,11 +775,12 @@
       if (products.length === 0) {
         setError(
           'Nenhum produto encontrado',
-          'O site provavelmente renderiza tudo no cliente e nenhuma das estratégias deu certo. ' +
-          'Abra o log de debug abaixo (ou o console) pra ver detalhes.'
+          'Nenhuma estratégia funcionou. O log abaixo foi aberto automaticamente — ' +
+          'use "📋 Copiar log" pra mandar pro suporte.'
         );
         setStatus('Falha. Veja o log abaixo.', '');
         document.getElementById('emptyState').style.display = 'block';
+        toggleDebug(true); // abre o log automaticamente quando falha
         return;
       }
 
