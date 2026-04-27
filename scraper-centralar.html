@@ -559,33 +559,51 @@
           const title = titleEl.innerText.trim();
           if (!title || seen.has(title)) return;
 
-          // Link do produto (a extensão não pega; aqui buscamos o <a> mais
-          // representativo: prefere o que tem o nome, senão qualquer <a href>)
+          // Link do produto. Tenta ordem específica → genérica.
+          // Casos que cubro:
+          //   1. <a class="name"> ou <a class="thumb"> dentro do card
+          //   2. Qualquer <a href> com /p/ ou /produto/ no caminho
+          //   3. O card raiz pode SER um <a> (Hybris faz isso às vezes)
+          //   4. Qualquer <a href> não-vazio dentro do card
           let link = '';
-          const linkEl = card.querySelector('a.name, a.thumb, a[href*="/p/"], a[href]');
-          if (linkEl) {
-            link = linkEl.getAttribute('href') || '';
-            if (link && !link.startsWith('http')) {
-              link = 'https://www.centralar.com.br' + (link.startsWith('/') ? '' : '/') + link;
+          const linkCandidates = [
+            card.querySelector('a.name'),
+            card.querySelector('a.thumb'),
+            card.querySelector('a[href*="/p/"]'),
+            card.querySelector('a[href*="/produto/"]'),
+            (card.tagName === 'A' ? card : null),
+            card.closest('a[href]'),
+            card.querySelector('a[href]:not([href=""]):not([href="#"])')
+          ];
+          for (const el of linkCandidates) {
+            if (el) {
+              const h = el.getAttribute('href') || '';
+              if (h && h !== '#' && !h.startsWith('javascript:')) { link = h; break; }
             }
           }
+          if (link && !link.startsWith('http')) {
+            link = 'https://www.centralar.com.br' + (link.startsWith('/') ? '' : '/') + link;
+          }
 
-          // Imagem (cadeia de fallback igual à extensão)
+          // Imagem — filtro mais permissivo. Só descarta data:image e .svg
+          // (que costuma ser ícone). Aceita qualquer URL absoluta ou relativa.
           let image = '';
-          const imgEl = card.querySelector('a.thumb img, .thumb img, img[class*="thumb"], img');
+          const imgEl = card.querySelector(
+            'a.thumb img, .thumb img, img[class*="thumb"], picture img, img'
+          );
           if (imgEl) {
-            const attrs = ['data-src', 'src', 'data-lazy-src', 'srcset'];
+            const attrs = ['data-src', 'data-original', 'data-lazy-src', 'src', 'srcset', 'data-srcset'];
             for (const attr of attrs) {
               let s = imgEl.getAttribute(attr);
-              if (s && typeof s === 'string' &&
-                  !s.startsWith('data:image') && !s.includes('.svg')) {
-                if (s.includes(' ')) s = s.split(' ')[0]; // srcset → 1ª URL
-                if (s.includes('castaticstorage') || /\.(jpe?g|png|webp)/i.test(s)) {
-                  if (s.startsWith('//')) s = 'https:' + s;
-                  image = s;
-                  break;
-                }
-              }
+              if (!s || typeof s !== 'string') continue;
+              if (s.startsWith('data:image')) continue;
+              // srcset → pega a primeira URL
+              if (attr.includes('srcset') || s.includes(' ')) s = s.split(',')[0].trim().split(' ')[0];
+              if (!s || s.endsWith('.svg')) continue;
+              if (s.startsWith('//')) s = 'https:' + s;
+              if (s.startsWith('/'))  s = 'https://www.centralar.com.br' + s;
+              image = s;
+              break;
             }
           }
 
@@ -639,6 +657,19 @@
       });
 
       log(`Extraídos ${products.length} produtos válidos de ${cards.length} cards`);
+
+      // Diagnóstico: se algum produto saiu sem imagem ou link, dumpa o HTML
+      // do PRIMEIRO card pra a gente ver onde estão escondidos.
+      const semImg  = products.filter(p => !p.image).length;
+      const semLink = products.filter(p => !p.url).length;
+      if ((semImg || semLink) && cards.length > 0) {
+        log(`⚠️  ${semImg} sem imagem, ${semLink} sem link.`);
+        log('--- HTML do 1º card (primeiros 2000 chars) ---');
+        const sample = cards[0].outerHTML || '';
+        log(sample.slice(0, 2000).replace(/\s+/g, ' '));
+        log('--- fim ---');
+      }
+
       return products;
     }
 
