@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Scraper Central Ar - Em Teste</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base: #050505;
+      --card-bg: rgba(20, 20, 20, 0.6);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #ffffff;
+      --text-muted: #888888;
+      --accent: #ec4899;
+      --green: #10b981;
+      --font-outfit: 'Outfit', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-outfit);
+      min-height: 100vh;
+      background: var(--bg-base);
+      color: var(--text-main);
+      overflow-x: hidden;
+    }
+
+    .aurora {
+      position: fixed;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: -1;
+      opacity: 0.2;
+      animation: auroraAnim 18s infinite alternate ease-in-out;
+    }
+    .aurora-1 { background: #ec4899; top: -10%; left: -10%; }
+    .aurora-2 { background: #6366f1; bottom: -10%; right: -5%; animation-duration: 22s; }
+
+    @keyframes auroraAnim {
+      0% { transform: scale(1) translate(0, 0); }
+      100% { transform: scale(1.3) translate(50px, -50px); }
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px 140px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .back-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .back-link:hover { color: var(--text-main); }
+
+    .badge-test {
+      background: rgba(236, 72, 153, 0.15);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 30px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: 1px solid rgba(236, 72, 153, 0.3);
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 32px;
+    }
+
+    .form-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 280px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text-main);
+      font-family: var(--font-outfit);
+      font-size: 13px;
+      outline: none;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    button.primary {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-family: var(--font-outfit);
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      min-width: 140px;
+    }
+    button.primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
+    }
+    button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: rgba(20, 20, 20, 0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--text-muted);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .status-bar .counter { color: var(--green); font-weight: 800; font-size: 16px; }
+
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .error-box b { color: #ef4444; display: block; margin-bottom: 4px; font-size: 14px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .product-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(236, 72, 153, 0.4);
+    }
+
+    .product-img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .product-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .product-name {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      min-height: 50px;
+      color: var(--text-main);
+    }
+
+    .product-price-cash {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--green);
+      letter-spacing: -0.5px;
+    }
+
+    .product-price-installment {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .product-link {
+      display: block;
+      text-align: center;
+      background: rgba(236, 72, 153, 0.15);
+      color: var(--accent);
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-top: 8px;
+      border: 1px solid rgba(236, 72, 153, 0.25);
+    }
+    .product-link:hover {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .debug-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+    .debug-toggle {
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      user-select: none;
+    }
+    .debug-toggle:hover { color: var(--text-main); }
+    .copy-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      font-family: var(--font-outfit);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .copy-btn.copied { background: var(--green); color: #000; border-color: var(--green); }
+
+    .debug-log {
+      display: none;
+      margin-top: 12px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #a3e635;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .debug-log.open { display: block; }
+
+    @media (max-width: 768px) {
+      .container { padding: 24px 14px 140px; }
+      h1 { font-size: 26px; }
+      .subtitle { font-size: 13px; }
+      input[type="text"] { min-width: 100%; }
+      button.primary { width: 100%; }
+      .debug-log { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="aurora aurora-1"></div>
+  <div class="aurora aurora-2"></div>
+
+  <div class="container">
+    <div class="top-bar">
+      <a href="index.html" class="back-link">&larr; Voltar ao Hub</a>
+      <span class="badge-test">Em Teste — Central Ar</span>
+    </div>
+
+    <h1>Scraper Central Ar</h1>
+    <p class="subtitle">Bancada de testes para extrair produtos do <b>centralar.com.br</b>. Usa exatamente os seletores que já provaram funcionar na extensão (extractDataCentralAr).</p>
+
+    <div class="form-card">
+      <label for="urlInput">URL para Raspar</label>
+      <div class="input-row">
+        <input type="text" id="urlInput" value="https://www.centralar.com.br/ar-condicionado/inverter/c/INVERTER?sort=price-asc&q=%3Arelevance%3Afeature-capacity-btu%3A9000">
+        <button class="primary" id="btnScrape" onclick="scrape()">Raspar</button>
+      </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+      <div id="statusText">Pronto. Cole uma URL e clique em <b style="color:#fff">Raspar</b>.</div>
+      <div><span class="counter" id="counter">0</span> produtos</div>
+    </div>
+
+    <div id="errorContainer"></div>
+    <div id="results" class="grid"></div>
+    <div id="emptyState" class="empty" style="display:none">Nenhum produto encontrado.</div>
+
+    <div class="debug-actions">
+      <div class="debug-toggle" onclick="toggleDebug()">▶ Mostrar log de debug</div>
+      <button class="copy-btn" onclick="copyLog(this)">📋 Copiar log</button>
+    </div>
+    <div class="debug-log" id="debugLog"></div>
+  </div>
+
+  <script>
+    // ============================================================
+    // SCRAPER CENTRAL AR (centralar.com.br)
+    //
+    // Seletores aproveitados da extensão Chrome (extensao/content.js,
+    // função extractDataCentralAr) que já provou funcionar dentro da
+    // página renderizada. Aqui usamos os mesmos seletores no HTML que
+    // vem do servidor via proxy (Central Ar é Hybris/SAP Commerce, que
+    // renderiza SSR — então o HTML cru já contém os cards).
+    // ============================================================
+
+    const PROXY_DEFAULT = "https://corsproxy.io/?";
+    const PROXY_WORKER  = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+
+    function log(msg, data) {
+      const ts = new Date().toLocaleTimeString();
+      const debugBox = document.getElementById('debugLog');
+      debugBox.textContent += `[${ts}] ${msg}` +
+        (data !== undefined ? ' ' + JSON.stringify(data).slice(0, 250) : '') + '\n';
+      debugBox.scrollTop = debugBox.scrollHeight;
+      if (data !== undefined) console.log(msg, data); else console.log(msg);
+    }
+
+    function toggleDebug(forceOpen) {
+      const box = document.getElementById('debugLog');
+      const toggle = document.querySelector('.debug-toggle');
+      if (forceOpen === true) box.classList.add('open');
+      else if (forceOpen === false) box.classList.remove('open');
+      else box.classList.toggle('open');
+      toggle.innerHTML = box.classList.contains('open')
+        ? '▼ Esconder log de debug' : '▶ Mostrar log de debug';
+    }
+
+    async function copyLog(btn) {
+      const txt = document.getElementById('debugLog').textContent || '(log vazio)';
+      try {
+        await navigator.clipboard.writeText(txt);
+      } catch(e) {
+        const ta = document.createElement('textarea');
+        ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch(_) {}
+        ta.remove();
+      }
+      const old = btn.textContent;
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = old; btn.classList.remove('copied'); }, 1500);
+    }
+
+    function setError(title, detail) {
+      document.getElementById('errorContainer').innerHTML =
+        `<div class="error-box"><b>${title}</b>${detail || ''}</div>`;
+    }
+    function clearError() { document.getElementById('errorContainer').innerHTML = ''; }
+
+    function setStatus(text) {
+      document.getElementById('statusText').innerHTML = text;
+    }
+
+    function escape(s) {
+      return String(s || '').replace(/[<>&"']/g,
+        c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // Tenta corsproxy.io e, se falhar, o worker (que faz spoof de Origin)
+    async function fetchHtml(targetUrl) {
+      const tryProxy = async (proxyBase, label) => {
+        const u = proxyBase + encodeURIComponent(targetUrl);
+        log(`→ ${label}`, u);
+        const t0 = performance.now();
+        const resp = await fetch(u, { cache: 'no-store' });
+        log(`← ${label} HTTP ${resp.status} em ${Math.round(performance.now()-t0)}ms`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const text = await resp.text();
+        log(`  HTML: ${text.length} chars`);
+        return text;
+      };
+      try { return await tryProxy(PROXY_DEFAULT, 'corsproxy.io'); }
+      catch (e1) {
+        log(`corsproxy.io falhou (${e1.message}). Tentando worker...`);
+        return await tryProxy(PROXY_WORKER, 'worker (Origin spoof)');
+      }
+    }
+
+    // ============================================================
+    // EXTRAÇÃO — Mesmos seletores da extensão (extractDataCentralAr)
+    // Diferença: aqui também extraímos o LINK do produto (a extensão
+    // não precisava porque já estava na página).
+    // ============================================================
+    function extractProductsFromDoc(doc) {
+      const cards = doc.querySelectorAll(
+        '.pdc_product-item, .card-product, [class*="product-item"], [class*="product_item"]'
+      );
+      log(`Cards encontrados: ${cards.length}`);
+      if (cards.length === 0) return [];
+
+      const products = [];
+      const seen = new Set();
+
+      cards.forEach((card, idx) => {
+        try {
+          // Título (mesmos seletores da extensão)
+          const titleEl = card.querySelector('a.name, .product-name, [class*="title"], h2, h3');
+          if (!titleEl) { log(`  card[${idx}]: sem título, ignorado`); return; }
+          const title = titleEl.innerText.trim();
+          if (!title || seen.has(title)) return;
+
+          // Link do produto (a extensão não pega; aqui buscamos o <a> mais
+          // representativo: prefere o que tem o nome, senão qualquer <a href>)
+          let link = '';
+          const linkEl = card.querySelector('a.name, a.thumb, a[href*="/p/"], a[href]');
+          if (linkEl) {
+            link = linkEl.getAttribute('href') || '';
+            if (link && !link.startsWith('http')) {
+              link = 'https://www.centralar.com.br' + (link.startsWith('/') ? '' : '/') + link;
+            }
+          }
+
+          // Imagem (cadeia de fallback igual à extensão)
+          let image = '';
+          const imgEl = card.querySelector('a.thumb img, .thumb img, img[class*="thumb"], img');
+          if (imgEl) {
+            const attrs = ['data-src', 'src', 'data-lazy-src', 'srcset'];
+            for (const attr of attrs) {
+              let s = imgEl.getAttribute(attr);
+              if (s && typeof s === 'string' &&
+                  !s.startsWith('data:image') && !s.includes('.svg')) {
+                if (s.includes(' ')) s = s.split(' ')[0]; // srcset → 1ª URL
+                if (s.includes('castaticstorage') || /\.(jpe?g|png|webp)/i.test(s)) {
+                  if (s.startsWith('//')) s = 'https:' + s;
+                  image = s;
+                  break;
+                }
+              }
+            }
+          }
+
+          // Preços via regex no texto do card (mesma técnica da extensão)
+          const cardText = card.innerText.replace(/\s+/g, ' ').trim();
+
+          // Preço à vista: PRIMEIRO R$ que aparece e NÃO está dentro do bloco
+          // de parcelamento (i.e. não é seguido por "x de" ou precedido por "em N x")
+          let priceCash = null;
+          let priceCashRaw = '';
+          const allPrices = [...cardText.matchAll(/r\$\s*([\d.]+,\d{2})/gi)];
+          if (allPrices.length > 0) {
+            priceCashRaw = allPrices[0][0];
+            priceCash = parseFloat(allPrices[0][1].replace(/\./g, '').replace(',', '.'));
+          }
+
+          // Parcelamento: "ou R$ X em/até Nx de R$ Y"
+          let priceInstallment = '';
+          const instMatch = cardText.match(
+            /(?:ou\s+)?r\$\s*[\d.,]+\s*(?:em|até|ate)?\s*\d+\s*x\s*de\s*r\$\s*[\d.,]+/i
+          );
+          if (instMatch) {
+            priceInstallment = instMatch[0]
+              .replace(/sem\s+juros/gi, '')
+              .replace(/\s+/g, ' ')
+              .replace(/^(\s*ou\s+)?/i, 'ou ')
+              .replace(/\s+(em|até|ate)\s+/i, ' até ')
+              .trim();
+          } else {
+            const fallback = cardText.match(/\d+\s*x\s*de\s*r\$\s*[\d.,]+/i);
+            if (fallback) priceInstallment = fallback[0].trim();
+          }
+
+          if (!priceCash) {
+            log(`  card[${idx}] "${title.slice(0,40)}...": sem preço, ignorado`);
+            return;
+          }
+
+          seen.add(title);
+          products.push({
+            name: title,
+            image,
+            priceCash,
+            priceCashRaw,
+            priceInstallment,
+            url: link
+          });
+        } catch (e) {
+          log(`  card[${idx}] erro: ${e.message}`);
+        }
+      });
+
+      log(`Extraídos ${products.length} produtos válidos de ${cards.length} cards`);
+      return products;
+    }
+
+    function fmtPrice(v) {
+      if (v === null || v === undefined || isNaN(v)) return '';
+      return 'R$ ' + Number(v).toLocaleString('pt-BR',
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function render(products) {
+      const grid = document.getElementById('results');
+      grid.innerHTML = '';
+      document.getElementById('counter').textContent = products.length;
+      document.getElementById('emptyState').style.display = products.length ? 'none' : 'block';
+
+      products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          ${p.image ? `<img class="product-img" src="${escape(p.image)}" alt="${escape(p.name)}" loading="lazy" onerror="this.style.display='none'">` : ''}
+          <div class="product-body">
+            <div class="product-name">${escape(p.name)}</div>
+            ${p.priceCash ? `<div class="product-price-cash">${fmtPrice(p.priceCash)} <span style="font-size:13px;font-weight:600;color:var(--text-muted)">à vista</span></div>` : ''}
+            ${p.priceInstallment ? `<div class="product-price-installment">${escape(p.priceInstallment)}</div>` : ''}
+            ${p.url ? `<a href="${escape(p.url)}" target="_blank" rel="noopener" class="product-link">Abrir no Site</a>` : ''}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function scrape() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) { setError('URL vazia', 'Informe uma URL para raspar.'); return; }
+
+      clearError();
+      document.getElementById('results').innerHTML = '';
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('counter').textContent = '0';
+      document.getElementById('debugLog').textContent = '';
+
+      const btn = document.getElementById('btnScrape');
+      btn.disabled = true;
+      setStatus('<span class="spinner"></span>Buscando página via proxy...');
+      log('🚀 Iniciando scrape', url);
+
+      try {
+        const html = await fetchHtml(url);
+        const doc  = new DOMParser().parseFromString(html, 'text/html');
+        const products = extractProductsFromDoc(doc);
+
+        if (products.length === 0) {
+          setError(
+            'Nenhum produto encontrado',
+            'O HTML veio mas nenhum card casou com os seletores conhecidos. ' +
+            'Pode ser que a Central Ar tenha mudado o template, ou que a página ' +
+            'renderize via JS no cliente. O log abaixo foi aberto automaticamente.'
+          );
+          setStatus('Falha. Veja o log abaixo.');
+          document.getElementById('emptyState').style.display = 'block';
+          toggleDebug(true);
+          return;
+        }
+
+        log(`✅ Concluído: ${products.length} produtos`);
+        render(products);
+        setStatus(`Concluído. <b style="color:#fff">${products.length}</b> produtos extraídos.`);
+      } catch (e) {
+        log('❌ ERRO', e.message);
+        setError('Falha ao raspar', e.message);
+        setStatus('Falha. Veja o log abaixo.');
+        toggleDebug(true);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
