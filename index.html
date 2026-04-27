@@ -523,10 +523,10 @@
     <div class="meta-footer">
       <div><span class="status-dot"></span> Sistemas Operacionais e Online<br><span style="font-size: 14px; opacity: 0.8; display: block; margin-top: 5px;">Criado em 16/09/2024 por Thiago Luz</span></div>
       <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
-        <div style="cursor: pointer; display: inline-block;" onclick="toggleUpdateInfo()">
+        <div style="display: inline-block;">
           <span style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase;">📦 Última atualização</span>
         </div>
-        <div id="update-info-content" style="display: none; margin-top: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+        <div id="update-info-content" style="display: block; margin-top: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
           <div id="update-title" style="color: #4facfe; font-weight: 800; margin-bottom: 6px; font-size: 12px;">--</div>
           <div id="update-desc" style="color: var(--text-main); font-size: 12px; line-height: 1.4; margin-bottom: 8px;">Carregando...</div>
           <div id="update-datetime" style="color: var(--text-muted); font-size: 11px; text-align: right;">--</div>
@@ -606,40 +606,21 @@
       else gridO.appendChild(card);
     });
 
-    // Carregar e exibir última atualização
-    let updateInfoVisible = false;
-
-    function toggleUpdateInfo() {
-      const content = document.getElementById('update-info-content');
-      updateInfoVisible = !updateInfoVisible;
-      content.style.display = updateInfoVisible ? 'block' : 'none';
-    }
-
-    // Mostrar automaticamente no desktop ao passar o mouse
-    function initUpdateUI() {
-      const updateLabel = document.querySelector('[onclick="toggleUpdateInfo()"]');
-      if (updateLabel) {
-        updateLabel.addEventListener('mouseenter', () => {
-          if (window.innerWidth > 768) {
-            document.getElementById('update-info-content').style.display = 'block';
-          }
-        });
-        updateLabel.addEventListener('mouseleave', () => {
-          if (window.innerWidth > 768) {
-            document.getElementById('update-info-content').style.display = 'none';
-          }
-        });
-      }
-    }
-
+    // Painel de "Última atualização" agora fica permanentemente visível
+    // (sem toggle / hover). loadLastUpdate() popula no DOMContentLoaded.
     document.addEventListener('DOMContentLoaded', () => {
       loadLastUpdate();
-      initUpdateUI();
     });
 
     // Dados de atualizações embutidos
     const updatesData = {
       "updates": [
+        {
+          "date": "27/04/2026",
+          "time": "TBD",
+          "title": "Fixes: Dufrio URL crua + Central Ar matching + atualização sempre visível",
+          "description": "scrapeDufrio agora usa a URL exata da planilha (não reconstrói categoria — corrigia 9000 só frio Hi Wall). Matching da Central Ar afrouxado (aceita 'Central Ar', 'centralar', 'central-ar' etc). Cache-buster em todos os fetches pra resposta fresca a cada pesquisa. Painel de 'Última atualização' agora fica permanentemente visível na home."
+        },
         {
           "date": "27/04/2026",
           "time": "14:19",
