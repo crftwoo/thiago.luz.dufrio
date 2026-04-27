@@ -874,15 +874,11 @@
           return;
         }
 
-        log(`✅ Listagem ok: ${products.length} produtos`);
+        // Usar SEMPRE a thumb da listagem (foto ambientada — primeira do site).
+        // O enhance via PDP foi removido porque trazia a foto-conjunto
+        // (AC + controle + condensadora), que não é o que aparece na listagem.
+        log(`✅ Concluído: ${products.length} produtos`);
         render(products);
-        setStatus(`<span class="spinner"></span>Listagem ok (${products.length}). Buscando imagens reais nas fichas...`);
-
-        // Enriquece com imagens reais da PDP (thumbs da listagem às vezes
-        // são banners "OFERTAS"/"QUENTE E FRIO" em vez da foto do produto).
-        await enhanceWithPdpImages(products);
-        render(products);
-
         setStatus(`Concluído. <b style="color:#fff">${products.length}</b> produtos extraídos.`);
       } catch (e) {
         log('❌ ERRO', e.message);
