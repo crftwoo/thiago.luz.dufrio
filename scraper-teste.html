@@ -664,19 +664,25 @@
                      (item.sellers && item.sellers[0]) || {};
       const offer  = seller.commertialOffer || {};
 
-      // Preço — tenta vários caminhos pq cada API formata diferente
-      let priceCash =
-        offer.Price ??
+      // VTEX expõe TRÊS preços distintos:
+      //   • spotPrice  → "à vista" no PIX/Boleto (com desconto adicional)
+      //   • Price      → 1x no cartão (preço com desconto base)
+      //   • ListPrice  → preço cheio, sem desconto (riscado na vitrine)
+      // O preço de destaque é o spotPrice quando ele existe e é menor que Price,
+      // exatamente como a vitrine da WebContinental mostra.
+      const priceSpot       =
+        offer.spotPrice ?? offer.SpotPrice ??
         (p.priceRange && p.priceRange.sellingPrice && p.priceRange.sellingPrice.lowPrice) ??
-        p.price ??
         null;
-      let priceListed =
-        offer.ListPrice ??
-        offer.PriceWithoutDiscount ??
+      const priceCardOnePay =
+        offer.Price ?? p.price ?? null;
+      const priceListed     =
+        offer.ListPrice ?? offer.PriceWithoutDiscount ??
         (p.priceRange && p.priceRange.listPrice && p.priceRange.listPrice.highPrice) ??
-        p.listPrice ??
-        null;
+        p.listPrice ?? null;
 
+      // Preferência: spotPrice (PIX/Boleto). Se não tiver, cai pro Price (1x cartão).
+      const priceCash = priceSpot ?? priceCardOnePay;
       if (!priceCash) return null;
 
       // Parcelamento (maior nº de parcelas SEM JUROS, igual Frigelar)
@@ -693,8 +699,13 @@
         const v = best.Value ?? best.value ?? 0;
         const r = best.InterestRate ?? best.interestRate ?? 0;
         if (n > 1 && v > 0) {
+          // Total das parcelas: usa o Price exato (1x cartão) p/ não dar diferença
+          // de centavos por arredondamento de n*v.
+          const total = (priceCardOnePay && priceCardOnePay >= n * v - 0.5)
+            ? priceCardOnePay
+            : n * v;
           priceInstallment =
-            `ou ${fmtPrice(n * v)} em ${n}x de ${fmtPrice(v)}` +
+            `ou ${fmtPrice(total)} em ${n}x de ${fmtPrice(v)}` +
             (r === 0 ? ' sem juros' : '');
         }
       }
@@ -718,7 +729,10 @@
         priceCash,
         priceListed,
         priceInstallment,
-        url
+        url,
+        // Sufixo "à vista" só faz sentido quando spotPrice é o preço destacado
+        // (i.e. quando há desconto adicional PIX/Boleto vs. preço de cartão)
+        hasSpotPrice: priceSpot != null && priceCardOnePay != null && priceSpot < priceCardOnePay
       };
     }
 
@@ -847,11 +861,13 @@
         const discountPct = hasDiscount
           ? Math.round((p.priceListed - p.priceCash) / p.priceListed * 100) : 0;
 
+        const cashSuffix = p.hasSpotPrice
+          ? ` <span style="font-size:13px;font-weight:600;color:var(--text-muted)">à vista</span>` : '';
         card.innerHTML = `
           ${p.image ? `<img class="product-img" src="${escape(p.image)}" alt="${escape(p.name)}" loading="lazy" onerror="this.style.display='none'">` : ''}
           <div class="product-body">
             <div class="product-name">${escape(p.name)}</div>
-            ${p.priceCash ? `<div class="product-price-cash">${fmtPrice(p.priceCash)}${hasDiscount ? ` <span style="font-size:11px;color:#f59e0b;font-weight:700">-${discountPct}%</span>` : ''}</div>` : ''}
+            ${p.priceCash ? `<div class="product-price-cash">${fmtPrice(p.priceCash)}${cashSuffix}${hasDiscount ? ` <span style="font-size:11px;color:#f59e0b;font-weight:700">-${discountPct}%</span>` : ''}</div>` : ''}
             ${p.priceInstallment ? `<div class="product-price-installment">${escape(p.priceInstallment)}</div>` : ''}
             ${p.url ? `<a href="${escape(p.url)}" target="_blank" rel="noopener" class="product-link">Abrir no Site</a>` : ''}
           </div>
