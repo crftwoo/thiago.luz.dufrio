@@ -697,34 +697,80 @@
     // PDP IMAGE ENHANCE
     // A thumb da listagem do Central Ar muitas vezes é um banner-stamp
     // ("OFERTAS"/"QUENTE E FRIO") em vez da foto do produto. A foto real
-    // só aparece no carrossel da PDP, em:
-    //   .pdp-carousel-wrapper .gallery-image-body
-    //     .owl-carousel.image-carousel .owl-item.active img
-    // O src segue o padrão:
+    // só aparece no carrossel da PDP. O src tem padrão estável:
     //   https://casticstorage.blob.core.windows.net/centralar/mds/produtos/
     //     <slug>/<codigo>/1000x1000/<arquivo>.jpg
-    // Aqui buscamos cada PDP via proxy e substituímos a imagem.
+    //
+    // OBS: o carrossel é Owl, e classes como .owl-item.active /.owl-stage
+    // são adicionadas em runtime via JS. No HTML cru que o proxy traz,
+    // elas NÃO existem. Por isso a estratégia principal é:
+    //   1) Procurar QUALQUER <img> com URL no padrão ...casticstorage...
+    //      /1000x1000/  (essa é a foto canônica do produto na PDP).
+    //   2) Se não achar, cair em seletores estruturais (carousel-item,
+    //      pdp-carousel-wrapper, gallery-image-body).
+    //   3) Se ainda não achar, tentar meta og:image.
     // ============================================================
-    const PDP_IMAGE_SELECTORS = [
-      '.pdp-carousel-wrapper .owl-item.active img',
-      '.pdp-carousel-wrapper .gallery-image-body .owl-item img',
-      '.image-carousel.pdp .owl-item img',
-      '.pdp-carousel-wrapper img',
-      '.gallery-image-body img'
-    ];
+
+    function pickFromImg(el) {
+      const attrs = ['src', 'data-src', 'data-original', 'data-lazy-src', 'srcset', 'data-srcset'];
+      for (const a of attrs) {
+        let s = el.getAttribute(a);
+        if (!s || typeof s !== 'string') continue;
+        if (s.startsWith('data:image')) continue;
+        if (a.includes('srcset') || s.includes(' ')) s = s.split(',')[0].trim().split(' ')[0];
+        if (!s || s.endsWith('.svg')) continue;
+        if (s.startsWith('//')) s = 'https:' + s;
+        if (s.startsWith('/'))  s = 'https://www.centralar.com.br' + s;
+        return s;
+      }
+      return '';
+    }
+
+    function isProductPdpUrl(s) {
+      if (!s) return false;
+      // foto canônica da PDP do Central Ar fica em casticstorage e tem /1000x1000/
+      return s.includes('casticstorage.blob.core.windows.net') && /\/1000x1000\//i.test(s);
+    }
 
     function extractPdpImage(doc) {
-      for (const sel of PDP_IMAGE_SELECTORS) {
+      // 1) Busca por padrão de URL (mais confiável que estrutura DOM)
+      const allImgs = Array.from(doc.querySelectorAll('img'));
+      for (const im of allImgs) {
+        const s = pickFromImg(im);
+        if (isProductPdpUrl(s)) return { src: s, via: 'url-pattern 1000x1000' };
+      }
+      // 1b) Mesmo padrão mas em <source> de <picture>
+      for (const so of doc.querySelectorAll('source')) {
+        let s = so.getAttribute('srcset') || so.getAttribute('data-srcset') || '';
+        if (s.includes(',') || s.includes(' ')) s = s.split(',')[0].trim().split(' ')[0];
+        if (s.startsWith('//')) s = 'https:' + s;
+        if (isProductPdpUrl(s)) return { src: s, via: 'source srcset' };
+      }
+
+      // 2) Seletores estruturais (sem depender de classes runtime do Owl)
+      const STRUCT_SELECTORS = [
+        '.pdp-carousel-wrapper .carousel-item img',
+        '.pdp-carousel-wrapper .image-carousel img',
+        '.pdp-carousel-wrapper .gallery-image-body img',
+        '.pdp-carousel-wrapper img',
+        '.gallery-image-body img',
+        '.image-carousel img',
+        '.pdp .image-carousel img'
+      ];
+      for (const sel of STRUCT_SELECTORS) {
         const el = doc.querySelector(sel);
         if (!el) continue;
-        const attrs = ['src', 'data-src', 'data-original', 'data-lazy-src'];
-        for (const a of attrs) {
-          let s = el.getAttribute(a);
-          if (!s || s.startsWith('data:image') || s.endsWith('.svg')) continue;
-          if (s.startsWith('//')) s = 'https:' + s;
-          if (s.startsWith('/'))  s = 'https://www.centralar.com.br' + s;
-          return { src: s, selector: sel };
-        }
+        const s = pickFromImg(el);
+        if (s && !s.endsWith('.svg')) return { src: s, via: sel };
+      }
+
+      // 3) Fallback final: meta og:image (sempre presente em PDP)
+      const og = doc.querySelector('meta[property="og:image"], meta[name="og:image"]');
+      if (og) {
+        let s = og.getAttribute('content') || '';
+        if (s.startsWith('//')) s = 'https:' + s;
+        if (s.startsWith('/'))  s = 'https://www.centralar.com.br' + s;
+        if (s) return { src: s, via: 'og:image' };
       }
       return null;
     }
@@ -735,7 +781,7 @@
 
       log(`🖼  Buscando imagens reais nas PDPs (${targets.length})...`);
       const BATCH = 5;
-      let done = 0, ok = 0;
+      let done = 0, ok = 0, firstDumped = false;
 
       for (let i = 0; i < targets.length; i += BATCH) {
         const batch = targets.slice(i, i + BATCH);
@@ -747,17 +793,27 @@
             if (found && found.src) {
               p.image = found.src;
               ok++;
+              if (!firstDumped) {
+                firstDumped = true;
+                log(`  ✓ 1ª PDP via [${found.via}]: ${found.src.slice(0,120)}`);
+              }
             } else {
-              log(`  PDP sem imagem: ${p.name.slice(0,50)}`);
+              log(`  ✗ PDP sem imagem: ${p.name.slice(0,50)}`);
+              if (!firstDumped) {
+                firstDumped = true;
+                log(`    HTML: ${html.length} chars; <img>=${doc.querySelectorAll('img').length}`);
+                const sample = Array.from(doc.querySelectorAll('img')).slice(0, 6)
+                  .map(im => (im.getAttribute('src')||im.getAttribute('data-src')||'').slice(0,100));
+                sample.forEach((s, j) => log(`    img[${j}]: ${s}`));
+              }
             }
           } catch (e) {
-            log(`  PDP erro (${p.name.slice(0,40)}): ${e.message}`);
+            log(`  ✗ PDP erro (${p.name.slice(0,40)}): ${e.message}`);
           } finally {
             done++;
           }
         }));
         setStatus(`<span class="spinner"></span>Buscando imagens reais nas fichas (${done}/${targets.length})...`);
-        // re-render incremental p/ usuário ver as imagens chegando
         render(products);
       }
       log(`🖼  PDP images: ${ok}/${targets.length} resolvidas`);
