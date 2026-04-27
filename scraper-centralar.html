@@ -372,13 +372,14 @@
 
   <script>
     // ============================================================
-    // SCRAPER CENTRAL AR (centralar.com.br)
+    // SCRAPER CENTRAL AR — site oficial (centralar.com.br)
     //
-    // Seletores aproveitados da extensão Chrome (extensao/content.js,
-    // função extractDataCentralAr) que já provou funcionar dentro da
-    // página renderizada. Aqui usamos os mesmos seletores no HTML que
-    // vem do servidor via proxy (Central Ar é Hybris/SAP Commerce, que
-    // renderiza SSR — então o HTML cru já contém os cards).
+    // IMPORTANTE: a função extractDataCentralAr() da extensão usa
+    // seletores da PLATAFORMA DE PARCEIROS deles (.pdc_product-item),
+    // que NÃO casam com o site oficial. Aqui usamos seletores
+    // genéricos de Hybris/SAP Commerce. Se nenhum casar, a ferramenta
+    // entra em "modo descoberta" e mostra as classes mais frequentes
+    // do HTML para a gente identificar o seletor correto.
     // ============================================================
 
     const PROXY_DEFAULT = "https://corsproxy.io/?";
@@ -456,16 +457,96 @@
     }
 
     // ============================================================
-    // EXTRAÇÃO — Mesmos seletores da extensão (extractDataCentralAr)
-    // Diferença: aqui também extraímos o LINK do produto (a extensão
-    // não precisava porque já estava na página).
+    // EXTRAÇÃO — seletores genéricos de Hybris/SAP Commerce.
+    // Tenta vários em ordem; o primeiro que retornar > 0 cards vence.
     // ============================================================
-    function extractProductsFromDoc(doc) {
-      const cards = doc.querySelectorAll(
-        '.pdc_product-item, .card-product, [class*="product-item"], [class*="product_item"]'
-      );
-      log(`Cards encontrados: ${cards.length}`);
-      if (cards.length === 0) return [];
+    const CARD_SELECTORS = [
+      // Hybris/SAP Commerce (o que mais provavelmente casa no site oficial)
+      '.product-listing-item',
+      '.product__item',
+      '.product-grid-item',
+      '.product-item',
+      '.searchPageProductWrapper > *',
+      '.tile-product',
+      'li[class*="product-item"]',
+      'div[class*="ProductGridItem"]',
+      'article[class*="product"]',
+      // Fallbacks genéricos
+      '[class*="product-tile"]',
+      '[class*="ProductTile"]',
+      '[data-product-id]',
+      '[data-product-code]',
+      // Os da extensão (caso o site oficial herde algo da plataforma)
+      '.pdc_product-item',
+      '.card-product'
+    ];
+
+    function findCards(doc) {
+      for (const sel of CARD_SELECTORS) {
+        const cards = doc.querySelectorAll(sel);
+        if (cards.length > 0) {
+          log(`✓ Seletor "${sel}" achou ${cards.length} cards`);
+          return { cards, selector: sel };
+        }
+      }
+      return { cards: [], selector: null };
+    }
+
+    // Modo descoberta: quando NENHUM seletor casa, varre o HTML e mostra
+    // as classes mais frequentes que parecem ser de produto. Isso permite
+    // identificar o seletor correto sem precisar adivinhar.
+    function diagnoseHtml(doc, html) {
+      log('━━━ MODO DESCOBERTA ━━━');
+      log(`HTML body: ${doc.body ? doc.body.outerHTML.length : 0} chars`);
+
+      // Conta classes que aparecem em mais de 1 elemento e contêm palavras-chave
+      const KEYWORDS = ['product', 'item', 'card', 'tile', 'listing', 'gallery'];
+      const classCount = {};
+      doc.querySelectorAll('[class]').forEach(el => {
+        const classes = (el.getAttribute('class') || '').split(/\s+/);
+        for (const c of classes) {
+          if (!c) continue;
+          const lc = c.toLowerCase();
+          if (KEYWORDS.some(k => lc.includes(k))) {
+            classCount[c] = (classCount[c] || 0) + 1;
+          }
+        }
+      });
+      const top = Object.entries(classCount)
+        .filter(([,n]) => n >= 2)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 25);
+
+      log('Top classes que contêm product/item/card/tile/listing (count ≥ 2):');
+      for (const [cls, n] of top) log(`  ${n.toString().padStart(3)}× .${cls}`);
+
+      // IDs com palavras-chave (ex: VTEX usa #productList; Hybris usa #productListContainer)
+      const ids = [];
+      doc.querySelectorAll('[id]').forEach(el => {
+        const id = el.getAttribute('id') || '';
+        if (KEYWORDS.some(k => id.toLowerCase().includes(k))) ids.push(id);
+      });
+      if (ids.length) log('IDs com palavras-chave: ' + ids.slice(0, 15).join(', '));
+
+      // Tags <meta> e <title> ajudam a identificar a plataforma
+      const platform = doc.querySelector('meta[name="generator"], meta[name="platform"]');
+      if (platform) log('meta platform: ' + platform.getAttribute('content'));
+      const title = doc.querySelector('title');
+      if (title) log('<title>: ' + title.textContent.trim().slice(0, 100));
+
+      // Dump dos primeiros 800 chars do <body> p/ inspecionar manualmente
+      const bodyHtml = doc.body ? doc.body.outerHTML : '';
+      log('--- body (primeiros 800 chars) ---');
+      log(bodyHtml.slice(0, 800).replace(/\s+/g, ' '));
+      log('--- fim do trecho ---');
+    }
+
+    function extractProductsFromDoc(doc, html) {
+      const { cards, selector } = findCards(doc);
+      if (cards.length === 0) {
+        diagnoseHtml(doc, html);
+        return [];
+      }
 
       const products = [];
       const seen = new Set();
@@ -607,14 +688,14 @@
       try {
         const html = await fetchHtml(url);
         const doc  = new DOMParser().parseFromString(html, 'text/html');
-        const products = extractProductsFromDoc(doc);
+        const products = extractProductsFromDoc(doc, html);
 
         if (products.length === 0) {
           setError(
             'Nenhum produto encontrado',
-            'O HTML veio mas nenhum card casou com os seletores conhecidos. ' +
-            'Pode ser que a Central Ar tenha mudado o template, ou que a página ' +
-            'renderize via JS no cliente. O log abaixo foi aberto automaticamente.'
+            'Nenhum dos seletores conhecidos casou. O log abaixo está em ' +
+            '"modo descoberta" — mostra as classes/IDs mais frequentes do ' +
+            'HTML p/ a gente identificar o seletor correto. Use 📋 Copiar log.'
           );
           setStatus('Falha. Veja o log abaixo.');
           document.getElementById('emptyState').style.display = 'block';
