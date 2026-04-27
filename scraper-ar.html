@@ -445,19 +445,22 @@
     }
 
     // --- SCRAPING DUFRIO ---
-    // Usa a URL exata da planilha — fonte de verdade. Sem reconstrução,
-    // sem suposição de categoria/path. Só adiciona ordenação por preço
-    // e cache-buster.
+    // Usa a URL exata da planilha. Único pré-processamento: a Dufrio
+    // (Magento) espera `ec_capacidade[0]=X` (notação de array). Se a
+    // planilha veio com `ec_capacidade=X` (sem [0]), o filtro é ignorado
+    // e o site devolve 0 produtos. Convertemos só essa chave.
     async function scrapeDufrio(url) {
       try {
         console.log("🔗 Dufrio URL da planilha:", url);
-        const u = new URL(url);
-        u.searchParams.set('product_list_dir', 'asc');
-        u.searchParams.set('product_list_order', 'price');
-        u.searchParams.set('_', Date.now());
-        const fullUrl = u.toString();
-        console.log("🎯 URL final Dufrio:", fullUrl);
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl);
+        let processedUrl = url;
+        if (/[?&]ec_capacidade=/.test(processedUrl) && !/ec_capacidade(%5B|\[)/i.test(processedUrl)) {
+          processedUrl = processedUrl.replace(/([?&])ec_capacidade=/g, '$1ec_capacidade[0]=');
+          console.log("🔧 Dufrio: ec_capacidade= → ec_capacidade[0]= (Magento exige array)");
+        }
+        // Cache-buster (mantém ordenação que veio da planilha; só append do _)
+        processedUrl += (processedUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
+        console.log("🎯 URL final Dufrio:", processedUrl);
+        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(processedUrl);
 
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         const html = await resp.text();
@@ -466,6 +469,10 @@
 
         const items = Array.from(doc.querySelectorAll('.product-item'));
         console.log(`📊 Dufrio: encontrados ${items.length} items brutos`);
+        if (items.length === 0) {
+          const t = doc.querySelector('title');
+          console.log(`⚠️  Dufrio devolveu 0 .product-item. <title>:`, t ? t.textContent.trim() : '(sem)');
+        }
         const result = items.map(card => {
            const titleEl = card.querySelector('a.product-item-link');
            if (!titleEl) return null;
