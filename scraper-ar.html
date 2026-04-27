@@ -445,36 +445,17 @@
     }
 
     // --- SCRAPING DUFRIO ---
-    // Reconstrói a URL canônica da Dufrio a partir dos filtros da planilha
-    // (categoria via path; ec_capacidade e ec_ciclo via params).
-    function parseDufrioFilters(url) {
-      const p = new URL(url), caps = [];
-      p.searchParams.forEach((v,k) => { if(k.startsWith("ec_capacidade")) caps.push(v.trim()); });
-      const ciclo = p.searchParams.get("ec_ciclo") || null;
-      const path = p.pathname;
-      let cat = "ar-condicionado-split-inverter";
-      if(path.includes("piso-teto")) cat = "ar-condicionado-split-piso-teto";
-      else if(path.includes("cassete")) cat = "ar-condicionado-split-cassete";
-      return { capacidades: caps, ciclo, categoria: cat };
-    }
-
+    // Usa a URL exata da planilha — fonte de verdade. Sem reconstrução,
+    // sem suposição de categoria/path. Só adiciona ordenação por preço
+    // e cache-buster.
     async function scrapeDufrio(url) {
       try {
-        console.log("🔗 Dufrio URL original da planilha:", url);
-        const f = parseDufrioFilters(url);
-        console.log("📦 Filtros extraídos:", f);
-
-        let categoryUrl = "https://www.dufrio.com.br/ar-condicionado/" + f.categoria;
-        let queryParams = [];
-        if (f.capacidades.length > 0) {
-            f.capacidades.forEach((c, idx) => queryParams.push(`ec_capacidade[${idx}]=${encodeURIComponent(c)}`));
-        }
-        if (f.ciclo) queryParams.push(`ec_ciclo=${encodeURIComponent(f.ciclo)}`);
-        queryParams.push('product_list_dir=asc');
-        queryParams.push('product_list_order=price');
-        queryParams.push('_=' + Date.now()); // cache-buster
-
-        const fullUrl = categoryUrl + "?" + queryParams.join("&");
+        console.log("🔗 Dufrio URL da planilha:", url);
+        const u = new URL(url);
+        u.searchParams.set('product_list_dir', 'asc');
+        u.searchParams.set('product_list_order', 'price');
+        u.searchParams.set('_', Date.now());
+        const fullUrl = u.toString();
         console.log("🎯 URL final Dufrio:", fullUrl);
         const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl);
 
@@ -879,23 +860,24 @@
           );
         }
 
-        // Central Ar — URL construída a partir da BTU selecionada (mesmo
-        // padrão de URL que o piloto scraper-centralar.html já valida).
-        // Não depende de linha na planilha. Por enquanto só dispara em
-        // buscas de Hi Wall (URL "inverter" cobre essa categoria).
-        const tipoLower = String(selection.tipo || '').toLowerCase();
-        const btuNum = String(selection.btu || '').replace(/\D/g, '');
-        const isHiWall = tipoLower.includes('hi wall') || tipoLower.includes('hi-wall') || tipoLower.includes('hiwall');
-        if (btuNum && isHiWall) {
-          const centralArUrl = `https://www.centralar.com.br/ar-condicionado/inverter/c/INVERTER?sort=price-asc&q=%3Arelevance%3Afeature-capacity-btu%3A${btuNum}`;
-          console.log("🔗 Central Ar URL:", centralArUrl);
+        // Central Ar — URL crua da planilha (mesma regra das outras lojas).
+        // Matching frouxo no nome do site: aceita "Central Ar", "centralar",
+        // "central-ar", "Central AR" — espaços/hífens/underscores ignorados.
+        const centralArLink = links.find(l => {
+          if (!l.Site) return false;
+          const s = String(l.Site).toLowerCase().replace(/[\s\-_]/g, '');
+          return s === "centralar";
+        });
+        console.log("🔎 Central Ar — sites na planilha p/ essa busca:", links.map(l => l.Site));
+        if (centralArLink && centralArLink.Link) {
+          console.log("🔎 Central Ar — linha casou:", centralArLink);
           scrapePromises.push(
-            scrapeCentralAr(centralArUrl).then(products => {
+            scrapeCentralAr(centralArLink.Link).then(products => {
               return products.map(p => ({...p, storeName: "Central Ar"}));
             })
           );
         } else {
-          console.log("⚠️  Central Ar pulado — tipo não é Hi Wall ou BTU vazia. tipo:", selection.tipo, "btu:", selection.btu);
+          console.log("⚠️  Central Ar — sem linha 'Central Ar' na planilha pra essa combinação.");
         }
 
         const resultsArrays = await Promise.all(scrapePromises);
