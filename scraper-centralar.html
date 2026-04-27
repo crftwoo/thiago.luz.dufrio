@@ -585,25 +585,27 @@
             link = 'https://www.centralar.com.br' + (link.startsWith('/') ? '' : '/') + link;
           }
 
-          // Imagem — filtro mais permissivo. Só descarta data:image e .svg
-          // (que costuma ser ícone). Aceita qualquer URL absoluta ou relativa.
+          // Imagem — Hybris coloca vários <img> dentro do card: ícones SVG de
+          // feature (tecnologia, frio, cobre...) E a foto do produto. Precisamos
+          // iterar TODOS e pegar o primeiro que parece ser foto de produto.
+          // Critérios para descartar: data:image, .svg, e qualquer caminho
+          // /_ui/ (assets de UI da Hybris).
           let image = '';
-          const imgEl = card.querySelector(
-            'a.thumb img, .thumb img, img[class*="thumb"], picture img, img'
-          );
-          if (imgEl) {
-            const attrs = ['data-src', 'data-original', 'data-lazy-src', 'src', 'srcset', 'data-srcset'];
+          const imgEls = card.querySelectorAll('img');
+          imageLoop: for (const imgEl of imgEls) {
+            const attrs = ['data-src', 'data-original', 'data-lazy-src', 'srcset', 'data-srcset', 'src'];
             for (const attr of attrs) {
               let s = imgEl.getAttribute(attr);
               if (!s || typeof s !== 'string') continue;
               if (s.startsWith('data:image')) continue;
-              // srcset → pega a primeira URL
               if (attr.includes('srcset') || s.includes(' ')) s = s.split(',')[0].trim().split(' ')[0];
-              if (!s || s.endsWith('.svg')) continue;
+              if (!s) continue;
+              if (s.endsWith('.svg')) continue;
+              if (s.includes('/_ui/')) continue; // assets de UI Hybris (ícones)
               if (s.startsWith('//')) s = 'https:' + s;
               if (s.startsWith('/'))  s = 'https://www.centralar.com.br' + s;
               image = s;
-              break;
+              break imageLoop;
             }
           }
 
@@ -664,9 +666,16 @@
       const semLink = products.filter(p => !p.url).length;
       if ((semImg || semLink) && cards.length > 0) {
         log(`⚠️  ${semImg} sem imagem, ${semLink} sem link.`);
-        log('--- HTML do 1º card (primeiros 2000 chars) ---');
+        // Lista todos os <img> do 1º card (URLs encurtadas) p/ ver onde estão
+        const imgs = cards[0].querySelectorAll('img');
+        log(`<img> no 1º card: ${imgs.length}`);
+        imgs.forEach((im, i) => {
+          const src = im.getAttribute('src') || im.getAttribute('data-src') || '';
+          log(`  img[${i}]: ${src.slice(0, 120)}`);
+        });
+        log('--- HTML do 1º card (primeiros 6000 chars) ---');
         const sample = cards[0].outerHTML || '';
-        log(sample.slice(0, 2000).replace(/\s+/g, ' '));
+        log(sample.slice(0, 6000).replace(/\s+/g, ' '));
         log('--- fim ---');
       }
 
