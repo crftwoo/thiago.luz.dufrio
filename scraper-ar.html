@@ -445,16 +445,36 @@
     }
 
     // --- SCRAPING DUFRIO ---
-    // Usa a URL exata da planilha. Só garante ordenação por preço asc e
-    // adiciona cache-buster pra forçar resposta fresca a cada busca.
+    // Reconstrói a URL canônica da Dufrio a partir dos filtros da planilha
+    // (categoria via path; ec_capacidade e ec_ciclo via params).
+    function parseDufrioFilters(url) {
+      const p = new URL(url), caps = [];
+      p.searchParams.forEach((v,k) => { if(k.startsWith("ec_capacidade")) caps.push(v.trim()); });
+      const ciclo = p.searchParams.get("ec_ciclo") || null;
+      const path = p.pathname;
+      let cat = "ar-condicionado-split-inverter";
+      if(path.includes("piso-teto")) cat = "ar-condicionado-split-piso-teto";
+      else if(path.includes("cassete")) cat = "ar-condicionado-split-cassete";
+      return { capacidades: caps, ciclo, categoria: cat };
+    }
+
     async function scrapeDufrio(url) {
       try {
-        console.log("🔗 Dufrio URL da planilha:", url);
-        const u = new URL(url);
-        u.searchParams.set('product_list_dir', 'asc');
-        u.searchParams.set('product_list_order', 'price');
-        u.searchParams.set('_', Date.now());
-        const fullUrl = u.toString();
+        console.log("🔗 Dufrio URL original da planilha:", url);
+        const f = parseDufrioFilters(url);
+        console.log("📦 Filtros extraídos:", f);
+
+        let categoryUrl = "https://www.dufrio.com.br/ar-condicionado/" + f.categoria;
+        let queryParams = [];
+        if (f.capacidades.length > 0) {
+            f.capacidades.forEach((c, idx) => queryParams.push(`ec_capacidade[${idx}]=${encodeURIComponent(c)}`));
+        }
+        if (f.ciclo) queryParams.push(`ec_ciclo=${encodeURIComponent(f.ciclo)}`);
+        queryParams.push('product_list_dir=asc');
+        queryParams.push('product_list_order=price');
+        queryParams.push('_=' + Date.now()); // cache-buster
+
+        const fullUrl = categoryUrl + "?" + queryParams.join("&");
         console.log("🎯 URL final Dufrio:", fullUrl);
         const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(fullUrl);
 
