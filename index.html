@@ -617,6 +617,12 @@
       "updates": [
         {
           "date": "27/04/2026",
+          "time": "20:33",
+          "title": "Fix Dufrio 9000 só frio Hi Wall: ec_capacidade vira array Magento",
+          "description": "URL da planilha trazia 'ec_capacidade=9.000+BTUs' mas a Dufrio (Magento) só aceita o filtro como array: 'ec_capacidade[0]=9.000+BTUs'. Sem [0] o site ignorava o filtro e devolvia 0 produtos. As outras URLs da planilha já vêm com [0], por isso só essa quebrava. Pré-processo mínimo: adiciono [0] quando vem sem array. Resto da URL intocado."
+        },
+        {
+          "date": "27/04/2026",
           "time": "20:17",
           "title": "Princípio firme: SEMPRE usar URL crua da planilha em todos os scrapers",
           "description": "Dufrio volta a usar URL exata do sheet (sem reconstruir categoria). Central Ar volta a vir do sheet (com matching frouxo: 'Central Ar', 'centralar', 'central-ar' etc). Sem mais reconstrução de URL e sem suposição de path — a planilha é a única fonte de verdade."
