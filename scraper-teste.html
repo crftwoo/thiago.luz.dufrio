@@ -520,6 +520,64 @@
       return { origin: u.origin, segments, apiMap, order, query };
     }
 
+    // Extrai os filtros de especificação da URL (segmentos cujo map NÃO é category-N).
+    // Ex.: /.../hi-wall/9000-btus/inverter?map=c,c,c,capacidade-btus,tecnologia
+    //   → ["9000-btus", "inverter"]
+    // Esses slugs viram tokens de busca p/ filtrar o resultado da API e garantir
+    // que só vêm produtos que casam com TODOS os filtros do link original.
+    function extractUrlSpecSlugs(originalUrl) {
+      const u = new URL(originalUrl);
+      const segments = u.pathname.split('/').filter(Boolean);
+      const map = (u.searchParams.get('map') || '').split(',').map(s => s.trim());
+      const slugs = [];
+      for (let i = 0; i < segments.length && i < map.length; i++) {
+        if (map[i] && !/^category-?\d*$/i.test(map[i]) && map[i] !== 'c') {
+          slugs.push(segments[i]);
+        }
+      }
+      return slugs;
+    }
+
+    // Token mais distintivo de um slug. "9000-btus" → "9000"; "inverter" → "inverter".
+    function distinctiveToken(slug) {
+      const parts = slug.split('-').filter(Boolean);
+      const numeric = parts.find(p => /^\d+$/.test(p));
+      if (numeric) return numeric;
+      return parts.slice().sort((a, b) => b.length - a.length)[0] || slug;
+    }
+
+    // Constrói uma string com tudo que vale procurar dentro de um produto VTEX
+    // (nome + valores de todas as especificações). Cobre formato Catalog API,
+    // Intelligent Search e __STATE__ Apollo cache.
+    function productHaystack(p) {
+      let s = (p.productName || p.name || '') + ' ' + (p.productTitle || '');
+      // Catalog API: specs como chaves top-level
+      if (Array.isArray(p.allSpecifications)) {
+        for (const spec of p.allSpecifications) {
+          const vals = p[spec];
+          if (Array.isArray(vals)) s += ' ' + vals.join(' ');
+        }
+      }
+      // Intelligent Search / Apollo: specs como array de objetos
+      if (Array.isArray(p.specifications)) {
+        for (const spec of p.specifications) {
+          if (spec.name) s += ' ' + spec.name;
+          if (Array.isArray(spec.values)) s += ' ' + spec.values.join(' ');
+        }
+      }
+      return s.toLowerCase();
+    }
+
+    function matchesUrlSpecs(product, slugs) {
+      if (!slugs.length) return true;
+      const hay = productHaystack(product);
+      for (const slug of slugs) {
+        const tok = distinctiveToken(slug).toLowerCase();
+        if (!hay.includes(tok)) return false;
+      }
+      return true;
+    }
+
     // ----- ESTRATÉGIA 1: VTEX INTELLIGENT SEARCH (JSON, moderno) -----
     // Esse é o endpoint usado pelo VTEX IO. Ao contrário da Catalog API antiga,
     // ele aceita especificações (capacidade-btus, tecnologia) misturadas com
@@ -540,16 +598,20 @@
         return [];
       }
       log(`✅ Intelligent Search: ${products.length} produtos brutos`);
-      return products.map(extractFromVtexProduct).filter(p => p && p.name && p.priceCash);
+      // Filtra pelas specs da URL (9000-btus, inverter, ...)
+      const slugs = extractUrlSpecSlugs(originalUrl);
+      const filtered = products.filter(p => matchesUrlSpecs(p, slugs));
+      log(`   ${products.length} → ${filtered.length} após filtro de specs (${slugs.join(', ') || 'nenhuma'})`);
+      return filtered.map(extractFromVtexProduct).filter(p => p && p.name && p.priceCash);
     }
 
     // ----- ESTRATÉGIA 2: VTEX CATALOG API (JSON, legado) -----
-    // Quando a URL tem só categorias, a API antiga funciona. Com specifications
-    // (capacidade-btus, tecnologia) ela retorna 400 — então só uso os primeiros
-    // segmentos com map "c,c,c,...".
+    // A Catalog API pública só aceita CATEGORIAS no path (HTTP 400 com specs).
+    // Solução: chamar sem specs (path só de categorias), paginar todos os
+    // resultados (limite 50 por página) e filtrar no cliente pelos slugs de
+    // especificação da URL original. Garante que só sobrem produtos que casam.
     async function tryVtexCatalogApi(originalUrl) {
       const { origin, segments, apiMap, order } = vtexUrlParts(originalUrl);
-      // Mantém só os segmentos correspondentes a "c" (categorias) — descarta specs
       const mapEntries = apiMap.split(',');
       const catSegments = [];
       for (let i = 0; i < segments.length && i < mapEntries.length; i++) {
@@ -561,16 +623,40 @@
         return [];
       }
       const catMap = catSegments.map(() => 'c').join(',');
-      const qs = [`map=${catMap}`];
-      if (order) qs.push(`O=${order}`);
-      qs.push('_from=0', '_to=49');
-      const apiUrl =
-        `${origin}/api/catalog_system/pub/products/search/${catSegments.join('/')}?${qs.join('&')}`;
-      log('🎯 VTEX Catalog API URL (só categorias):', apiUrl);
-      const { json } = await fetchViaProxy(apiUrl, true);
-      if (!Array.isArray(json)) return [];
-      log(`✅ Catalog API: ${json.length} produtos brutos`);
-      return json.map(extractFromVtexProduct).filter(p => p && p.name && p.priceCash);
+      const baseUrl =
+        `${origin}/api/catalog_system/pub/products/search/${catSegments.join('/')}` +
+        `?map=${catMap}` + (order ? `&O=${order}` : '');
+      log('🎯 VTEX Catalog API URL (só categorias):', baseUrl);
+
+      const slugs = extractUrlSpecSlugs(originalUrl);
+      log(`   filtros pós-API a aplicar: [${slugs.join(', ') || 'nenhum'}]`);
+
+      // Paginação: VTEX limita a 50 itens por página. Vai buscando até a API
+      // retornar menos de 50 (sinal de fim) ou bater um limite de segurança.
+      const PAGE = 50;
+      const MAX_PAGES = 8; // até 400 produtos varridos
+      const allFiltered = [];
+      let totalRaw = 0;
+      for (let page = 0; page < MAX_PAGES; page++) {
+        const from = page * PAGE;
+        const to   = from + PAGE - 1;
+        const pageUrl = `${baseUrl}&_from=${from}&_to=${to}`;
+        try {
+          const { json } = await fetchViaProxy(pageUrl, true);
+          if (!Array.isArray(json) || json.length === 0) break;
+          totalRaw += json.length;
+          for (const p of json) {
+            if (matchesUrlSpecs(p, slugs)) allFiltered.push(p);
+          }
+          log(`   página ${page+1}: ${json.length} brutos → ${allFiltered.length} acumulados após filtro`);
+          if (json.length < PAGE) break; // última página
+        } catch (e) {
+          log(`   página ${page+1} falhou: ${e.message}`);
+          break;
+        }
+      }
+      log(`✅ Catalog API: ${totalRaw} brutos varridos → ${allFiltered.length} após filtro de specs`);
+      return allFiltered.map(extractFromVtexProduct).filter(p => p && p.name && p.priceCash);
     }
 
     // ----- ESTRATÉGIA 3: __STATE__ embutido no HTML (Apollo cache do VTEX IO) -----
@@ -578,7 +664,7 @@
     // Lá dentro tem entries "Product:sp-12345" com nome, preço, link, imagem, etc.
     // Como a 1a tentativa do log já mostrou que o HTML vem completo (2.7MB), essa
     // é geralmente a fonte mais rica para sites VTEX IO renderizados no servidor.
-    function tryVtexState(html) {
+    function tryVtexState(html, originalUrl) {
       // Captura o conteúdo de window.__STATE__ = { ... };
       // Usa parser tolerante porque o JSON é gigante e pode ter caracteres Unicode
       const startMarker = 'window.__STATE__';
@@ -651,7 +737,10 @@
         }
       }
       log(`__STATE__: ${products.length} produtos resolvidos`);
-      return products.map(extractFromVtexProduct).filter(p => p && p.name && p.priceCash);
+      const slugs = originalUrl ? extractUrlSpecSlugs(originalUrl) : [];
+      const filtered = products.filter(p => matchesUrlSpecs(p, slugs));
+      log(`   ${products.length} → ${filtered.length} após filtro de specs (${slugs.join(', ') || 'nenhuma'})`);
+      return filtered.map(extractFromVtexProduct).filter(p => p && p.name && p.priceCash);
     }
 
     function extractFromVtexProduct(p) {
@@ -910,7 +999,7 @@
           const { text: html } = await fetchViaProxy(url, false);
 
           // 3a. __STATE__ Apollo cache (mais rico em sites VTEX IO)
-          products = tryVtexState(html);
+          products = tryVtexState(html, url);
           if (products.length > 0) {
             strategy = 'VTEX __STATE__ (Apollo cache)';
           } else {
