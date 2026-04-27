@@ -617,6 +617,12 @@
       "updates": [
         {
           "date": "27/04/2026",
+          "time": "20:04",
+          "title": "Central Ar: URL construída direto pela BTU (sem depender da planilha)",
+          "description": "scrapeCentralAr agora é acionada sempre que a busca for Hi Wall + BTU selecionada, construindo a URL no mesmo padrão do piloto. Antes dependia de linha 'Central Ar' na planilha — o que explicava por que ela nunca aparecia mesmo com tudo certo no código."
+        },
+        {
+          "date": "27/04/2026",
           "time": "14:29",
           "title": "Fixes: Dufrio URL crua + Central Ar matching + atualização sempre visível",
           "description": "scrapeDufrio agora usa a URL exata da planilha (não reconstrói categoria — corrigia 9000 só frio Hi Wall). Matching da Central Ar afrouxado (aceita 'Central Ar', 'centralar', 'central-ar' etc). Cache-buster em todos os fetches pra resposta fresca a cada pesquisa. Painel de 'Última atualização' agora fica permanentemente visível na home."

@@ -859,22 +859,23 @@
           );
         }
 
-        // Aceita variações: "Central Ar", "centralar", "central-ar", "Central AR"
-        const centralArLink = links.find(l => {
-          if (!l.Site) return false;
-          const s = String(l.Site).toLowerCase().replace(/[\s\-_]/g, '');
-          return s === "centralar";
-        });
-        console.log("🔎 Central Ar — sites encontrados na planilha p/ essa busca:", links.map(l => l.Site));
-        if (centralArLink && centralArLink.Link) {
-          console.log("🔎 Central Ar — linha casou:", centralArLink);
+        // Central Ar — URL construída a partir da BTU selecionada (mesmo
+        // padrão de URL que o piloto scraper-centralar.html já valida).
+        // Não depende de linha na planilha. Por enquanto só dispara em
+        // buscas de Hi Wall (URL "inverter" cobre essa categoria).
+        const tipoLower = String(selection.tipo || '').toLowerCase();
+        const btuNum = String(selection.btu || '').replace(/\D/g, '');
+        const isHiWall = tipoLower.includes('hi wall') || tipoLower.includes('hi-wall') || tipoLower.includes('hiwall');
+        if (btuNum && isHiWall) {
+          const centralArUrl = `https://www.centralar.com.br/ar-condicionado/inverter/c/INVERTER?sort=price-asc&q=%3Arelevance%3Afeature-capacity-btu%3A${btuNum}`;
+          console.log("🔗 Central Ar URL:", centralArUrl);
           scrapePromises.push(
-            scrapeCentralAr(centralArLink.Link).then(products => {
+            scrapeCentralAr(centralArUrl).then(products => {
               return products.map(p => ({...p, storeName: "Central Ar"}));
             })
           );
         } else {
-          console.log("⚠️  Central Ar — nenhuma linha com Site = 'Central Ar' encontrada p/ essa combinação. Verifique a planilha.");
+          console.log("⚠️  Central Ar pulado — tipo não é Hi Wall ou BTU vazia. tipo:", selection.tipo, "btu:", selection.btu);
         }
 
         const resultsArrays = await Promise.all(scrapePromises);
