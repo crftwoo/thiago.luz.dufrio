@@ -57,6 +57,7 @@
     .store-badge.store-dufrio { background: linear-gradient(135deg, rgba(16,30,100,0.95), rgba(79,172,254,0.2)); border-color: rgba(79,172,254,0.3); }
     .store-badge.store-frigelar { background: linear-gradient(135deg, rgba(0,89,36,0.95), rgba(0,230,118,0.2)); border-color: rgba(0,230,118,0.3); }
     .store-badge.store-leveros { background: linear-gradient(135deg, #ff6b00, #ff9e00); border-color: #ff9e00; }
+    .store-badge.store-centralar { background: linear-gradient(135deg, rgba(160,30,100,0.95), rgba(236,72,153,0.25)); border-color: rgba(236,72,153,0.4); }
 
     /* FOTO */
     .product-img-wrap { width: 100%; aspect-ratio: 1.1/1; background: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; border-bottom: 1px solid var(--card-border); }
@@ -199,6 +200,7 @@
     .filter-btn.active { background: rgba(79,172,254,0.2); border-color: rgba(79,172,254,0.5); color: var(--blue); box-shadow: 0 0 10px rgba(79,172,254,0.2); }
     .filter-btn.store-frigelar.active { background: rgba(0,230,118,0.2); border-color: rgba(0,230,118,0.5); color: var(--green); box-shadow: 0 0 10px rgba(0,230,118,0.2); }
     .filter-btn.store-leveros.active { background: rgba(255,107,0,0.2); border-color: rgba(255,107,0,0.5); color: #ff6b00; box-shadow: 0 0 10px rgba(255,107,0,0.2); }
+    .filter-btn.store-centralar.active { background: rgba(236,72,153,0.2); border-color: rgba(236,72,153,0.5); color: #ec4899; box-shadow: 0 0 10px rgba(236,72,153,0.2); }
 
     /* SYNC STATUS */
     .sync-status { position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: rgba(18,18,28,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); padding: 10px 18px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: all 0.4s ease; cursor: default; }
@@ -674,6 +676,119 @@
       } catch(e) { console.error("Leveros erro:", e); return []; }
     }
 
+    async function scrapeCentralAr(url) {
+      // Lógica portada do piloto scraper-centralar.html (foto da listagem ambientada).
+      // Usa corsproxy.io e cai no worker da Frigelar como fallback.
+      const PROXY_DEFAULT = "https://corsproxy.io/?";
+      const PROXY_WORKER  = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+      const CARD_SELECTORS = [
+        '.product-listing-item','.product__item','.product-grid-item','.product-item',
+        '.searchPageProductWrapper > *','.tile-product',
+        'li[class*="product-item"]','div[class*="ProductGridItem"]','article[class*="product"]',
+        '[class*="product-tile"]','[class*="ProductTile"]','[data-product-id]','[data-product-code]',
+        '.pdc_product-item','.card-product'
+      ];
+
+      async function fetchHtml(target) {
+        const tryProxy = async (base) => {
+          const r = await fetch(base + encodeURIComponent(target), { cache: 'no-store' });
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return await r.text();
+        };
+        try { return await tryProxy(PROXY_DEFAULT); }
+        catch(e1) { return await tryProxy(PROXY_WORKER); }
+      }
+
+      try {
+        const html = await fetchHtml(url);
+        const doc = new DOMParser().parseFromString(html, "text/html");
+
+        let cards = [];
+        for (const sel of CARD_SELECTORS) {
+          const found = doc.querySelectorAll(sel);
+          if (found.length > 0) { cards = Array.from(found); break; }
+        }
+        console.log(`📊 Central Ar: ${cards.length} cards brutos`);
+        if (!cards.length) return [];
+
+        const seen = new Set();
+        const result = cards.map(card => {
+          const titleEl = card.querySelector('a.name, .product-name, [class*="title"], h2, h3');
+          if (!titleEl) return null;
+          const title = titleEl.innerText.trim();
+          if (!title || seen.has(title)) return null;
+
+          // Link
+          let link = '';
+          const linkCandidates = [
+            card.querySelector('a.name'),
+            card.querySelector('a.thumb'),
+            card.querySelector('a[href*="/p/"]'),
+            card.querySelector('a[href*="/produto/"]'),
+            (card.tagName === 'A' ? card : null),
+            card.closest('a[href]'),
+            card.querySelector('a[href]:not([href=""]):not([href="#"])')
+          ];
+          for (const el of linkCandidates) {
+            if (el) {
+              const h = el.getAttribute('href') || '';
+              if (h && h !== '#' && !h.startsWith('javascript:')) { link = h; break; }
+            }
+          }
+          if (link && !link.startsWith('http')) {
+            link = 'https://www.centralar.com.br' + (link.startsWith('/') ? '' : '/') + link;
+          }
+
+          // Imagem ambientada — preferir a.thumb img
+          let image = '';
+          const thumbImg = card.querySelector('a.thumb img, .thumb img, picture img');
+          const candidates = thumbImg ? [thumbImg] : Array.from(card.querySelectorAll('img'));
+          imageLoop: for (const imgEl of candidates) {
+            const attrs = ['data-src','data-original','data-lazy-src','srcset','data-srcset','src'];
+            for (const attr of attrs) {
+              let s = imgEl.getAttribute(attr);
+              if (!s || typeof s !== 'string') continue;
+              if (s.startsWith('data:image')) continue;
+              if (attr.includes('srcset') || s.includes(' ')) s = s.split(',')[0].trim().split(' ')[0];
+              if (!s || s.endsWith('.svg') || s.includes('/_ui/')) continue;
+              if (s.startsWith('//')) s = 'https:' + s;
+              if (s.startsWith('/'))  s = 'https://www.centralar.com.br' + s;
+              image = s;
+              break imageLoop;
+            }
+          }
+
+          // Preços via regex no innerText do card
+          const cardText = card.innerText.replace(/\s+/g, ' ').trim();
+          const allPrices = [...cardText.matchAll(/r\$\s*([\d.]+,\d{2})/gi)];
+          if (allPrices.length === 0) return null;
+          const priceCash = parseFloat(allPrices[0][1].replace(/\./g, '').replace(',', '.'));
+          if (!priceCash) return null;
+
+          const spotLine = "R$ " + priceCash.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " à vista";
+
+          let installLine = "";
+          const instMatch = cardText.match(/(?:ou\s+)?r\$\s*[\d.,]+\s*(?:em|até|ate)?\s*\d+\s*x\s*de\s*r\$\s*[\d.,]+/i);
+          if (instMatch) {
+            installLine = instMatch[0]
+              .replace(/sem\s+juros/gi, '')
+              .replace(/\s+/g, ' ')
+              .replace(/^(\s*ou\s+)?/i, 'ou ')
+              .replace(/\s+(em|até|ate)\s+/i, ' até ')
+              .trim();
+          } else {
+            const fb = cardText.match(/\d+\s*x\s*de\s*r\$\s*[\d.,]+/i);
+            if (fb) installLine = fb[0].trim();
+          }
+
+          seen.add(title);
+          return { title, image, spot: spotLine, install: installLine, link, discount: 0 };
+        }).filter(Boolean);
+
+        console.log(`✅ Central Ar: ${result.length} produtos após filtro`);
+        return result;
+      } catch(e) { console.error("Central Ar erro:", e); return []; }
+    }
 
 
     async function startScraping() {
@@ -736,6 +851,15 @@
           scrapePromises.push(
             scrapeLeveros(leverosLink.Link).then(products => {
               return products.map(p => ({...p, storeName: "Leveros"}));
+            })
+          );
+        }
+
+        const centralArLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "central ar");
+        if (centralArLink && centralArLink.Link) {
+          scrapePromises.push(
+            scrapeCentralAr(centralArLink.Link).then(products => {
+              return products.map(p => ({...p, storeName: "Central Ar"}));
             })
           );
         }
@@ -822,6 +946,7 @@
             if (item.toLowerCase() === "frigelar") btn.classList.add("store-frigelar");
             if (item.toLowerCase() === "dufrio") btn.classList.add("store-dufrio");
             if (item.toLowerCase() === "leveros") btn.classList.add("store-leveros");
+            if (item.toLowerCase() === "central ar") btn.classList.add("store-centralar");
         }
         btn.innerText = item;
         btn.onclick = () => toggleFilter(btn, type, item);
@@ -866,6 +991,7 @@
       if (store.toLowerCase() === "frigelar") badge.classList.add("store-frigelar");
       if (store.toLowerCase() === "dufrio") badge.classList.add("store-dufrio");
       if (store.toLowerCase() === "leveros") badge.classList.add("store-leveros");
+      if (store.toLowerCase() === "central ar") badge.classList.add("store-centralar");
       badge.textContent = store;
 
       const imgWrap = document.createElement("div"); imgWrap.className = "product-img-wrap";
