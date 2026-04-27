@@ -585,14 +585,19 @@
             link = 'https://www.centralar.com.br' + (link.startsWith('/') ? '' : '/') + link;
           }
 
-          // Imagem — Hybris coloca vários <img> dentro do card: ícones SVG de
-          // feature (tecnologia, frio, cobre...) E a foto do produto. Precisamos
-          // iterar TODOS e pegar o primeiro que parece ser foto de produto.
-          // Critérios para descartar: data:image, .svg, e qualquer caminho
-          // /_ui/ (assets de UI da Hybris).
+          // Imagem — locação canônica no Central Ar/Hybris é <a class="thumb"><img>.
+          // Fora dela, o card pode ter banner promo ("OFERTAS"/"QUENTE E FRIO"),
+          // ícones SVG de feature (tecnologia, frio, cobre) etc. Por isso:
+          //   1) Tenta primeiro a.thumb img / .thumb img — é onde a foto do
+          //      produto fica na ficha (URL em castaticstorage.blob...).
+          //   2) Se não achar, cai na iteração genérica de todos os <img> com
+          //      skip de SVG e /_ui/ (assets de UI da Hybris).
           let image = '';
-          const imgEls = card.querySelectorAll('img');
-          imageLoop: for (const imgEl of imgEls) {
+          const thumbImg = card.querySelector('a.thumb img, .thumb img, picture img');
+          const candidates = thumbImg
+            ? [thumbImg]
+            : Array.from(card.querySelectorAll('img'));
+          imageLoop: for (const imgEl of candidates) {
             const attrs = ['data-src', 'data-original', 'data-lazy-src', 'srcset', 'data-srcset', 'src'];
             for (const attr of attrs) {
               let s = imgEl.getAttribute(attr);
@@ -688,6 +693,76 @@
         { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    // ============================================================
+    // PDP IMAGE ENHANCE
+    // A thumb da listagem do Central Ar muitas vezes é um banner-stamp
+    // ("OFERTAS"/"QUENTE E FRIO") em vez da foto do produto. A foto real
+    // só aparece no carrossel da PDP, em:
+    //   .pdp-carousel-wrapper .gallery-image-body
+    //     .owl-carousel.image-carousel .owl-item.active img
+    // O src segue o padrão:
+    //   https://casticstorage.blob.core.windows.net/centralar/mds/produtos/
+    //     <slug>/<codigo>/1000x1000/<arquivo>.jpg
+    // Aqui buscamos cada PDP via proxy e substituímos a imagem.
+    // ============================================================
+    const PDP_IMAGE_SELECTORS = [
+      '.pdp-carousel-wrapper .owl-item.active img',
+      '.pdp-carousel-wrapper .gallery-image-body .owl-item img',
+      '.image-carousel.pdp .owl-item img',
+      '.pdp-carousel-wrapper img',
+      '.gallery-image-body img'
+    ];
+
+    function extractPdpImage(doc) {
+      for (const sel of PDP_IMAGE_SELECTORS) {
+        const el = doc.querySelector(sel);
+        if (!el) continue;
+        const attrs = ['src', 'data-src', 'data-original', 'data-lazy-src'];
+        for (const a of attrs) {
+          let s = el.getAttribute(a);
+          if (!s || s.startsWith('data:image') || s.endsWith('.svg')) continue;
+          if (s.startsWith('//')) s = 'https:' + s;
+          if (s.startsWith('/'))  s = 'https://www.centralar.com.br' + s;
+          return { src: s, selector: sel };
+        }
+      }
+      return null;
+    }
+
+    async function enhanceWithPdpImages(products) {
+      const targets = products.filter(p => p.url);
+      if (!targets.length) return;
+
+      log(`🖼  Buscando imagens reais nas PDPs (${targets.length})...`);
+      const BATCH = 5;
+      let done = 0, ok = 0;
+
+      for (let i = 0; i < targets.length; i += BATCH) {
+        const batch = targets.slice(i, i + BATCH);
+        await Promise.all(batch.map(async (p) => {
+          try {
+            const html = await fetchHtml(p.url);
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const found = extractPdpImage(doc);
+            if (found && found.src) {
+              p.image = found.src;
+              ok++;
+            } else {
+              log(`  PDP sem imagem: ${p.name.slice(0,50)}`);
+            }
+          } catch (e) {
+            log(`  PDP erro (${p.name.slice(0,40)}): ${e.message}`);
+          } finally {
+            done++;
+          }
+        }));
+        setStatus(`<span class="spinner"></span>Buscando imagens reais nas fichas (${done}/${targets.length})...`);
+        // re-render incremental p/ usuário ver as imagens chegando
+        render(products);
+      }
+      log(`🖼  PDP images: ${ok}/${targets.length} resolvidas`);
+    }
+
     function render(products) {
       const grid = document.getElementById('results');
       grid.innerHTML = '';
@@ -743,8 +818,15 @@
           return;
         }
 
-        log(`✅ Concluído: ${products.length} produtos`);
+        log(`✅ Listagem ok: ${products.length} produtos`);
         render(products);
+        setStatus(`<span class="spinner"></span>Listagem ok (${products.length}). Buscando imagens reais nas fichas...`);
+
+        // Enriquece com imagens reais da PDP (thumbs da listagem às vezes
+        // são banners "OFERTAS"/"QUENTE E FRIO" em vez da foto do produto).
+        await enhanceWithPdpImages(products);
+        render(products);
+
         setStatus(`Concluído. <b style="color:#fff">${products.length}</b> produtos extraídos.`);
       } catch (e) {
         log('❌ ERRO', e.message);
