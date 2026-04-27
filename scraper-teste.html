@@ -704,9 +704,7 @@
           const total = (priceCardOnePay && priceCardOnePay >= n * v - 0.5)
             ? priceCardOnePay
             : n * v;
-          priceInstallment =
-            `ou ${fmtPrice(total)} em ${n}x de ${fmtPrice(v)}` +
-            (r === 0 ? ' sem juros' : '');
+          priceInstallment = `ou ${fmtPrice(total)} até ${n}x de ${fmtPrice(v)}`;
         }
       }
 
@@ -857,17 +855,11 @@
       products.forEach(p => {
         const card = document.createElement('div');
         card.className = 'product-card';
-        const hasDiscount = p.priceListed && p.priceListed > p.priceCash;
-        const discountPct = hasDiscount
-          ? Math.round((p.priceListed - p.priceCash) / p.priceListed * 100) : 0;
-
-        const cashSuffix = p.hasSpotPrice
-          ? ` <span style="font-size:13px;font-weight:600;color:var(--text-muted)">à vista</span>` : '';
         card.innerHTML = `
           ${p.image ? `<img class="product-img" src="${escape(p.image)}" alt="${escape(p.name)}" loading="lazy" onerror="this.style.display='none'">` : ''}
           <div class="product-body">
             <div class="product-name">${escape(p.name)}</div>
-            ${p.priceCash ? `<div class="product-price-cash">${fmtPrice(p.priceCash)}${cashSuffix}${hasDiscount ? ` <span style="font-size:11px;color:#f59e0b;font-weight:700">-${discountPct}%</span>` : ''}</div>` : ''}
+            ${p.priceCash ? `<div class="product-price-cash">${fmtPrice(p.priceCash)} <span style="font-size:13px;font-weight:600;color:var(--text-muted)">à vista</span></div>` : ''}
             ${p.priceInstallment ? `<div class="product-price-installment">${escape(p.priceInstallment)}</div>` : ''}
             ${p.url ? `<a href="${escape(p.url)}" target="_blank" rel="noopener" class="product-link">Abrir no Site</a>` : ''}
           </div>
