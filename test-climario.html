@@ -148,6 +148,7 @@
   </div>
 
   <script>
+    let sheetData = [], selection = {tipo:"", btu:"", ciclo:""};
     const norm = (s) => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
 
     async function loadSheet() {
