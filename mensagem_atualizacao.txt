@@ -1,1 +1,1 @@
-Re-implementado scraper da Dufrio e atualizados logs.
+Adicionado scraper da ClimaRio e atualizados logs.
