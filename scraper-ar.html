@@ -54,7 +54,6 @@
 
     /* LOJA BADGE */
     .store-badge { position: absolute; top: 12px; left: 12px; z-index: 3; background: rgba(18,18,28,0.9); border: 1px solid rgba(255,255,255,0.1); padding: 3px 10px; border-radius: 20px; font-size: 9px; font-weight: 900; color: white; letter-spacing: 1.5px; text-transform: uppercase; backdrop-filter: blur(8px); }
-    .store-badge.store-dufrio { background: linear-gradient(135deg, rgba(16,30,100,0.95), rgba(79,172,254,0.2)); border-color: rgba(79,172,254,0.3); }
     .store-badge.store-frigelar { background: linear-gradient(135deg, rgba(0,89,36,0.95), rgba(0,230,118,0.2)); border-color: rgba(0,230,118,0.3); }
     .store-badge.store-leveros { background: linear-gradient(135deg, #ff6b00, #ff9e00); border-color: #ff9e00; }
     .store-badge.store-centralar { background: linear-gradient(135deg, rgba(160,30,100,0.95), rgba(236,72,153,0.25)); border-color: rgba(236,72,153,0.4); }
@@ -444,113 +443,8 @@
       return getCycleEmoji(title)+" "+boldBrand(title)+"\n💰 "+spot+"\n💳 "+install;
     }
 
-    // --- SCRAPING DUFRIO ---
-    // Usa a URL exata da planilha. Sem reconstrução, sem [0], sem
-    // suposição. Tenta corsproxy.io primeiro; se voltar 0 produtos,
-    // tenta de novo via worker (que faz spoof de Origin/Referer e pode
-    // passar onde o corsproxy não passa).
-    //
-    // IMPORTANTE: na query string, '+' representa espaço (per
-    // application/x-www-form-urlencoded). Mas dependendo da cadeia de
-    // encoding (browser → encodeURIComponent → corsproxy → Dufrio), o
-    // '+' pode ser interpretado como literal e o filtro não casa.
-    // Convertemos pra '%20' (espaço explícito) só na query, pra evitar
-    // ambiguidade. O resto da URL fica intocado.
-    async function scrapeDufrio(url) {
-      try {
-        console.log("🔗 Dufrio URL da planilha:", url);
-        let normalized = url;
-        const qIdx = url.indexOf('?');
-        if (qIdx !== -1) {
-          const path = url.substring(0, qIdx);
-          const query = url.substring(qIdx + 1).replace(/\+/g, '%20');
-          normalized = path + '?' + query;
-          if (normalized !== url) console.log("🔧 Dufrio: + → %20 na query (anti-ambiguidade)");
-        }
-        const finalUrl = normalized + (normalized.includes('?') ? '&' : '?') + '_=' + Date.now();
-        console.log("🎯 URL final Dufrio:", finalUrl);
-
-        const fetchVia = async (proxyBase, label) => {
-          const r = await fetch(proxyBase + encodeURIComponent(finalUrl), { cache: 'no-store' });
-          console.log(`  Dufrio ${label}: HTTP ${r.status}`);
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          return await r.text();
-        };
-        const parseItems = (html) => {
-          const doc = new DOMParser().parseFromString(html, "text/html");
-          return { doc, items: Array.from(doc.querySelectorAll('.product-item')) };
-        };
-
-        let { doc, items } = parseItems(await fetchVia("https://corsproxy.io/?", "corsproxy"));
-        console.log(`📊 Dufrio (corsproxy): ${items.length} items brutos`);
-
-        // Fallback: se corsproxy voltou 0 produtos, tenta via worker
-        if (items.length === 0) {
-          try {
-            const fb = parseItems(await fetchVia("https://frigelar-proxy.crftwo.workers.dev/?url=", "worker"));
-            console.log(`📊 Dufrio (worker fallback): ${fb.items.length} items brutos`);
-            if (fb.items.length > 0) { doc = fb.doc; items = fb.items; }
-          } catch(e) {
-            console.log("Dufrio worker fallback falhou:", e.message);
-          }
-        }
-
-        if (items.length === 0) {
-          const t = doc.querySelector('title');
-          console.log(`⚠️  Dufrio: 0 items finais. <title>:`, t ? t.textContent.trim() : '(sem)');
-        }
-        const result = items.map(card => {
-           const titleEl = card.querySelector('a.product-item-link');
-           if (!titleEl) return null;
-           const title = titleEl.innerText.trim();
-
-           const imgEl = card.querySelector('img.product-image-photo, img.product-image');
-           let image = "";
-           if (imgEl) {
-               image = imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || "";
-               if (image.includes('data:image')) {
-                   const sourceEl = card.querySelector('source');
-                   if (sourceEl && sourceEl.srcset) image = sourceEl.srcset.split(',')[0].split(' ')[0];
-               }
-           }
-
-           let spotLine = "";
-           const spotPriceEl = card.querySelector('.spot-price');
-           if (spotPriceEl) spotLine = spotPriceEl.innerText.replace(/\s+/g, ' ').trim();
-           if (!spotLine) {
-               let realPriceEl = card.querySelector('#cash_down');
-               if (!realPriceEl) {
-                   const allWrappers = card.querySelectorAll('.price-wrapper');
-                   if (allWrappers.length > 0) realPriceEl = allWrappers[allWrappers.length - 1];
-               }
-               if (realPriceEl) {
-                   spotLine = realPriceEl.innerText.replace(/\s+/g, ' ').trim();
-                   const labelToUse = (realPriceEl.parentElement && realPriceEl.parentElement.querySelector('.price-label')) || card.querySelector('.price-label');
-                   if (labelToUse) spotLine += ' ' + labelToUse.innerText.replace(/\s+/g, ' ').trim();
-               }
-           }
-
-           let installLine = "";
-           const ps = card.querySelectorAll('p');
-           ps.forEach(p => {
-               const pText = p.innerText.toLowerCase();
-               if (pText.includes('ou r$') && (pText.includes('em') || pText.includes('x'))) {
-                   installLine = p.innerText.replace(/\s+/g, ' ').replace(/ /g, ' ').trim();
-               }
-           });
-
-           if (!spotLine) spotLine = "Sob consulta"; // Antes filtrava (Avise-me) — agora mostra placeholder pra Dufrio nunca sumir da grid
-
-           let linkHref = titleEl.getAttribute('href');
-           if(!linkHref) linkHref = "";
-           const finalLink = linkHref.startsWith('http') ? linkHref : "https://www.dufrio.com.br" + linkHref;
-
-           return { title, image, spot: spotLine, install: installLine, link: finalLink, discount: 0 };
-        }).filter(Boolean);
-        console.log(`✅ Dufrio: ${result.length} produtos após filtro`);
-        return result;
-      } catch(e) { console.error("❌ Dufrio erro:", e); return []; }
-    }
+    // Scraping da Dufrio foi removido (re-implementação a fazer).
+    // Funções ativas: scrapeFrigelar, scrapeLeveros, scrapeCentralAr.
 
     async function scrapeFrigelar(url) {
       try {
@@ -861,30 +755,20 @@
 
         console.log("📋 Links encontrados:", links.length, "— Sites:", links.map(l => l.Site));
 
-        // Matching frouxo: ignora case, espaços extras, hífens, e usa includes
-        // pra cobrir variações tipo "Dufrio Ar", "DUFRIO", "dufrio.com" etc.
+        // Matching frouxo: ignora case, espaços extras, hífens, pontos.
+        // Dufrio foi removida temporariamente (re-implementação pendente).
         const norm = (s) => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
-        const dufrioLink   = links.find(l => l.Site && norm(l.Site).includes("dufrio"));
         const frigelarLink = links.find(l => l.Site && norm(l.Site).includes("frigelar"));
         const leverosLink  = links.find(l => l.Site && norm(l.Site).includes("leveros"));
         console.log("📋 Match das lojas:", {
-          dufrio:   dufrioLink   ? `✓ "${dufrioLink.Site}"`   : "✗ nenhum",
           frigelar: frigelarLink ? `✓ "${frigelarLink.Site}"` : "✗ nenhum",
           leveros:  leverosLink  ? `✓ "${leverosLink.Site}"`  : "✗ nenhum"
         });
-        
+
         document.getElementById("loading-msg").innerText = "BUSCANDO LOJAS...";
-        
+
         const scrapePromises = [];
-        
-        if (dufrioLink && dufrioLink.Link) {
-          scrapePromises.push(
-            scrapeDufrio(dufrioLink.Link).then(products => {
-              return products.map(p => ({...p, storeName: "Dufrio"}));
-            })
-          );
-        }
-        
+
         if (frigelarLink && frigelarLink.Link) {
           scrapePromises.push(
             scrapeFrigelar(frigelarLink.Link).then(products => {
@@ -1001,7 +885,6 @@
         btn.className = "filter-btn"; 
         if (type === "lojas") {
             if (item.toLowerCase() === "frigelar") btn.classList.add("store-frigelar");
-            if (item.toLowerCase() === "dufrio") btn.classList.add("store-dufrio");
             if (item.toLowerCase() === "leveros") btn.classList.add("store-leveros");
             if (item.toLowerCase() === "central ar") btn.classList.add("store-centralar");
         }
@@ -1046,7 +929,6 @@
 
       const badge = document.createElement("div"); badge.className = "store-badge";
       if (store.toLowerCase() === "frigelar") badge.classList.add("store-frigelar");
-      if (store.toLowerCase() === "dufrio") badge.classList.add("store-dufrio");
       if (store.toLowerCase() === "leveros") badge.classList.add("store-leveros");
       if (store.toLowerCase() === "central ar") badge.classList.add("store-centralar");
       badge.textContent = store;
@@ -1110,7 +992,7 @@
               const resp = await fetch(PROXY + encodeURIComponent(p.image));
               blob = await resp.blob();
             } else {
-              // Dufrio e outras: tenta carregar direto primeiro (mais rápido)
+              // Outras lojas: tenta carregar direto primeiro (mais rápido)
               const tempImg = new Image();
               tempImg.crossOrigin = "anonymous";
               tempImg.src = p.image;
