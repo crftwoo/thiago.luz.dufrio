@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Laboratório Clima Rio: Extração direta por link e banner de origem ativados. Otimizado para conferência rápida entre ferramenta e site oficial. Log 17:51.', dateIso: '2026-04-28T17:51:25-03:00' };
+const LATEST_LOG = { message: 'Removendo ferramentas de teste da Clima Rio e limpando o ambiente conforme solicitado pelo usuário. Log 17:55.', dateIso: '2026-04-28T17:55:33-03:00' };
