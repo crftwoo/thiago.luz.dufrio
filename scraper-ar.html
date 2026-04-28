@@ -859,11 +859,19 @@
           return match;
         });
 
-        console.log("📋 Links encontrados:", links.length);
+        console.log("📋 Links encontrados:", links.length, "— Sites:", links.map(l => l.Site));
 
-        const dufrioLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "dufrio");
-        const frigelarLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "frigelar");
-        const leverosLink = links.find(l => l.Site && String(l.Site).toLowerCase().trim() === "leveros");
+        // Matching frouxo: ignora case, espaços extras, hífens, e usa includes
+        // pra cobrir variações tipo "Dufrio Ar", "DUFRIO", "dufrio.com" etc.
+        const norm = (s) => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
+        const dufrioLink   = links.find(l => l.Site && norm(l.Site).includes("dufrio"));
+        const frigelarLink = links.find(l => l.Site && norm(l.Site).includes("frigelar"));
+        const leverosLink  = links.find(l => l.Site && norm(l.Site).includes("leveros"));
+        console.log("📋 Match das lojas:", {
+          dufrio:   dufrioLink   ? `✓ "${dufrioLink.Site}"`   : "✗ nenhum",
+          frigelar: frigelarLink ? `✓ "${frigelarLink.Site}"` : "✗ nenhum",
+          leveros:  leverosLink  ? `✓ "${leverosLink.Site}"`  : "✗ nenhum"
+        });
         
         document.getElementById("loading-msg").innerText = "BUSCANDO LOJAS...";
         
