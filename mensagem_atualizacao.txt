@@ -1,1 +1,1 @@
-Projeto movido para pasta scratch e Scraper Central Ar removido.
+Removido updates.json e configurada regra de log automático no index.html.
