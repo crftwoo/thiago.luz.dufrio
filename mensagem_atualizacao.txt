@@ -1,1 +1,1 @@
-Revertido FrioPeças. Foco 100% na correção final da Clima Rio para garantir fidelidade total aos links da planilha.
+Corrigida extração da Clima Rio. Agora os cards carregam corretamente via raspagem robusta de HTML (window.__STATE__). Testado e pronto para os novos links.

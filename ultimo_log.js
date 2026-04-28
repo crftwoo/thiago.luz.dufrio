@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Revertido FrioPeças. Foco 100% na correção final da Clima Rio para garantir fidelidade total aos links da planilha.', dateIso: '2026-04-28T17:14:44-03:00' };
+const LATEST_LOG = { message: 'Corrigida extração da Clima Rio. Agora os cards carregam corretamente via raspagem robusta de HTML (window.__STATE__). Testado e pronto para os novos links.', dateIso: '2026-04-28T17:20:52-03:00' };

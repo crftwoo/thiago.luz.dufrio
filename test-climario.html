@@ -246,44 +246,58 @@
         const resp = await fetch(PROXY_WORKER + encodeURIComponent(url));
         const html = await resp.text();
         
-        // Tenta extrair window.__STATE__ (Fonte de dados nativa do VTEX IO)
-        const stateMatch = html.match(/window\.__STATE__\s*=\s*({.*?});/);
+        // Regex robusta para capturar o objeto __STATE__ mesmo com quebras de linha
+        const stateMatch = html.match(/window\.__STATE__\s*=\s*({[\s\S]*?});/);
         if (!stateMatch) {
             console.error("Estado __STATE__ não encontrado.");
             return [];
         }
         
-        const state = JSON.parse(stateMatch[1]);
+        // Usa Function para processar o objeto, pois o VTEX IO às vezes usa formatos que o JSON.parse rejeita
+        let state;
+        try {
+            state = new Function(`return ${stateMatch[1]}`)();
+        } catch(e) {
+            console.error("Erro ao processar dados da Clima Rio:", e);
+            return [];
+        }
+        
         const products = [];
         const seenProducts = new Set();
 
-        // No VTEX IO, os produtos estão indexados por IDs no state
         for (let key in state) {
+            // No VTEX IO, os produtos são indexados como "Product:ID"
             if (key.startsWith('Product:') && state[key].productName) {
                 const p = state[key];
                 if (seenProducts.has(p.productId)) continue;
                 seenProducts.add(p.productId);
 
-                // Localiza o SKU e a oferta comercial no state
-                const commKey = `Product:${p.productId}.items.0.sellers.0.commertialOffer`;
+                // Busca o SKU (item 0) e a oferta comercial
+                const itemKey = `Product:${p.productId}.items.0`;
+                const item = state[itemKey];
+                if (!item) continue;
+
+                const sellerKey = `${itemKey}.sellers.0`;
+                const seller = state[sellerKey];
+                if (!seller) continue;
+
+                const commKey = `${sellerKey}.commertialOffer`;
                 const comm = state[commKey];
                 
                 if (comm && comm.AvailableQuantity > 0) {
                     const title = p.productName;
-                    const link = (url.startsWith('https://www.climario.com.br') ? "https://www.climario.com.br" : "") + p.link;
+                    // Garante que o link tenha o domínio
+                    const productLink = p.link.startsWith('http') ? p.link : "https://www.climario.com.br" + p.link;
                     
                     // Imagem
-                    const imgKey = `Product:${p.productId}.items.0.images.0`;
+                    const imgKey = `${itemKey}.images.0`;
                     const image = state[imgKey]?.imageUrl || "";
                     
-                    // Preço Pix e Parcelado
                     const pixPrice = comm.Price;
                     const spotText = "R$ " + pixPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista";
-                    
-                    // Tenta achar parcelamento sem juros
                     const installText = `ou R$ ${comm.Price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x`;
 
-                    products.push({ title, image, spotText, installText, link });
+                    products.push({ title, image, spotText, installText, link: productLink });
                 }
             }
         }
