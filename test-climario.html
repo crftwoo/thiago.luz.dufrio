@@ -210,6 +210,9 @@
     }
 
     async function startScraping() {
+      // Limpa resultados anteriores
+      document.getElementById('results-grid').innerHTML = '';
+      
       document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
       document.getElementById('loading-results').style.display = 'flex';
       
@@ -218,7 +221,6 @@
       document.getElementById('selection-summary').style.display = "flex";
 
       const grid = document.getElementById('results-grid');
-      grid.innerHTML = '';
 
       const match = sheetData.find(r => 
         norm(r.Tipo) === norm(selection.tipo) && 
@@ -248,8 +250,12 @@
         
         const order = u.searchParams.get('order') || "OrderByPriceASC";
         
-        // CORREÇÃO DO MAP: Clima Rio exige map=c,c,c para certas buscas de categoria
-        let apiUrl = `https://www.climario.com.br/api/catalog_system/pub/products/search${apiPath}?O=${order}&_from=0&_to=49&map=c,c,c`;
+        // EXTRAI O MAP DO LINK DA PLANILHA E TRADUZ PARA A API
+        // Ex: category-1,category-2,ciclo -> c,c,ciclo
+        let mapParam = u.searchParams.get('map') || "c,c,c";
+        const translatedMap = mapParam.split(',').map(m => m.startsWith('category-') ? 'c' : m).join(',');
+        
+        let apiUrl = `https://www.climario.com.br/api/catalog_system/pub/products/search${apiPath}?O=${order}&_from=0&_to=49&map=${translatedMap}`;
 
         const resp = await fetch(PROXY_WORKER + encodeURIComponent(apiUrl), { cache: 'no-store' });
         const products = await resp.json();
