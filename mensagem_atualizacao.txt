@@ -1,1 +1,1 @@
-Iniciado Laboratório FrioPeças com extração de HTML (window.__STATE__). Banner de log e cards do index atualizados automaticamente.
+Revertido FrioPeças. Foco 100% na correção final da Clima Rio para garantir fidelidade total aos links da planilha.

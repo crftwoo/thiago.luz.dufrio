@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Iniciado Laboratório FrioPeças com extração de HTML (window.__STATE__). Banner de log e cards do index atualizados automaticamente.', dateIso: '2026-04-28T17:09:45-03:00' };
+const LATEST_LOG = { message: 'Revertido FrioPeças. Foco 100% na correção final da Clima Rio para garantir fidelidade total aos links da planilha.', dateIso: '2026-04-28T17:14:44-03:00' };
