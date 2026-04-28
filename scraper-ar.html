@@ -445,33 +445,44 @@
     }
 
     // --- SCRAPING DUFRIO ---
-    // Usa a URL exata da planilha. Único pré-processamento: a Dufrio
-    // (Magento) espera `ec_capacidade[0]=X` (notação de array). Se a
-    // planilha veio com `ec_capacidade=X` (sem [0]), o filtro é ignorado
-    // e o site devolve 0 produtos. Convertemos só essa chave.
+    // Usa a URL exata da planilha. Sem reconstrução, sem [0], sem
+    // suposição. Tenta corsproxy.io primeiro; se voltar 0 produtos,
+    // tenta de novo via worker (que faz spoof de Origin/Referer e pode
+    // passar onde o corsproxy não passa).
     async function scrapeDufrio(url) {
       try {
         console.log("🔗 Dufrio URL da planilha:", url);
-        let processedUrl = url;
-        if (/[?&]ec_capacidade=/.test(processedUrl) && !/ec_capacidade(%5B|\[)/i.test(processedUrl)) {
-          processedUrl = processedUrl.replace(/([?&])ec_capacidade=/g, '$1ec_capacidade[0]=');
-          console.log("🔧 Dufrio: ec_capacidade= → ec_capacidade[0]= (Magento exige array)");
+        const finalUrl = url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
+        console.log("🎯 URL final Dufrio:", finalUrl);
+
+        const fetchVia = async (proxyBase, label) => {
+          const r = await fetch(proxyBase + encodeURIComponent(finalUrl), { cache: 'no-store' });
+          console.log(`  Dufrio ${label}: HTTP ${r.status}`);
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return await r.text();
+        };
+        const parseItems = (html) => {
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          return { doc, items: Array.from(doc.querySelectorAll('.product-item')) };
+        };
+
+        let { doc, items } = parseItems(await fetchVia("https://corsproxy.io/?", "corsproxy"));
+        console.log(`📊 Dufrio (corsproxy): ${items.length} items brutos`);
+
+        // Fallback: se corsproxy voltou 0 produtos, tenta via worker
+        if (items.length === 0) {
+          try {
+            const fb = parseItems(await fetchVia("https://frigelar-proxy.crftwo.workers.dev/?url=", "worker"));
+            console.log(`📊 Dufrio (worker fallback): ${fb.items.length} items brutos`);
+            if (fb.items.length > 0) { doc = fb.doc; items = fb.items; }
+          } catch(e) {
+            console.log("Dufrio worker fallback falhou:", e.message);
+          }
         }
-        // Cache-buster (mantém ordenação que veio da planilha; só append do _)
-        processedUrl += (processedUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
-        console.log("🎯 URL final Dufrio:", processedUrl);
-        const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(processedUrl);
 
-        const resp = await fetch(proxyUrl, { cache: 'no-store' });
-        const html = await resp.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-
-        const items = Array.from(doc.querySelectorAll('.product-item'));
-        console.log(`📊 Dufrio: encontrados ${items.length} items brutos`);
         if (items.length === 0) {
           const t = doc.querySelector('title');
-          console.log(`⚠️  Dufrio devolveu 0 .product-item. <title>:`, t ? t.textContent.trim() : '(sem)');
+          console.log(`⚠️  Dufrio: 0 items finais. <title>:`, t ? t.textContent.trim() : '(sem)');
         }
         const result = items.map(card => {
            const titleEl = card.querySelector('a.product-item-link');
