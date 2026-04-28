@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Formato de preços da Clima Rio corrigido. Adicionado desconto de 10% no PIX e detalhamento de parcelas (ex: 10x de R$ 177,19) conforme solicitado. Log dinâmico 17:43.', dateIso: '2026-04-28T17:44:00-03:00' };
+const LATEST_LOG = { message: 'Laboratório Clima Rio: Extração direta por link e banner de origem ativados. Otimizado para conferência rápida entre ferramenta e site oficial. Log 17:51.', dateIso: '2026-04-28T17:51:25-03:00' };
