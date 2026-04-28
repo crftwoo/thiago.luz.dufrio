@@ -1,1 +1,1 @@
-Scraper Clima Rio ultra-robusto ativado (JSON-LD + Cache Buster). Implementada extração via Schema.org para garantir que os cards apareçam sempre, sem erros de cache.
+Fallback inteligente para Clima Rio ativado. Se o site bloquear o HTML, a ferramenta agora usa a API de Catálogo injetando os filtros da planilha. Cards garantidos contra bot-detection.

@@ -241,82 +241,89 @@
     }
 
     async function scrapeClimaRio(url) {
-      const PROXY_WORKER = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+      // Tenta múltiplos proxies para evitar bloqueios
+      const proxies = [
+        "https://frigelar-proxy.crftwo.workers.dev/?url=",
+        "https://api.allorigins.win/get?url=",
+        "https://corsproxy.io/?"
+      ];
+      
+      let html = "";
+      let usedProxy = proxies[0];
+
       try {
-        // Adiciona cache-buster no link da Clima Rio para evitar resultados em branco
+        // Tenta o proxy principal com cache-buster
         const finalUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
-        const resp = await fetch(PROXY_WORKER + encodeURIComponent(finalUrl));
-        const html = await resp.text();
+        const resp = await fetch(usedProxy + encodeURIComponent(finalUrl));
+        html = await resp.text();
         
+        // Se o AllOrigins for usado, o HTML vem dentro de um JSON .contents
+        if (html.startsWith('{') && html.includes('"contents":')) {
+            html = JSON.parse(html).contents;
+        }
+
         const products = [];
         const seenLinks = new Set();
 
-        // MÉTODO 1: JSON-LD (O mais estável para sites VTEX)
-        try {
-            const scripts = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g);
-            if (scripts) {
-                for (const scriptTag of scripts) {
-                    const content = scriptTag.replace(/<script.*?>|<\/script>/g, '');
-                    const json = JSON.parse(content);
-                    
+        // FUNÇÃO AUXILIAR: Extrai via JSON-LD
+        function extractJSONLD(source) {
+            const scripts = source.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g);
+            if (!scripts) return [];
+            const results = [];
+            scripts.forEach(tag => {
+                try {
+                    const json = JSON.parse(tag.replace(/<script.*?>|<\/script>/g, ''));
                     if (json['@type'] === 'ItemList' && json.itemListElement) {
                         json.itemListElement.forEach(item => {
                             const p = item.item;
-                            if (!p || seenLinks.has(p.url)) return;
-                            seenLinks.add(p.url);
-                            
-                            const title = p.name;
-                            const link = p.url.startsWith('http') ? p.url : "https://www.climario.com.br" + p.url;
-                            const image = Array.isArray(p.image) ? p.image[0] : p.image;
-                            
-                            const lowPrice = p.offers?.lowPrice || 0;
-                            const highPrice = p.offers?.highPrice || lowPrice;
-
-                            if (lowPrice > 0) {
-                                products.push({
-                                    title,
-                                    image,
-                                    spotText: "R$ " + lowPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista",
-                                    installText: `ou R$ ${highPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x`,
-                                    link
+                            if (p && p.url && p.offers?.lowPrice > 0) {
+                                results.push({
+                                    title: p.name,
+                                    image: Array.isArray(p.image) ? p.image[0] : p.image,
+                                    spotText: "R$ " + p.offers.lowPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista",
+                                    installText: `ou R$ ${ (p.offers.highPrice || p.offers.lowPrice).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x`,
+                                    link: p.url.startsWith('http') ? p.url : "https://www.climario.com.br" + p.url
                                 });
                             }
                         });
                     }
-                }
-            }
-        } catch (e) { console.error("Erro no Método JSON-LD:", e); }
+                } catch(e) {}
+            });
+            return results;
+        }
 
-        if (products.length > 0) return products;
+        const ldProducts = extractJSONLD(html);
+        if (ldProducts.length > 0) return ldProducts;
 
-        // MÉTODO 2: window.__STATE__ (Fallback robusto)
-        const stateMatch = html.match(/window\.__STATE__\s*=\s*({[\s\S]*?});/);
-        if (stateMatch) {
-            let state;
-            try { state = new Function(`return ${stateMatch[1]}`)(); } catch(e) { return []; }
+        // SE FALHAR (Bloqueio de Robô): Tenta API de Catálogo como Fallback Inteligente
+        console.log("HTML vazio ou bloqueado. Tentando API de Catálogo...");
+        
+        // Extrai o path da query (ex: /ar-condicionado/ar-condicionado-hi-wall-inverter/9-000-btu-h)
+        const queryMatch = url.match(/query=([^&]+)/);
+        if (queryMatch) {
+            const path = decodeURIComponent(queryMatch[1]);
+            const apiUrl = `https://www.climario.com.br/api/catalog_system/pub/products/search${path}?O=OrderByPriceASC&_from=0&_to=19`;
+            const apiResp = await fetch(usedProxy + encodeURIComponent(apiUrl));
+            const apiJson = await apiResp.json();
             
-            for (let key in state) {
-                if (key.startsWith('Product:') && state[key].productName) {
-                    const p = state[key];
-                    const itemKey = `Product:${p.productId}.items.0`;
-                    const commKey = `${itemKey}.sellers.0.commertialOffer`;
-                    const comm = state[commKey];
+            const results = (apiJson.contents ? JSON.parse(apiJson.contents) : apiJson);
+            
+            if (Array.isArray(results)) {
+                results.forEach(p => {
+                    const item = p.items[0];
+                    const seller = item.sellers[0];
+                    const comm = seller.commertialOffer;
                     
-                    if (comm && comm.AvailableQuantity > 0 && !seenLinks.has(p.link)) {
-                        seenLinks.add(p.link);
-                        const productLink = p.link.startsWith('http') ? p.link : "https://www.climario.com.br" + p.link;
-                        const imgKey = `${itemKey}.images.0`;
-                        const image = state[imgKey]?.imageUrl || "";
-                        
+                    if (comm && comm.Price > 0 && comm.AvailableQuantity > 0) {
                         products.push({
                             title: p.productName,
-                            image,
+                            image: item.images[0].imageUrl,
                             spotText: "R$ " + comm.Price.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista",
                             installText: `ou R$ ${comm.Price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x`,
-                            link: productLink
+                            link: p.link
                         });
                     }
-                }
+                });
             }
         }
         

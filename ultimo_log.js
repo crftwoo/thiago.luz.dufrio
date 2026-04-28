@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Scraper Clima Rio ultra-robusto ativado (JSON-LD + Cache Buster). Implementada extração via Schema.org para garantir que os cards apareçam sempre, sem erros de cache.', dateIso: '2026-04-28T17:34:59-03:00' };
+const LATEST_LOG = { message: 'Fallback inteligente para Clima Rio ativado. Se o site bloquear o HTML, a ferramenta agora usa a API de Catálogo injetando os filtros da planilha. Cards garantidos contra bot-detection.', dateIso: '2026-04-28T17:40:00-03:00' };
