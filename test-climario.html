@@ -226,7 +226,7 @@
         norm(r.Tipo) === norm(selection.tipo) && 
         norm(r.BTUs) === norm(selection.btu) && 
         norm(r.Ciclo) === norm(selection.ciclo) &&
-        norm(r.Site) === 'ClimaRio'
+        norm(r.Site) === norm('ClimaRio')
       );
 
       if (match && match.Link && match.Link.startsWith('http')) {

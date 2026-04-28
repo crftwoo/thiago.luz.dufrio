@@ -1,1 +1,1 @@
-Corrigida extração da Clima Rio. Agora os cards carregam corretamente via raspagem robusta de HTML (window.__STATE__). Testado e pronto para os novos links.
+Corrigido erro de localização dos links da Clima Rio. Busca na planilha agora ignora maiúsculas/minúsculas corretamente. Cards restaurados.
