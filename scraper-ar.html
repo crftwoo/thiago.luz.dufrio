@@ -539,7 +539,7 @@
                }
            });
 
-           if (!spotLine) return null; // Filtra produtos esgotados (Avise-me)
+           if (!spotLine) spotLine = "Sob consulta"; // Antes filtrava (Avise-me) — agora mostra placeholder pra Dufrio nunca sumir da grid
 
            let linkHref = titleEl.getAttribute('href');
            if(!linkHref) linkHref = "";
