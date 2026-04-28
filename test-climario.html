@@ -226,7 +226,7 @@
         norm(r.Tipo) === norm(selection.tipo) && 
         norm(r.BTUs) === norm(selection.btu) && 
         norm(r.Ciclo) === norm(selection.ciclo) &&
-        norm(r.Site) === 'climario'
+        norm(r.Site) === 'ClimaRio'
       );
 
       if (match && match.Link && match.Link.startsWith('http')) {
@@ -243,57 +243,55 @@
     async function scrapeClimaRio(url) {
       const PROXY_WORKER = "https://frigelar-proxy.crftwo.workers.dev/?url=";
       try {
-        const u = new URL(url);
-        let apiPath = u.searchParams.get('query') || u.pathname;
-        if (!apiPath.startsWith('/')) apiPath = '/' + apiPath;
-        if (apiPath.endsWith('/')) apiPath = apiPath.slice(0, -1);
+        const resp = await fetch(PROXY_WORKER + encodeURIComponent(url));
+        const html = await resp.text();
         
-        const order = u.searchParams.get('order') || "OrderByPriceASC";
+        // Tenta extrair window.__STATE__ (Fonte de dados nativa do VTEX IO)
+        const stateMatch = html.match(/window\.__STATE__\s*=\s*({.*?});/);
+        if (!stateMatch) {
+            console.error("Estado __STATE__ não encontrado.");
+            return [];
+        }
         
-        // EXTRAI O MAP DO LINK DA PLANILHA E TRADUZ PARA A API
-        // Ex: category-1,category-2,ciclo -> c,c,ciclo
-        let mapParam = u.searchParams.get('map') || "c,c,c";
-        const translatedMap = mapParam.split(',').map(m => m.startsWith('category-') ? 'c' : m).join(',');
-        
-        let apiUrl = `https://www.climario.com.br/api/catalog_system/pub/products/search${apiPath}?O=${order}&_from=0&_to=49&map=${translatedMap}`;
+        const state = JSON.parse(stateMatch[1]);
+        const products = [];
+        const seenProducts = new Set();
 
-        const resp = await fetch(PROXY_WORKER + encodeURIComponent(apiUrl), { cache: 'no-store' });
-        const products = await resp.json();
-        
-        if (!Array.isArray(products)) return [];
+        // No VTEX IO, os produtos estão indexados por IDs no state
+        for (let key in state) {
+            if (key.startsWith('Product:') && state[key].productName) {
+                const p = state[key];
+                if (seenProducts.has(p.productId)) continue;
+                seenProducts.add(p.productId);
 
-        return products.map(p => {
-          const item = p.items && p.items[0];
-          const seller = item && item.sellers && item.sellers[0];
-          const comm = seller && seller.commertialOffer;
-          if (!comm || comm.AvailableQuantity <= 0) return null;
+                // Localiza o SKU e a oferta comercial no state
+                const commKey = `Product:${p.productId}.items.0.sellers.0.commertialOffer`;
+                const comm = state[commKey];
+                
+                if (comm && comm.AvailableQuantity > 0) {
+                    const title = p.productName;
+                    const link = (url.startsWith('https://www.climario.com.br') ? "https://www.climario.com.br" : "") + p.link;
+                    
+                    // Imagem
+                    const imgKey = `Product:${p.productId}.items.0.images.0`;
+                    const image = state[imgKey]?.imageUrl || "";
+                    
+                    // Preço Pix e Parcelado
+                    const pixPrice = comm.Price;
+                    const spotText = "R$ " + pixPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista";
+                    
+                    // Tenta achar parcelamento sem juros
+                    const installText = `ou R$ ${comm.Price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x`;
 
-          const title = p.productName;
-          const link = p.link;
-          const image = item.images && item.images[0] ? item.images[0].imageUrl : "";
-          
-          let pixPrice = comm.Price;
-          if (comm.Installments && comm.Installments.length > 0) {
-            const pix = comm.Installments.find(ins => norm(ins.PaymentSystemName).includes('pix') || norm(ins.Name).includes('pix'));
-            if (pix) pixPrice = pix.Value;
-          }
-          
-          const spotText = "R$ " + pixPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista";
-          const totalInstall = comm.Price;
-          let bestInstall = comm.Installments.reduce((prev, curr) => {
-            if (curr.InterestRate === 0 && curr.NumberOfInstallments > prev.NumberOfInstallments) return curr;
-            return prev;
-          }, { NumberOfInstallments: 0, Value: 0 });
-
-          if (bestInstall.NumberOfInstallments === 0 && comm.Installments.length > 0) {
-             bestInstall = comm.Installments.sort((a,b) => b.NumberOfInstallments - a.NumberOfInstallments)[0];
-          }
-
-          const installText = `ou R$ ${totalInstall.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até ${bestInstall.NumberOfInstallments}x de R$ ${bestInstall.Value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-
-          return { title, image, spotText, installText, link };
-        }).filter(Boolean);
-      } catch(e) { console.error("ClimaRio erro:", e); return []; }
+                    products.push({ title, image, spotText, installText, link });
+                }
+            }
+        }
+        return products;
+      } catch(e) { 
+        console.error("ClimaRio Scraper Error:", e); 
+        return []; 
+      }
     }
 
     function renderProducts(products) {
