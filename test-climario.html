@@ -243,64 +243,83 @@
     async function scrapeClimaRio(url) {
       const PROXY_WORKER = "https://frigelar-proxy.crftwo.workers.dev/?url=";
       try {
-        const resp = await fetch(PROXY_WORKER + encodeURIComponent(url));
+        // Adiciona cache-buster no link da Clima Rio para evitar resultados em branco
+        const finalUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+        const resp = await fetch(PROXY_WORKER + encodeURIComponent(finalUrl));
         const html = await resp.text();
         
-        // Regex robusta para capturar o objeto __STATE__ mesmo com quebras de linha
-        const stateMatch = html.match(/window\.__STATE__\s*=\s*({[\s\S]*?});/);
-        if (!stateMatch) {
-            console.error("Estado __STATE__ não encontrado.");
-            return [];
-        }
-        
-        // Usa Function para processar o objeto, pois o VTEX IO às vezes usa formatos que o JSON.parse rejeita
-        let state;
-        try {
-            state = new Function(`return ${stateMatch[1]}`)();
-        } catch(e) {
-            console.error("Erro ao processar dados da Clima Rio:", e);
-            return [];
-        }
-        
         const products = [];
-        const seenProducts = new Set();
+        const seenLinks = new Set();
 
-        for (let key in state) {
-            // No VTEX IO, os produtos são indexados como "Product:ID"
-            if (key.startsWith('Product:') && state[key].productName) {
-                const p = state[key];
-                if (seenProducts.has(p.productId)) continue;
-                seenProducts.add(p.productId);
-
-                // Busca o SKU (item 0) e a oferta comercial
-                const itemKey = `Product:${p.productId}.items.0`;
-                const item = state[itemKey];
-                if (!item) continue;
-
-                const sellerKey = `${itemKey}.sellers.0`;
-                const seller = state[sellerKey];
-                if (!seller) continue;
-
-                const commKey = `${sellerKey}.commertialOffer`;
-                const comm = state[commKey];
-                
-                if (comm && comm.AvailableQuantity > 0) {
-                    const title = p.productName;
-                    // Garante que o link tenha o domínio
-                    const productLink = p.link.startsWith('http') ? p.link : "https://www.climario.com.br" + p.link;
+        // MÉTODO 1: JSON-LD (O mais estável para sites VTEX)
+        try {
+            const scripts = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g);
+            if (scripts) {
+                for (const scriptTag of scripts) {
+                    const content = scriptTag.replace(/<script.*?>|<\/script>/g, '');
+                    const json = JSON.parse(content);
                     
-                    // Imagem
-                    const imgKey = `${itemKey}.images.0`;
-                    const image = state[imgKey]?.imageUrl || "";
-                    
-                    const pixPrice = comm.Price;
-                    const spotText = "R$ " + pixPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista";
-                    const installText = `ou R$ ${comm.Price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x`;
+                    if (json['@type'] === 'ItemList' && json.itemListElement) {
+                        json.itemListElement.forEach(item => {
+                            const p = item.item;
+                            if (!p || seenLinks.has(p.url)) return;
+                            seenLinks.add(p.url);
+                            
+                            const title = p.name;
+                            const link = p.url.startsWith('http') ? p.url : "https://www.climario.com.br" + p.url;
+                            const image = Array.isArray(p.image) ? p.image[0] : p.image;
+                            
+                            const lowPrice = p.offers?.lowPrice || 0;
+                            const highPrice = p.offers?.highPrice || lowPrice;
 
-                    products.push({ title, image, spotText, installText, link: productLink });
+                            if (lowPrice > 0) {
+                                products.push({
+                                    title,
+                                    image,
+                                    spotText: "R$ " + lowPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista",
+                                    installText: `ou R$ ${highPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x`,
+                                    link
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+        } catch (e) { console.error("Erro no Método JSON-LD:", e); }
+
+        if (products.length > 0) return products;
+
+        // MÉTODO 2: window.__STATE__ (Fallback robusto)
+        const stateMatch = html.match(/window\.__STATE__\s*=\s*({[\s\S]*?});/);
+        if (stateMatch) {
+            let state;
+            try { state = new Function(`return ${stateMatch[1]}`)(); } catch(e) { return []; }
+            
+            for (let key in state) {
+                if (key.startsWith('Product:') && state[key].productName) {
+                    const p = state[key];
+                    const itemKey = `Product:${p.productId}.items.0`;
+                    const commKey = `${itemKey}.sellers.0.commertialOffer`;
+                    const comm = state[commKey];
+                    
+                    if (comm && comm.AvailableQuantity > 0 && !seenLinks.has(p.link)) {
+                        seenLinks.add(p.link);
+                        const productLink = p.link.startsWith('http') ? p.link : "https://www.climario.com.br" + p.link;
+                        const imgKey = `${itemKey}.images.0`;
+                        const image = state[imgKey]?.imageUrl || "";
+                        
+                        products.push({
+                            title: p.productName,
+                            image,
+                            spotText: "R$ " + comm.Price.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista",
+                            installText: `ou R$ ${comm.Price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x`,
+                            link: productLink
+                        });
+                    }
                 }
             }
         }
+        
         return products;
       } catch(e) { 
         console.error("ClimaRio Scraper Error:", e); 

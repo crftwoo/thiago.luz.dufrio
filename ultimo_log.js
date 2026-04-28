@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Log dinâmico ativado! O banner do Hub agora atualiza sozinho com a mensagem e hora real do commit do Git. Chega de cache e logs manuais.', dateIso: '2026-04-28T17:31:03-03:00' };
+const LATEST_LOG = { message: 'Scraper Clima Rio ultra-robusto ativado (JSON-LD + Cache Buster). Implementada extração via Schema.org para garantir que os cards apareçam sempre, sem erros de cache.', dateIso: '2026-04-28T17:34:59-03:00' };
