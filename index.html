@@ -626,6 +626,12 @@
     });
 
     // Dados de atualizações embutidos
+    // Carrega o log dinâmico do Git com cache-buster
+    const logScript = document.createElement('script');
+    logScript.src = 'ultimo_log.js?v=' + Date.now();
+    document.head.appendChild(logScript);
+
+    // Dados de atualizações embutidos (Fallback)
     const updatesData = {
       "updates": [
         {
@@ -759,6 +765,28 @@
 
     async function loadLastUpdate() {
       try {
+        // PRIORIDADE: Tenta usar o log dinâmico do Git (LATEST_LOG) se ele existir
+        if (typeof LATEST_LOG !== 'undefined') {
+           const latest = LATEST_LOG;
+           const title = "Última Sincronização Git";
+           const desc = latest.message;
+           
+           // Formata a data ISO do Git
+           const dateObj = new Date(latest.dateIso);
+           const dateStr = dateObj.toLocaleDateString('pt-BR');
+           const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+           document.getElementById('update-title').textContent = title;
+           document.getElementById('update-desc').textContent = desc;
+           document.getElementById('update-datetime').innerHTML = `
+             <div style="font-weight: 600; color: #4facfe; margin-bottom: 4px;">📅 ${dateStr}</div>
+             <div style="font-weight: 700; color: #00e676;">⏰ ${timeStr}</div>
+           `;
+           console.log("Log dinâmico carregado:", latest);
+           return;
+        }
+
+        // FALLBACK: Se o log dinâmico falhar, usa os dados estáticos abaixo
         const data = updatesData;
         if (data.updates && data.updates.length > 0) {
           const latest = data.updates[0];
@@ -773,6 +801,11 @@
         console.error('Erro ao carregar atualizações:', e);
       }
     }
+
+    // Aguarda um pequeno delay para garantir que o script dinâmico foi processado
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(loadLastUpdate, 300);
+    });
 
   </script>
 </body>

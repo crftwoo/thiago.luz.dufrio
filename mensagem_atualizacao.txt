@@ -1,1 +1,1 @@
-Corrigido erro de localização dos links da Clima Rio. Busca na planilha agora ignora maiúsculas/minúsculas corretamente. Cards restaurados.
+Log dinâmico ativado! O banner do Hub agora atualiza sozinho com a mensagem e hora real do commit do Git. Chega de cache e logs manuais.

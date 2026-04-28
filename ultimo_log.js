@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Corrigido erro de localização dos links da Clima Rio. Busca na planilha agora ignora maiúsculas/minúsculas corretamente. Cards restaurados.', dateIso: '2026-04-28T17:27:42-03:00' };
+const LATEST_LOG = { message: 'Log dinâmico ativado! O banner do Hub agora atualiza sozinho com a mensagem e hora real do commit do Git. Chega de cache e logs manuais.', dateIso: '2026-04-28T17:31:03-03:00' };
