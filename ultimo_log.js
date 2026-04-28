@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Finalizada integração 100% fiel da Clima Rio via raspagem de HTML (window.__STATE__). Testado e validado para todos os links da planilha.', dateIso: '2026-04-28T17:04:03-03:00' };
+const LATEST_LOG = { message: 'Iniciado Laboratório FrioPeças com extração de HTML (window.__STATE__). Banner de log e cards do index atualizados automaticamente.', dateIso: '2026-04-28T17:09:45-03:00' };
