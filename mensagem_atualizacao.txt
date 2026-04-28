@@ -1,1 +1,1 @@
-Limpeza do scraper oficial (removido ClimaRio) e criação do Laboratório Clima Rio para testes isolados.
+Finalizada integração 100% fiel da Clima Rio via raspagem de HTML (window.__STATE__). Testado e validado para todos os links da planilha.

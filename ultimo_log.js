@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Limpeza do scraper oficial (removido ClimaRio) e criação do Laboratório Clima Rio para testes isolados.', dateIso: '2026-04-28T17:02:25-03:00' };
+const LATEST_LOG = { message: 'Finalizada integração 100% fiel da Clima Rio via raspagem de HTML (window.__STATE__). Testado e validado para todos os links da planilha.', dateIso: '2026-04-28T17:04:03-03:00' };
