@@ -557,7 +557,6 @@
       { nome: "SCRAPER DE AR CONDICIONADO", desc: "Varredura automática e direta no site da Dufrio via proxy.", arquivo: "scraper-ar.html", icone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>`, color: "#f59e0b", slug: "scraper", category: "ar" },
       { nome: "COMPARADOR DE AR-CONDICIONADO", desc: "Análise de preços da concorrência em tempo real.", arquivo: "comparador-ar.html", icone: svgComparar, color: "#6366f1", slug: "comparador", category: "ar" },
       { nome: "PREÇOS AO VIVO", badge: "Em Produção", desc: "Visualiza em cards os produtos raspados pela extensão das abas abertas nas lojas.", arquivo: "precos-ao-vivo.html", icone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`, color: "#00e676", slug: "precos-vivo", category: "ar" },
-      { nome: "LABORATÓRIO CLIMA RIO", badge: "Testes", desc: "Ambiente de testes para aperfeiçoar a extração via API da Clima Rio.", arquivo: "test-climario.html", icone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`, color: "#e30613", slug: "lab-climario", category: "ar" },
       { nome: "PRECIFICAÇÃO SKU'S (SITE)", desc: "Calculadora para precificar SKU's no 365 com o valor do site.", arquivo: "precificacao-ar.html", icone: svgPrecificar, color: "#0ea5e9", slug: "precificacao", category: "ar" },
 
 
@@ -601,12 +600,6 @@
           <div class="card-desc">${f.desc}</div>
         </div>
       `;
-
-      // LABORATÓRIO: CLIMA RIO
-      const labClimario = document.createElement('a');
-      labClimario.href = "test-climario.html";
-      labClimario.className = "tool-card";
-      labClimario.innerHTML = `<div class="tool-icon">🧪</div><div class="tool-info"><div class="tool-name">Lab: Clima Rio</div><div class="tool-desc">Teste de raspagem VTEX IO (Filtros Fixos)</div></div>`;
 
       // LABORATÓRIO: FRIOPEÇAS
       const labFriopecas = document.createElement('a');
