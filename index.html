@@ -617,6 +617,12 @@
       "updates": [
         {
           "date": "28/04/2026",
+          "time": "TBD",
+          "title": "Dufrio: não esconder mais produtos sem preço (Avise-me/Sob consulta)",
+          "description": "Filtro antigo removia todo .product-item sem spot price (assumia esgotado). Em combinações onde TODOS os produtos da Dufrio são Avise-me — caso reportado: 9000 só frio Hi Wall — isso zerava a grid e a Dufrio sumia da pesquisa. Agora mantemos o card com placeholder 'Sob consulta'."
+        },
+        {
+          "date": "28/04/2026",
           "time": "08:16",
           "title": "Dufrio: + → %20 na query (anti-ambiguidade do encoding via proxy)",
           "description": "Hipótese pro caso 9000 só frio Hi Wall: o '+' em '9.000+BTUs' (que representa espaço) está sendo interpretado como caractere literal em algum ponto da cadeia browser → encodeURIComponent → corsproxy → Dufrio, fazendo o filtro não casar. Convertemos '+' em '%20' só na query antes de mandar pro proxy. Resto da URL intocado."
