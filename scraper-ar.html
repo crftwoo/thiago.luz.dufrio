@@ -449,10 +449,25 @@
     // suposição. Tenta corsproxy.io primeiro; se voltar 0 produtos,
     // tenta de novo via worker (que faz spoof de Origin/Referer e pode
     // passar onde o corsproxy não passa).
+    //
+    // IMPORTANTE: na query string, '+' representa espaço (per
+    // application/x-www-form-urlencoded). Mas dependendo da cadeia de
+    // encoding (browser → encodeURIComponent → corsproxy → Dufrio), o
+    // '+' pode ser interpretado como literal e o filtro não casa.
+    // Convertemos pra '%20' (espaço explícito) só na query, pra evitar
+    // ambiguidade. O resto da URL fica intocado.
     async function scrapeDufrio(url) {
       try {
         console.log("🔗 Dufrio URL da planilha:", url);
-        const finalUrl = url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
+        let normalized = url;
+        const qIdx = url.indexOf('?');
+        if (qIdx !== -1) {
+          const path = url.substring(0, qIdx);
+          const query = url.substring(qIdx + 1).replace(/\+/g, '%20');
+          normalized = path + '?' + query;
+          if (normalized !== url) console.log("🔧 Dufrio: + → %20 na query (anti-ambiguidade)");
+        }
+        const finalUrl = normalized + (normalized.includes('?') ? '&' : '?') + '_=' + Date.now();
         console.log("🎯 URL final Dufrio:", finalUrl);
 
         const fetchVia = async (proxyBase, label) => {
