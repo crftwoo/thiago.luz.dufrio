@@ -1,1 +1,1 @@
-Adicionada regra de persistência de logs (.antigravity_skills.md).
+Re-implementado scraper da Dufrio e atualizados logs.

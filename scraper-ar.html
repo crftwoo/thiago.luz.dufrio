@@ -57,6 +57,7 @@
     .store-badge.store-frigelar { background: linear-gradient(135deg, rgba(0,89,36,0.95), rgba(0,230,118,0.2)); border-color: rgba(0,230,118,0.3); }
     .store-badge.store-leveros { background: linear-gradient(135deg, #ff6b00, #ff9e00); border-color: #ff9e00; }
     .store-badge.store-centralar { background: linear-gradient(135deg, rgba(160,30,100,0.95), rgba(236,72,153,0.25)); border-color: rgba(236,72,153,0.4); }
+    .store-badge.store-dufrio { background: linear-gradient(135deg, #004a99, #007bff); border-color: #007bff; }
 
     /* FOTO */
     .product-img-wrap { width: 100%; aspect-ratio: 1.1/1; background: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; border-bottom: 1px solid var(--card-border); }
@@ -722,6 +723,67 @@
       } catch(e) { console.error("Central Ar erro:", e); return []; }
     }
 
+    async function scrapeDufrio(url) {
+      const PROXY_WORKER = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+      try {
+        let freshUrl = url;
+        try {
+          const u = new URL(url);
+          u.searchParams.set('_', Date.now());
+          freshUrl = u.toString();
+        } catch(_) { freshUrl = url + (url.includes('?') ? '&' : '?') + '_=' + Date.now(); }
+
+        const resp = await fetch(PROXY_WORKER + encodeURIComponent(freshUrl), { cache: 'no-store' });
+        const html = await resp.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        
+        const cards = Array.from(doc.querySelectorAll('.product-item'));
+        return cards.map(card => {
+          const titleEl = card.querySelector('a.product-item-link');
+          if (!titleEl) return null;
+          const title = titleEl.innerText.trim();
+          
+          const imgEl = card.querySelector('img.product-image-photo, img.product-image');
+          let image = "";
+          if (imgEl) {
+             image = imgEl.src || imgEl.getAttribute('data-src') || "";
+             // Se a URL da imagem vier relativa do proxy, ajusta
+             if (image.includes('workers.dev')) {
+                const u = new URL(image);
+                image = u.searchParams.get('url') || image;
+             }
+             if (image && !image.startsWith('http')) image = "https://www.dufrio.com.br" + (image.startsWith('/') ? '' : '/') + image;
+          }
+
+          // Preço à vista (PIX)
+          let spotLine = "";
+          const spotPriceEl = card.querySelector('.spot-price');
+          if (spotPriceEl) {
+            spotLine = spotPriceEl.innerText.replace(/\s+/g, ' ').trim();
+          } else {
+            const cashDownEl = card.querySelector('#cash_down');
+            if (cashDownEl) spotLine = cashDownEl.innerText.replace(/\s+/g, ' ').trim();
+          }
+
+          // Preço parcelado
+          let installLine = "";
+          const ps = card.querySelectorAll('p');
+          ps.forEach(p => {
+            const pText = p.innerText.toLowerCase();
+            if (pText.includes('ou r$') && (pText.includes('em') || pText.includes('x'))) {
+              installLine = p.innerText.replace(/\s+/g, ' ').trim();
+            }
+          });
+
+          let link = titleEl.getAttribute('href') || "";
+          if (link && !link.startsWith('http')) link = "https://www.dufrio.com.br" + (link.startsWith('/') ? '' : '/') + link;
+
+          if (!spotLine || !installLine) return null;
+          return { title, image, spot: spotLine, install: installLine, link, discount: 0 };
+        }).filter(Boolean);
+      } catch(e) { console.error("Dufrio erro:", e); return []; }
+    }
+
 
     async function startScraping() {
       try {
@@ -760,9 +822,11 @@
         const norm = (s) => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
         const frigelarLink = links.find(l => l.Site && norm(l.Site).includes("frigelar"));
         const leverosLink  = links.find(l => l.Site && norm(l.Site).includes("leveros"));
+        const dufrioLink   = links.find(l => l.Site && norm(l.Site).includes("dufrio"));
         console.log("📋 Match das lojas:", {
           frigelar: frigelarLink ? `✓ "${frigelarLink.Site}"` : "✗ nenhum",
-          leveros:  leverosLink  ? `✓ "${leverosLink.Site}"`  : "✗ nenhum"
+          leveros:  leverosLink  ? `✓ "${leverosLink.Site}"`  : "✗ nenhum",
+          dufrio:   dufrioLink   ? `✓ "${dufrioLink.Site}"`   : "✗ nenhum"
         });
 
         document.getElementById("loading-msg").innerText = "BUSCANDO LOJAS...";
@@ -781,6 +845,14 @@
           scrapePromises.push(
             scrapeLeveros(leverosLink.Link).then(products => {
               return products.map(p => ({...p, storeName: "Leveros"}));
+            })
+          );
+        }
+
+        if (dufrioLink && dufrioLink.Link) {
+          scrapePromises.push(
+            scrapeDufrio(dufrioLink.Link).then(products => {
+              return products.map(p => ({...p, storeName: "Dufrio"}));
             })
           );
         }
