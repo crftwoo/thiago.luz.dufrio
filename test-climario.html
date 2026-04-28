@@ -241,7 +241,6 @@
     }
 
     async function scrapeClimaRio(url) {
-      // Tenta múltiplos proxies para evitar bloqueios
       const proxies = [
         "https://frigelar-proxy.crftwo.workers.dev/?url=",
         "https://api.allorigins.win/get?url=",
@@ -252,12 +251,10 @@
       let usedProxy = proxies[0];
 
       try {
-        // Tenta o proxy principal com cache-buster
         const finalUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
         const resp = await fetch(usedProxy + encodeURIComponent(finalUrl));
         html = await resp.text();
         
-        // Se o AllOrigins for usado, o HTML vem dentro de um JSON .contents
         if (html.startsWith('{') && html.includes('"contents":')) {
             html = JSON.parse(html).contents;
         }
@@ -265,7 +262,6 @@
         const products = [];
         const seenLinks = new Set();
 
-        // FUNÇÃO AUXILIAR: Extrai via JSON-LD
         function extractJSONLD(source) {
             const scripts = source.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g);
             if (!scripts) return [];
@@ -276,12 +272,18 @@
                     if (json['@type'] === 'ItemList' && json.itemListElement) {
                         json.itemListElement.forEach(item => {
                             const p = item.item;
-                            if (p && p.url && p.offers?.lowPrice > 0) {
+                            if (p && p.url && !seenLinks.has(p.url)) {
+                                seenLinks.add(p.url);
+                                
+                                // Clima Rio: lowPrice é o à vista, highPrice é o parcelado
+                                const lowPrice = p.offers?.lowPrice || 0;
+                                const highPrice = p.offers?.highPrice || lowPrice;
+
                                 results.push({
                                     title: p.name,
                                     image: Array.isArray(p.image) ? p.image[0] : p.image,
-                                    spotText: "R$ " + p.offers.lowPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista",
-                                    installText: `ou R$ ${ (p.offers.highPrice || p.offers.lowPrice).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x`,
+                                    spotText: "R$ " + lowPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista",
+                                    installText: `ou R$ ${highPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x de R$ ${(highPrice/10).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
                                     link: p.url.startsWith('http') ? p.url : "https://www.climario.com.br" + p.url
                                 });
                             }
@@ -295,31 +297,31 @@
         const ldProducts = extractJSONLD(html);
         if (ldProducts.length > 0) return ldProducts;
 
-        // SE FALHAR (Bloqueio de Robô): Tenta API de Catálogo como Fallback Inteligente
-        console.log("HTML vazio ou bloqueado. Tentando API de Catálogo...");
-        
-        // Extrai o path da query (ex: /ar-condicionado/ar-condicionado-hi-wall-inverter/9-000-btu-h)
+        // Fallback API
         const queryMatch = url.match(/query=([^&]+)/);
         if (queryMatch) {
             const path = decodeURIComponent(queryMatch[1]);
             const apiUrl = `https://www.climario.com.br/api/catalog_system/pub/products/search${path}?O=OrderByPriceASC&_from=0&_to=19`;
             const apiResp = await fetch(usedProxy + encodeURIComponent(apiUrl));
             const apiJson = await apiResp.json();
-            
             const results = (apiJson.contents ? JSON.parse(apiJson.contents) : apiJson);
             
             if (Array.isArray(results)) {
                 results.forEach(p => {
                     const item = p.items[0];
-                    const seller = item.sellers[0];
-                    const comm = seller.commertialOffer;
+                    const comm = item.sellers[0].commertialOffer;
                     
-                    if (comm && comm.Price > 0 && comm.AvailableQuantity > 0) {
+                    if (comm && comm.Price > 0 && !seenLinks.has(p.link)) {
+                        seenLinks.add(p.link);
+                        // No Catálogo, Price é o parcelado. À vista tem 10% off.
+                        const priceParcelado = comm.Price;
+                        const priceAvista = priceParcelado * 0.9;
+
                         products.push({
                             title: p.productName,
                             image: item.images[0].imageUrl,
-                            spotText: "R$ " + comm.Price.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista",
-                            installText: `ou R$ ${comm.Price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x`,
+                            spotText: "R$ " + priceAvista.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista",
+                            installText: `ou R$ ${priceParcelado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até 10x de R$ ${(priceParcelado/10).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
                             link: p.link
                         });
                     }
@@ -329,7 +331,6 @@
         
         return products;
       } catch(e) { 
-        console.error("ClimaRio Scraper Error:", e); 
         return []; 
       }
     }

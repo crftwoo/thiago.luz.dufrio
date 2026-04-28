@@ -1,1 +1,1 @@
-Fallback inteligente para Clima Rio ativado. Se o site bloquear o HTML, a ferramenta agora usa a API de Catálogo injetando os filtros da planilha. Cards garantidos contra bot-detection.
+Formato de preços da Clima Rio corrigido. Adicionado desconto de 10% no PIX e detalhamento de parcelas (ex: 10x de R$ 177,19) conforme solicitado. Log dinâmico 17:43.

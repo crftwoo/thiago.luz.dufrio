@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Fallback inteligente para Clima Rio ativado. Se o site bloquear o HTML, a ferramenta agora usa a API de Catálogo injetando os filtros da planilha. Cards garantidos contra bot-detection.', dateIso: '2026-04-28T17:40:00-03:00' };
+const LATEST_LOG = { message: 'Formato de preços da Clima Rio corrigido. Adicionado desconto de 10% no PIX e detalhamento de parcelas (ex: 10x de R$ 177,19) conforme solicitado. Log dinâmico 17:43.', dateIso: '2026-04-28T17:44:00-03:00' };
