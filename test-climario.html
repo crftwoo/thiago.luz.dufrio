@@ -148,8 +148,8 @@
   </div>
 
   <script>
-    let sheetData = [], selection = {tipo:"", btu:"", ciclo:""};
-    
+    const norm = (s) => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
+
     async function loadSheet() {
       const syncStatus = document.getElementById("sync-status");
       try {
@@ -158,11 +158,13 @@
         const json = JSON.parse(text.substring(47, text.length - 2));
         const rows = json.table.rows;
         
+        // A planilha agora tem: Tipo (0), BTUs (1), Ciclo (2), Site (3), Link (4)
         sheetData = rows.map(r => ({
-          tipo: r.c[0] ? r.c[0].v : "",
-          btu: r.c[1] ? r.c[1].v : "",
-          ciclo: r.c[2] ? r.c[2].v : "",
-          climario: r.c[8] ? r.c[8].v : "" // Coluna I é ClimaRio (index 8)
+          tipo: r.c[0] ? String(r.c[0].v) : "",
+          btu: r.c[1] ? String(r.c[1].v) : "",
+          ciclo: r.c[2] ? String(r.c[2].v) : "",
+          site: r.c[3] ? String(r.c[3].v) : "",
+          link: r.c[4] ? String(r.c[4].v) : ""
         }));
         
         syncStatus.classList.add("success");
@@ -198,21 +200,22 @@
       const summary = document.getElementById('summary-text');
       summary.innerHTML = `<span>${selection.tipo}</span> <span>${selection.btu} BTU</span> <span>${selection.ciclo}</span>`;
 
-      // Encontra o link na planilha
-      const match = sheetData.find(r => 
-        r.tipo.toLowerCase().includes(selection.tipo.toLowerCase()) && 
-        r.btu.toString().includes(selection.btu) && 
-        r.ciclo.toLowerCase().includes(selection.ciclo.toLowerCase())
-      );
-
       const grid = document.getElementById('results-grid');
       grid.innerHTML = '';
 
-      if (match && match.climario && match.climario.startsWith('http')) {
-        const products = await scrapeClimaRio(match.climario);
+      // Busca o link específico para ClimaRio baseado na combinação
+      const match = sheetData.find(r => 
+        norm(r.tipo) === norm(selection.tipo) && 
+        norm(r.btu).includes(norm(selection.btu)) && 
+        norm(r.ciclo).includes(norm(selection.ciclo)) &&
+        norm(r.site) === 'climario'
+      );
+
+      if (match && match.link && match.link.startsWith('http')) {
+        const products = await scrapeClimaRio(match.link);
         renderProducts(products);
       } else {
-        grid.innerHTML = '<p>Nenhum link encontrado para esta combinação na Clima Rio.</p>';
+        grid.innerHTML = `<p style="color: #ff4d4d; font-weight: 800; margin-top: 40px;">Nenhum link encontrado para esta combinação na Clima Rio na planilha.</p>`;
       }
 
       document.getElementById('loading-results').style.display = 'none';
@@ -248,22 +251,32 @@
           const link = p.link;
           const image = item.images && item.images[0] ? item.images[0].imageUrl : "";
           
-          let spotPrice = comm.Price;
+          // Preço Pix (Geralmente no installments com Name "Pix")
+          let pixPrice = comm.Price;
           if (comm.Installments && comm.Installments.length > 0) {
-            const pix = comm.Installments.find(ins => ins.PaymentSystemName.toLowerCase().includes('pix') || ins.PaymentSystemName.toLowerCase().includes('boleto'));
-            if (pix) spotPrice = pix.Value;
+            const pix = comm.Installments.find(ins => 
+              norm(ins.PaymentSystemName).includes('pix') || 
+              norm(ins.Name).includes('pix')
+            );
+            if (pix) pixPrice = pix.Value;
           }
-          const spot = "R$ " + spotPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista";
           
+          const spotText = "R$ " + pixPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista";
+          
+          // Preço Parcelado (Total e Parcelas)
+          const totalInstall = comm.Price;
           let bestInstall = comm.Installments.reduce((prev, curr) => {
             if (curr.InterestRate === 0 && curr.NumberOfInstallments > prev.NumberOfInstallments) return curr;
             return prev;
           }, { NumberOfInstallments: 0, Value: 0 });
 
-          if (bestInstall.NumberOfInstallments === 0 && comm.Installments.length > 0) bestInstall = comm.Installments[0];
-          const install = `${bestInstall.NumberOfInstallments}x de R$ ${bestInstall.Value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+          if (bestInstall.NumberOfInstallments === 0 && comm.Installments.length > 0) {
+             bestInstall = comm.Installments.sort((a,b) => b.NumberOfInstallments - a.NumberOfInstallments)[0];
+          }
 
-          return { title, image, spot, install, link };
+          const installText = `ou R$ ${totalInstall.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em até ${bestInstall.NumberOfInstallments}x de R$ ${bestInstall.Value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+          return { title, image, spotText, installText, link };
         }).filter(Boolean);
       } catch(e) { console.error("ClimaRio erro:", e); return []; }
     }
@@ -271,7 +284,7 @@
     function renderProducts(products) {
       const grid = document.getElementById('results-grid');
       if (products.length === 0) {
-        grid.innerHTML = '<p>Nenhum produto encontrado para o link fornecido.</p>';
+        grid.innerHTML = '<p>Nenhum produto disponível no momento para este link.</p>';
         return;
       }
 
@@ -286,8 +299,8 @@
           <div class="product-info">
             <div class="product-title">${p.title}</div>
             <div class="prices-wrap">
-              <div class="price-vista">${p.spot}</div>
-              <div class="price-install">${p.install}</div>
+              <div class="price-vista">${p.spotText}</div>
+              <div class="price-install">${p.installText}</div>
             </div>
           </div>
           <div class="card-footer">
