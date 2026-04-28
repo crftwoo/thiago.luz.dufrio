@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Laboratório de Scraping: Clima Rio</title>
+  <title>Laboratório: Clima Rio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
@@ -16,6 +16,7 @@
 
     .btn-back { position: fixed; top: 16px; left: 16px; z-index: 999; background: rgba(255,255,255,0.06); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.12); color: #fff; padding: 6px 14px; border-radius: 30px; text-decoration: none; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
     .btn-back:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+    .btn-back svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2.5; fill: none; }
 
     .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 70px 24px 100px; text-align: center; }
     .page-header { margin-bottom: 48px; }
@@ -72,115 +73,127 @@
     .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
     .sync-status.success .sync-dot { background: #00e676; }
 
-    #selection-summary { width: 100%; background: var(--card-bg); border: 1px solid var(--card-border); padding: 16px 24px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; backdrop-filter: blur(12px); }
-    .summary-text { font-size: 13px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; gap: 12px; }
+    #selection-summary { width: 100%; background: var(--card-bg); border: 1px solid var(--card-border); padding: 16px 24px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; backdrop-filter: blur(12px); flex-wrap: wrap; gap: 14px; }
+    .summary-text { font-size: 13px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; gap: 12px; flex-wrap: wrap; }
     .summary-text span { background: rgba(227,6,19,0.15); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(227,6,19,0.3); color: #ff4d4d; }
-    .btn-reset { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; color: #fff; font-weight: 800; font-size: 12px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+    .btn-reset { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; color: #fff; font-weight: 800; font-size: 12px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; font-family: "Outfit", sans-serif; }
+    .btn-reset:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); border-color: rgba(255,255,255,0.3); }
   </style>
 </head>
 <body>
   <div id="sync-status" class="sync-status">
     <div class="sync-dot"></div>
-    <span id="sync-text">Laboratório Clima Rio</span>
+    <span id="sync-text">Conectando</span>
   </div>
   
   <div class="aurora a1"></div>
   <div class="aurora a2"></div>
 
   <a href="scraper-ar.html" class="btn-back">
-    &larr; Voltar para Oficial
+    <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;stroke-width:2.5;fill:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    Voltar para Oficial
   </a>
 
   <div class="container">
     <div class="page-header">
       <h1>Laboratório: Clima Rio</h1>
-      <p>Testando extração de dados via API de Catálogo</p>
+      <p>Extração via API nativa • Idêntico ao Oficial</p>
     </div>
 
     <div id="step-tipo" class="step-section active">
       <h2>Selecione o Tipo</h2>
-      <div class="options-grid" id="tipo-options">
-        <button class="option-btn tipo-btn" onclick="selectOption('tipo', 'Hiwall')">
-          <img src="img/hi_wall.png" alt="Hiwall">
-          <span>Hiwall</span>
-        </button>
-        <button class="option-btn tipo-btn" onclick="selectOption('tipo', 'Piso Teto')">
-          <img src="img/piso_teto.png" alt="Piso Teto">
-          <span>Piso Teto</span>
-        </button>
-        <button class="option-btn tipo-btn" onclick="selectOption('tipo', 'Cassete')">
-          <img src="img/cassete.png" alt="Cassete">
-          <span>Cassete</span>
-        </button>
-      </div>
+      <div class="options-grid" id="tipo-options"></div>
     </div>
 
     <div id="step-btus" class="step-section">
       <h2>Selecione os BTUs</h2>
-      <div class="options-grid" id="btu-options">
-        <button class="option-btn" onclick="selectOption('btu', '9000')">9.000</button>
-        <button class="option-btn" onclick="selectOption('btu', '12000')">12.000</button>
-        <button class="option-btn" onclick="selectOption('btu', '18000')">18.000</button>
-        <button class="option-btn" onclick="selectOption('btu', '24000')">24.000</button>
-      </div>
+      <div class="options-grid" id="btu-options"></div>
     </div>
 
     <div id="step-ciclo" class="step-section">
       <h2>Selecione o Ciclo</h2>
-      <div class="options-grid" id="ciclo-options">
-        <button class="option-btn" onclick="selectOption('ciclo', 'Frio')">Só Frio</button>
-        <button class="option-btn" onclick="selectOption('ciclo', 'Quente/Frio')">Quente/Frio</button>
-      </div>
+      <div class="options-grid" id="ciclo-options"></div>
     </div>
 
     <div id="loading-results">
       <div class="spinner"></div>
-      <p id="loading-msg">Consultando API Clima Rio...</p>
+      <p id="loading-msg">Consultando Clima Rio...</p>
     </div>
 
     <div id="step-resultados" class="step-section" style="width:100%;">
-      <div id="selection-summary">
+      <div id="selection-summary" style="display:none;">
         <div class="summary-text" id="summary-text"></div>
-        <button class="btn-reset" onclick="resetScraper()">🔄 Nova Busca</button>
+        <button class="btn-reset" onclick="resetScraper()">🔄 Refazer Busca</button>
       </div>
       <div class="products-grid" id="results-grid"></div>
     </div>
   </div>
 
   <script>
+    const IMAGES = {"Hiwall":"img/hi_wall.png","Hi Wall":"img/hi_wall.png","Piso Teto":"img/piso_teto.png","Cassete":"img/cassete.png"};
     let sheetData = [], selection = {tipo:"", btu:"", ciclo:""};
     const norm = (s) => String(s || '').toLowerCase().replace(/[\s\-_.]/g, '');
-
-    async function loadSheet() {
+    
+    async function loadData() {
+      renderTipos();
       const syncStatus = document.getElementById("sync-status");
+      const syncText = document.getElementById("sync-text");
       try {
-        const resp = await fetch("https://docs.google.com/spreadsheets/d/1ml7XpwZfzM4ElRJb4G62b93VMqUw3jeprTtgxdigiD8/gviz/tq?tqx=out:json");
-        const text = await resp.text();
-        const json = JSON.parse(text.substring(47, text.length - 2));
-        const rows = json.table.rows;
-        
-        // A planilha agora tem: Tipo (0), BTUs (1), Ciclo (2), Site (3), Link (4)
-        sheetData = rows.map(r => ({
-          tipo: r.c[0] ? String(r.c[0].v) : "",
-          btu: r.c[1] ? String(r.c[1].v) : "",
-          ciclo: r.c[2] ? String(r.c[2].v) : "",
-          site: r.c[3] ? String(r.c[3].v) : "",
-          link: r.c[4] ? String(r.c[4].v) : ""
-        }));
+        const resp = await fetch("https://opensheet.elk.sh/1ml7XpwZfzM4ElRJb4G62b93VMqUw3jeprTtgxdigiD8/Sheet1");
+        sheetData = await resp.json();
         
         syncStatus.classList.add("success");
-        document.getElementById("sync-text").innerText = "Planilha Conectada";
+        syncText.innerText = "Conectado";
+        renderTipos();
       } catch(e) {
         console.error("Erro ao carregar planilha:", e);
-        document.getElementById("sync-text").innerText = "Erro Planilha";
+        syncText.innerText = "Erro Planilha";
       }
     }
 
-    function selectOption(step, val) {
-      selection[step] = val;
-      if (step === 'tipo') showStep('btus');
-      else if (step === 'btu') showStep('ciclo');
-      else if (step === 'ciclo') startScraping();
+    function renderTipos() {
+      const c = document.getElementById("tipo-options"); c.innerHTML = "";
+      const tipos = sheetData && sheetData.length > 0 ? [...new Set(sheetData.map(i=>i.Tipo))] : ["Hiwall", "Piso Teto", "Cassete"];
+      tipos.forEach(t => {
+        const b = document.createElement("button"); 
+        b.className = "option-btn tipo-btn" + (selection.tipo === t ? " selected" : "");
+        let imgName = t === "Hiwall" || t === "Hi Wall" ? "Hi Wall" : t;
+        b.innerHTML = `<img src="${IMAGES[imgName] || 'img/hi_wall.png'}" onerror="this.src='https://placehold.co/80';"><span>${t}</span>`;
+        b.onclick = () => selectTipo(t); c.appendChild(b);
+      });
+    }
+
+    function renderOptions(containerId, options, onClick, selectedVal, formatter = (v)=>v) {
+      const c = document.getElementById(containerId); c.innerHTML = "";
+      options.forEach(o => {
+        const b = document.createElement("button");
+        b.className = "option-btn" + (selectedVal === o ? " selected" : "");
+        b.innerText = formatter(o);
+        b.onclick = () => onClick(o);
+        c.appendChild(b);
+      });
+    }
+
+    function selectTipo(t) {
+      selection.tipo = t; selection.btu = ""; selection.ciclo = "";
+      renderTipos();
+      const btus = [...new Set(sheetData.filter(i=>i.Tipo===t).map(i=>i.BTUs))].sort((a,b)=>parseInt(a)-parseInt(b));
+      renderOptions("btu-options", btus, selectBTU, selection.btu, (v)=>v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."));
+      showStep('btus');
+    }
+
+    function selectBTU(b) {
+      selection.btu = b; selection.ciclo = "";
+      const btus = [...new Set(sheetData.filter(i=>i.Tipo===selection.tipo).map(i=>i.BTUs))].sort((a,b)=>parseInt(a)-parseInt(b));
+      renderOptions("btu-options", btus, selectBTU, selection.btu, (v)=>v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."));
+      const ciclos = [...new Set(sheetData.filter(i=>i.Tipo===selection.tipo && i.BTUs===b).map(i=>i.Ciclo))];
+      renderOptions("ciclo-options", ciclos, selectCiclo, selection.ciclo, (v)=>v.toLowerCase()==="frio"?"Só Frio":v);
+      showStep('ciclo');
+    }
+
+    function selectCiclo(c) {
+      selection.ciclo = c;
+      startScraping();
     }
 
     function showStep(id) {
@@ -190,8 +203,10 @@
 
     function resetScraper() {
       selection = {tipo:"", btu:"", ciclo:""};
-      showStep('tipo');
+      document.getElementById('selection-summary').style.display = "none";
       document.getElementById('results-grid').innerHTML = '';
+      showStep('tipo');
+      renderTipos();
     }
 
     async function startScraping() {
@@ -199,24 +214,24 @@
       document.getElementById('loading-results').style.display = 'flex';
       
       const summary = document.getElementById('summary-text');
-      summary.innerHTML = `<span>${selection.tipo}</span> <span>${selection.btu} BTU</span> <span>${selection.ciclo}</span>`;
+      summary.innerHTML = `<span>${selection.tipo}</span> <span>${selection.btu.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} BTU</span> <span>${selection.ciclo.toLowerCase()==="frio"?"Só Frio":selection.ciclo}</span>`;
+      document.getElementById('selection-summary').style.display = "flex";
 
       const grid = document.getElementById('results-grid');
       grid.innerHTML = '';
 
-      // Busca o link específico para ClimaRio baseado na combinação
       const match = sheetData.find(r => 
-        norm(r.tipo) === norm(selection.tipo) && 
-        norm(r.btu).includes(norm(selection.btu)) && 
-        norm(r.ciclo).includes(norm(selection.ciclo)) &&
-        norm(r.site) === 'climario'
+        norm(r.Tipo) === norm(selection.tipo) && 
+        norm(r.BTUs) === norm(selection.btu) && 
+        norm(r.Ciclo) === norm(selection.ciclo) &&
+        norm(r.Site) === 'climario'
       );
 
-      if (match && match.link && match.link.startsWith('http')) {
-        const products = await scrapeClimaRio(match.link);
+      if (match && match.Link && match.Link.startsWith('http')) {
+        const products = await scrapeClimaRio(match.Link);
         renderProducts(products);
       } else {
-        grid.innerHTML = `<p style="color: #ff4d4d; font-weight: 800; margin-top: 40px;">Nenhum link encontrado para esta combinação na Clima Rio na planilha.</p>`;
+        grid.innerHTML = `<p style="color: #ff4d4d; font-weight: 800; margin-top: 40px;">Nenhum link encontrado na planilha para Clima Rio com esta combinação.</p>`;
       }
 
       document.getElementById('loading-results').style.display = 'none';
@@ -231,11 +246,10 @@
         if (!apiPath.startsWith('/')) apiPath = '/' + apiPath;
         if (apiPath.endsWith('/')) apiPath = apiPath.slice(0, -1);
         
-        const map = u.searchParams.get('map') || "";
         const order = u.searchParams.get('order') || "OrderByPriceASC";
         
-        let apiUrl = `https://www.climario.com.br/api/catalog_system/pub/products/search${apiPath}?O=${order}&_from=0&_to=49`;
-        if (map) apiUrl += `&map=${map}`;
+        // CORREÇÃO DO MAP: Clima Rio exige map=c,c,c para certas buscas de categoria
+        let apiUrl = `https://www.climario.com.br/api/catalog_system/pub/products/search${apiPath}?O=${order}&_from=0&_to=49&map=c,c,c`;
 
         const resp = await fetch(PROXY_WORKER + encodeURIComponent(apiUrl), { cache: 'no-store' });
         const products = await resp.json();
@@ -252,19 +266,13 @@
           const link = p.link;
           const image = item.images && item.images[0] ? item.images[0].imageUrl : "";
           
-          // Preço Pix (Geralmente no installments com Name "Pix")
           let pixPrice = comm.Price;
           if (comm.Installments && comm.Installments.length > 0) {
-            const pix = comm.Installments.find(ins => 
-              norm(ins.PaymentSystemName).includes('pix') || 
-              norm(ins.Name).includes('pix')
-            );
+            const pix = comm.Installments.find(ins => norm(ins.PaymentSystemName).includes('pix') || norm(ins.Name).includes('pix'));
             if (pix) pixPrice = pix.Value;
           }
           
           const spotText = "R$ " + pixPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista";
-          
-          // Preço Parcelado (Total e Parcelas)
           const totalInstall = comm.Price;
           let bestInstall = comm.Installments.reduce((prev, curr) => {
             if (curr.InterestRate === 0 && curr.NumberOfInstallments > prev.NumberOfInstallments) return curr;
@@ -312,7 +320,7 @@
       });
     }
 
-    loadSheet();
+    loadData();
   </script>
 </body>
 </html>
