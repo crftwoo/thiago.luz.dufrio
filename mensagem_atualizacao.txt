@@ -1,1 +1,1 @@
-Removido updates.json e configurada regra de log automático no index.html.
+Adicionada regra de persistência de logs (.antigravity_skills.md).
