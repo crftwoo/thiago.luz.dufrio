@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Laboratório de Scraping: Clima Rio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --bg: #050505; --card-bg: rgba(18,18,28,0.85); --card-border: rgba(255,255,255,0.08); --green: #00e676; --blue: #4facfe; --text: #ffffff; --muted: #7a7a9a; --radius: 16px; }
+    body { font-family: "Outfit", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+    .aurora { position: fixed; border-radius: 50%; filter: blur(130px); z-index: 0; pointer-events: none; opacity: 0.22; animation: auroraAnim 18s infinite alternate ease-in-out; }
+    .a1 { width: 700px; height: 700px; background: #e30613; top: -15%; left: -15%; }
+    .a2 { width: 600px; height: 600px; background: #7c3aed; bottom: -15%; right: -10%; animation-duration: 24s; }
+    @keyframes auroraAnim { 0% { transform: scale(1) translate(0,0); } 100% { transform: scale(1.4) translate(60px,-60px); } }
+
+    .btn-back { position: fixed; top: 16px; left: 16px; z-index: 999; background: rgba(255,255,255,0.06); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.12); color: #fff; padding: 6px 14px; border-radius: 30px; text-decoration: none; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
+    .btn-back:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+
+    .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 70px 24px 100px; text-align: center; }
+    .page-header { margin-bottom: 48px; }
+    .page-header h1 { font-size: 34px; font-weight: 900; letter-spacing: -1.5px; text-transform: uppercase; font-style: italic; background: linear-gradient(135deg, #e30613, #ff4d4d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+    .page-header p { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid var(--card-border); padding-bottom: 28px; }
+
+    .step-section { display: none; flex-direction: column; align-items: center; gap: 20px; animation: slideUp 0.5s cubic-bezier(0.22,1,0.36,1) forwards; margin-top: 8px; }
+    .step-section.active { display: flex; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    h2 { font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; margin-top: 20px; }
+
+    .options-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; width: 100%; }
+    .option-btn { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); padding: 14px 28px; border-radius: 12px; cursor: pointer; transition: all 0.2s; color: var(--text); font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-family: "Outfit", sans-serif; }
+    .option-btn:hover { border-color: #ff4d4d55; background: rgba(227,6,19,0.08); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(227,6,19,0.1); }
+    .tipo-btn { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 20px; width: 190px; }
+    .tipo-btn img { width: 150px; transition: transform 0.3s; filter: drop-shadow(0 0 14px rgba(227,6,19,0.35)); mix-blend-mode: screen; }
+    .tipo-btn:hover img { transform: scale(1.06); filter: drop-shadow(0 0 20px rgba(227,6,19,0.6)); }
+
+    .option-btn.selected { background: rgba(227,6,19,0.15); border-color: rgba(227,6,19,0.6); box-shadow: 0 0 20px rgba(227,6,19,0.25); color: #fff; }
+    .tipo-btn.selected img { transform: scale(1.06); filter: drop-shadow(0 0 25px rgba(227,6,19,0.7)); }
+
+    #loading-results { display: none; flex-direction: column; align-items: center; gap: 14px; padding: 50px; margin-top: 20px; }
+    .spinner { width: 36px; height: 36px; border: 3px solid rgba(227,6,19,0.15); border-top-color: #e30613; border-radius: 50%; animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading-msg { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #e30613; }
+
+    /* GRID DE PRODUTOS */
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; margin-top: 28px; width: 100%; }
+
+    /* CARD */
+    .product-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); overflow: hidden; backdrop-filter: blur(16px); display: flex; flex-direction: column; transition: all 0.25s; position: relative; }
+    .product-card:hover { border-color: rgba(227,6,19,0.3); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(227,6,19,0.1); }
+
+    /* LOJA BADGE */
+    .store-badge { position: absolute; top: 12px; left: 12px; z-index: 3; background: linear-gradient(135deg, #e30613, #ff4d4d); border: 1px solid rgba(255,255,255,0.1); padding: 3px 10px; border-radius: 20px; font-size: 9px; font-weight: 900; color: white; letter-spacing: 1.5px; text-transform: uppercase; backdrop-filter: blur(8px); }
+
+    /* FOTO */
+    .product-img-wrap { width: 100%; aspect-ratio: 1.1/1; background: #ffffff; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid var(--card-border); }
+    .product-img-wrap img { width: 95%; height: 95%; object-fit: contain; transition: transform 0.3s; }
+    
+    /* INFO AREA */
+    .product-info { padding: 18px 14px 10px; flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; }
+    .product-title { font-size: 15px; font-weight: 800; color: #ffffff; line-height: 1.3; margin-bottom: 14px; }
+    .prices-wrap { display: flex; flex-direction: column; gap: 6px; align-items: center; width: 100%; text-align: center; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); }
+    .price-vista { font-size: 20px; font-weight: 900; color: #00e676; text-shadow: 0 0 12px rgba(0,230,118,0.2); }
+    .price-install { font-size: 12px; color: #a1a1aa; font-weight: 600; }
+
+    .card-footer { padding: 10px 14px 14px; }
+    .btn-link { display: block; width: 100%; padding: 9px; border-radius: 10px; background: rgba(227,6,19,0.12); border: 1px solid rgba(227,6,19,0.25); color: #ff4d4d; font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; text-align: center; text-decoration: none; transition: all 0.2s; }
+    .btn-link:hover { background: rgba(227,6,19,0.25); border-color: rgba(227,6,19,0.5); transform: translateY(-1px); }
+
+    /* SYNC STATUS */
+    .sync-status { position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: rgba(18,18,28,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); padding: 10px 18px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-size: 10px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; }
+    .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
+    .sync-status.success .sync-dot { background: #00e676; }
+
+    #selection-summary { width: 100%; background: var(--card-bg); border: 1px solid var(--card-border); padding: 16px 24px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; backdrop-filter: blur(12px); }
+    .summary-text { font-size: 13px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1px; display: flex; gap: 12px; }
+    .summary-text span { background: rgba(227,6,19,0.15); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(227,6,19,0.3); color: #ff4d4d; }
+    .btn-reset { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; color: #fff; font-weight: 800; font-size: 12px; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+  <div id="sync-status" class="sync-status">
+    <div class="sync-dot"></div>
+    <span id="sync-text">Laboratório Clima Rio</span>
+  </div>
+  
+  <div class="aurora a1"></div>
+  <div class="aurora a2"></div>
+
+  <a href="scraper-ar.html" class="btn-back">
+    &larr; Voltar para Oficial
+  </a>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Laboratório: Clima Rio</h1>
+      <p>Testando extração de dados via API de Catálogo</p>
+    </div>
+
+    <div id="step-tipo" class="step-section active">
+      <h2>Selecione o Tipo</h2>
+      <div class="options-grid" id="tipo-options">
+        <button class="option-btn tipo-btn" onclick="selectOption('tipo', 'Hiwall')">
+          <img src="img/hi_wall.png" alt="Hiwall">
+          <span>Hiwall</span>
+        </button>
+        <button class="option-btn tipo-btn" onclick="selectOption('tipo', 'Piso Teto')">
+          <img src="img/piso_teto.png" alt="Piso Teto">
+          <span>Piso Teto</span>
+        </button>
+        <button class="option-btn tipo-btn" onclick="selectOption('tipo', 'Cassete')">
+          <img src="img/cassete.png" alt="Cassete">
+          <span>Cassete</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="step-btus" class="step-section">
+      <h2>Selecione os BTUs</h2>
+      <div class="options-grid" id="btu-options">
+        <button class="option-btn" onclick="selectOption('btu', '9000')">9.000</button>
+        <button class="option-btn" onclick="selectOption('btu', '12000')">12.000</button>
+        <button class="option-btn" onclick="selectOption('btu', '18000')">18.000</button>
+        <button class="option-btn" onclick="selectOption('btu', '24000')">24.000</button>
+      </div>
+    </div>
+
+    <div id="step-ciclo" class="step-section">
+      <h2>Selecione o Ciclo</h2>
+      <div class="options-grid" id="ciclo-options">
+        <button class="option-btn" onclick="selectOption('ciclo', 'Frio')">Só Frio</button>
+        <button class="option-btn" onclick="selectOption('ciclo', 'Quente/Frio')">Quente/Frio</button>
+      </div>
+    </div>
+
+    <div id="loading-results">
+      <div class="spinner"></div>
+      <p id="loading-msg">Consultando API Clima Rio...</p>
+    </div>
+
+    <div id="step-resultados" class="step-section" style="width:100%;">
+      <div id="selection-summary">
+        <div class="summary-text" id="summary-text"></div>
+        <button class="btn-reset" onclick="resetScraper()">🔄 Nova Busca</button>
+      </div>
+      <div class="products-grid" id="results-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    let sheetData = [], selection = {tipo:"", btu:"", ciclo:""};
+    
+    async function loadSheet() {
+      const syncStatus = document.getElementById("sync-status");
+      try {
+        const resp = await fetch("https://docs.google.com/spreadsheets/d/1ml7XpwZfzM4ElRJb4G62b93VMqUw3jeprTtgxdigiD8/gviz/tq?tqx=out:json");
+        const text = await resp.text();
+        const json = JSON.parse(text.substring(47, text.length - 2));
+        const rows = json.table.rows;
+        
+        sheetData = rows.map(r => ({
+          tipo: r.c[0] ? r.c[0].v : "",
+          btu: r.c[1] ? r.c[1].v : "",
+          ciclo: r.c[2] ? r.c[2].v : "",
+          climario: r.c[8] ? r.c[8].v : "" // Coluna I é ClimaRio (index 8)
+        }));
+        
+        syncStatus.classList.add("success");
+        document.getElementById("sync-text").innerText = "Planilha Conectada";
+      } catch(e) {
+        console.error("Erro ao carregar planilha:", e);
+        document.getElementById("sync-text").innerText = "Erro Planilha";
+      }
+    }
+
+    function selectOption(step, val) {
+      selection[step] = val;
+      if (step === 'tipo') showStep('btus');
+      else if (step === 'btu') showStep('ciclo');
+      else if (step === 'ciclo') startScraping();
+    }
+
+    function showStep(id) {
+      document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-' + id).classList.add('active');
+    }
+
+    function resetScraper() {
+      selection = {tipo:"", btu:"", ciclo:""};
+      showStep('tipo');
+      document.getElementById('results-grid').innerHTML = '';
+    }
+
+    async function startScraping() {
+      document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('loading-results').style.display = 'flex';
+      
+      const summary = document.getElementById('summary-text');
+      summary.innerHTML = `<span>${selection.tipo}</span> <span>${selection.btu} BTU</span> <span>${selection.ciclo}</span>`;
+
+      // Encontra o link na planilha
+      const match = sheetData.find(r => 
+        r.tipo.toLowerCase().includes(selection.tipo.toLowerCase()) && 
+        r.btu.toString().includes(selection.btu) && 
+        r.ciclo.toLowerCase().includes(selection.ciclo.toLowerCase())
+      );
+
+      const grid = document.getElementById('results-grid');
+      grid.innerHTML = '';
+
+      if (match && match.climario && match.climario.startsWith('http')) {
+        const products = await scrapeClimaRio(match.climario);
+        renderProducts(products);
+      } else {
+        grid.innerHTML = '<p>Nenhum link encontrado para esta combinação na Clima Rio.</p>';
+      }
+
+      document.getElementById('loading-results').style.display = 'none';
+      document.getElementById('step-resultados').classList.add('active');
+    }
+
+    async function scrapeClimaRio(url) {
+      const PROXY_WORKER = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+      try {
+        const u = new URL(url);
+        let apiPath = u.searchParams.get('query') || u.pathname;
+        if (!apiPath.startsWith('/')) apiPath = '/' + apiPath;
+        if (apiPath.endsWith('/')) apiPath = apiPath.slice(0, -1);
+        
+        const map = u.searchParams.get('map') || "";
+        const order = u.searchParams.get('order') || "OrderByPriceASC";
+        
+        let apiUrl = `https://www.climario.com.br/api/catalog_system/pub/products/search${apiPath}?O=${order}&_from=0&_to=49`;
+        if (map) apiUrl += `&map=${map}`;
+
+        const resp = await fetch(PROXY_WORKER + encodeURIComponent(apiUrl), { cache: 'no-store' });
+        const products = await resp.json();
+        
+        if (!Array.isArray(products)) return [];
+
+        return products.map(p => {
+          const item = p.items && p.items[0];
+          const seller = item && item.sellers && item.sellers[0];
+          const comm = seller && seller.commertialOffer;
+          if (!comm || comm.AvailableQuantity <= 0) return null;
+
+          const title = p.productName;
+          const link = p.link;
+          const image = item.images && item.images[0] ? item.images[0].imageUrl : "";
+          
+          let spotPrice = comm.Price;
+          if (comm.Installments && comm.Installments.length > 0) {
+            const pix = comm.Installments.find(ins => ins.PaymentSystemName.toLowerCase().includes('pix') || ins.PaymentSystemName.toLowerCase().includes('boleto'));
+            if (pix) spotPrice = pix.Value;
+          }
+          const spot = "R$ " + spotPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + " à vista";
+          
+          let bestInstall = comm.Installments.reduce((prev, curr) => {
+            if (curr.InterestRate === 0 && curr.NumberOfInstallments > prev.NumberOfInstallments) return curr;
+            return prev;
+          }, { NumberOfInstallments: 0, Value: 0 });
+
+          if (bestInstall.NumberOfInstallments === 0 && comm.Installments.length > 0) bestInstall = comm.Installments[0];
+          const install = `${bestInstall.NumberOfInstallments}x de R$ ${bestInstall.Value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+          return { title, image, spot, install, link };
+        }).filter(Boolean);
+      } catch(e) { console.error("ClimaRio erro:", e); return []; }
+    }
+
+    function renderProducts(products) {
+      const grid = document.getElementById('results-grid');
+      if (products.length === 0) {
+        grid.innerHTML = '<p>Nenhum produto encontrado para o link fornecido.</p>';
+        return;
+      }
+
+      products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <div class="store-badge">Clima Rio</div>
+          <div class="product-img-wrap">
+            <img src="${p.image}" alt="${p.title}">
+          </div>
+          <div class="product-info">
+            <div class="product-title">${p.title}</div>
+            <div class="prices-wrap">
+              <div class="price-vista">${p.spot}</div>
+              <div class="price-install">${p.install}</div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="${p.link}" target="_blank" class="btn-link">Ver no Site</a>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    loadSheet();
+  </script>
+</body>
+</html>

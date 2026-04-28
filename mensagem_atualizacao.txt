@@ -1,1 +1,1 @@
-Adicionado scraper da ClimaRio e atualizados logs.
+Limpeza do scraper oficial (removido ClimaRio) e criação do Laboratório Clima Rio para testes isolados.
