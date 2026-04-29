@@ -180,23 +180,29 @@
   <script>
     // Proxies sugeridos para evitar bloqueios
     const PROXIES = [
+      "https://api.codetabs.com/v1/proxy?quest=",
       "https://api.allorigins.win/get?url=",
-      "https://frigelar-proxy.crftwo.workers.dev/?url=",
-      "https://cors-anywhere.herokuapp.com/"
+      "https://frigelar-proxy.crftwo.workers.dev/?url="
     ];
 
     async function tryFetch(targetUrl) {
-      // Tenta primeiro o worker dedicado (mais rápido se estiver online)
+      // Tenta primeiro o CodeTabs (muito estável para VTEX)
       try {
-        const resp = await fetch(PROXIES[1] + encodeURIComponent(targetUrl));
+        const resp = await fetch(PROXIES[0] + encodeURIComponent(targetUrl));
         if (resp.ok) return await resp.text();
       } catch(e) {}
 
       // Fallback para AllOrigins
       try {
-        const resp = await fetch(PROXIES[0] + encodeURIComponent(targetUrl));
+        const resp = await fetch(PROXIES[1] + encodeURIComponent(targetUrl));
         const json = await resp.json();
-        return json.contents;
+        if (json && json.contents) return json.contents;
+      } catch(e) {}
+
+      // Fallback para Worker
+      try {
+        const resp = await fetch(PROXIES[2] + encodeURIComponent(targetUrl));
+        if (resp.ok) return await resp.text();
       } catch(e) {}
 
       throw new Error("Falha em todos os proxies.");
