@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Sucesso Final: Scraper ClimaRio testado e validado via console no site oficial. Adicionado proxy CodeTabs para estabilidade total.', dateIso: '2026-04-29T13:56:39-03:00' };
+const LATEST_LOG = { message: 'Hotfix Definitive: Mudança para extração via Regex do raw HTML para contornar limitações do DOMParser com arquivos grandes do VTEX IO.', dateIso: '2026-04-29T14:05:39-03:00' };

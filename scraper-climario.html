@@ -224,81 +224,65 @@
 
       try {
         const html = await tryFetch(url);
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-
+        
         let products = [];
 
-        // 1. TENTATIVA VIA DOM (Classes exatas dos prints do usuário)
-        // O container de cada produto no VTEX IO costuma ser um <a> com a classe clearLink
-        const items = doc.querySelectorAll('a[class*="vtex-product-summary-2-x-clearLink"]');
+        // 1. EXTRAÇÃO VIA REGEX (RAW HTML) - Solução definitiva para arquivos grandes do VTEX IO
+        const stateMatch = html.match(/__STATE__\s*=\s*(\{.*?\});/s) || html.match(/__STATE__\s*=\s*(\{.*?\})<\/script>/s);
         
-        if (items.length > 0) {
-          items.forEach(item => {
-            // Nome: vtex-product-summary-2-x-productBrand
-            const name = item.querySelector('[class*="vtex-product-summary-2-x-productBrand"]')?.innerText;
+        if (stateMatch && stateMatch[1]) {
+          try {
+            const state = JSON.parse(stateMatch[1]);
+            const productKeys = Object.keys(state).filter(k => k.startsWith('Product:') && state[k].productName);
             
-            // Imagem: vtex-product-summary-2-x-imageNormal
-            let img = item.querySelector('img[class*="vtex-product-summary-2-x-imageNormal"]')?.src;
-            if (!img) img = item.querySelector('img[class*="vtex-product-summary-2-x-image"]')?.src;
+            products = productKeys.map(k => {
+              const p = state[k];
+              const productId = p.productId;
+              const skuKey = Object.keys(state).find(sk => sk.includes(`Product:${productId}`) && sk.includes('items.0'));
+              const sku = state[skuKey] || {};
+              
+              let img = '';
+              if (sku.images?.[0]?.id) img = state[sku.images[0].id]?.imageUrl;
 
-            // Preço à vista: vtex-product-price-1-x-spotPriceValue
-            const cash = item.querySelector('[class*="vtex-product-price-1-x-spotPriceValue"]')?.innerText;
+              const sellerKey = Object.keys(state).find(sk => sk.includes(skuKey || productId) && sk.includes('sellers.0'));
+              const offer = state[state[sellerKey]?.commertialOffer?.id] || {};
+              
+              let cash = 'Consulte o site';
+              if (offer.SpotPrice || offer.Price) {
+                cash = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(offer.SpotPrice || offer.Price);
+              }
 
-            // Parcelamento: vtex-product-price-1-x-installments
-            const parc = item.querySelector('[class*="vtex-product-price-1-x-installments"]')?.innerText;
+              let parc = '';
+              if (offer.Installments?.length > 0) {
+                const best = offer.Installments.reduce((a, b) => (a.NumberOfInstallments > b.NumberOfInstallments) ? a : b);
+                parc = `ou ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(best.TotalValuePlusInterestRate)} em ${best.NumberOfInstallments}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(best.Value)}`;
+              }
 
-            const link = item.href;
-
-            if (name && cash) {
-              products.push({ name, img, cash, parc, link });
-            }
-          });
+              return {
+                name: p.productName,
+                img: img,
+                cash: cash,
+                parc: parc,
+                link: 'https://www.climario.com.br/' + p.linkText + '/p'
+              };
+            });
+          } catch (e) {
+            console.error("Erro ao parsear JSON do Estado:", e);
+          }
         }
 
-        // 2. FALLBACK VIA __STATE__ (Caso o HTML venha "vazio" mas com o script de estado)
+        // 2. FALLBACK VIA DOM (Caso a regex falhe por algum motivo raro)
         if (products.length === 0) {
-          const stateScript = Array.from(doc.querySelectorAll('script')).find(s => s.textContent.includes('__STATE__'));
-          if (stateScript) {
-            const raw = stateScript.textContent;
-            const jsonStr = raw.includes('window.__STATE__ = ') ? raw.split('window.__STATE__ = ')[1].split(';')[0] : raw.match(/\{.*\}/s)?.[0];
-            
-            if (jsonStr) {
-              const state = JSON.parse(jsonStr);
-              const keys = Object.keys(state).filter(k => k.startsWith('Product:') && state[k].productName);
-              
-              products = keys.map(k => {
-                const p = state[k];
-                const id = p.productId;
-                const skuKey = Object.keys(state).find(sk => sk.includes(`Product:${id}`) && sk.includes('items.0'));
-                const sku = state[skuKey] || {};
-                
-                let img = '';
-                if (sku.images?.[0]?.id) img = state[sku.images[0].id]?.imageUrl;
-
-                const sellerKey = Object.keys(state).find(sk => sk.includes(skuKey || id) && sk.includes('sellers.0'));
-                const offer = state[state[sellerKey]?.commertialOffer?.id] || {};
-                
-                let cash = 'Consulte';
-                if (offer.SpotPrice || offer.Price) {
-                  cash = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(offer.SpotPrice || offer.Price);
-                }
-
-                let parc = '';
-                if (offer.Installments?.length > 0) {
-                  const best = offer.Installments.reduce((a, b) => (a.NumberOfInstallments > b.NumberOfInstallments) ? a : b);
-                  parc = `ou ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(best.TotalValuePlusInterestRate)} em ${best.NumberOfInstallments}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(best.Value)}`;
-                }
-
-                return {
-                  name: p.productName,
-                  img: img,
-                  cash: cash,
-                  parc: parc,
-                  link: 'https://www.climario.com.br/' + p.linkText + '/p'
-                };
-              });
-            }
-          }
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const items = doc.querySelectorAll('a[class*="vtex-product-summary-2-x-clearLink"]');
+          items.forEach(item => {
+            const name = item.querySelector('[class*="vtex-product-summary-2-x-productBrand"]')?.innerText;
+            const img = item.querySelector('img[class*="vtex-product-summary-2-x-imageNormal"]')?.src || item.querySelector('img[class*="vtex-product-summary-2-x-image"]')?.src;
+            const cash = item.querySelector('[class*="vtex-product-price-1-x-spotPriceValue"]')?.innerText;
+            const parc = item.querySelector('[class*="vtex-product-price-1-x-installments"]')?.innerText;
+            const link = item.href;
+            if (name && cash) products.push({ name, img, cash, parc, link });
+          });
         }
 
         if (products.length === 0) {
