@@ -1,1 +1,1 @@
-Fix: Ajustado proxy e lógica de extração (fallback via window.__STATE__) para o Scraper ClimaRio.
+Fix: Melhorada a agressividade da extração do window.__STATE__ do VTEX para garantir resultados na ClimaRio.

@@ -369,63 +369,100 @@
           });
         }
 
-        // TENTATIVA 2: Extração via __STATE__ (VTEX IO Standard)
+        // TENTATIVA 2: Extração via __STATE__ (VTEX IO Standard) - Lógica Robusta
         if (products.length === 0) {
           const scripts = Array.from(doc.querySelectorAll('script'));
-          const stateScript = scripts.find(s => s.innerText.includes('window.__STATE__'));
+          const stateScript = scripts.find(s => s.textContent.includes('__STATE__'));
+          
           if (stateScript) {
-            const jsonText = stateScript.innerText.split('window.__STATE__ = ')[1].split(';')[0];
-            const state = JSON.parse(jsonText);
-            
-            // Filtra chaves que começam com Product:
-            const productKeys = Object.keys(state).filter(k => k.startsWith('Product:'));
-            products = productKeys.map(k => {
-              const p = state[k];
-              const name = p.productName;
-              const link = '/' + p.linkText + '/p';
-              
-              // Busca imagem e preço no estado (objetos relacionados)
-              // Em VTEX IO, as imagens e preços costumam estar em chaves separadas referenciadas por ID
-              let img = '';
-              let cashPrice = 'Sob consulta';
-              let installments = '';
-
-              // Tenta achar a imagem
-              const itemsRef = p.items?.[0]?.id;
-              if (itemsRef) {
-                const itemData = state[`Product:${p.productId}.items(null).0`];
-                if (itemData && itemData.images?.[0]?.id) {
-                   const imgData = state[itemData.images[0].id];
-                   img = imgData?.imageUrl || '';
-                }
-                
-                // Tenta achar o preço no seller
-                const sellerRef = state[`$Product:${p.productId}.items(null).0.sellers.0`];
-                if (sellerRef && sellerRef.commertialOffer?.id) {
-                   const offer = state[sellerRef.commertialOffer.id];
-                   if (offer) {
-                     cashPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(offer.SpotPrice || offer.Price);
-                     if (offer.Installments && offer.Installments.length > 0) {
-                        // Pega a maior parcela (geralmente a última do array)
-                        const inst = offer.Installments.reduce((prev, current) => (prev.NumberOfInstallments > current.NumberOfInstallments) ? prev : current);
-                        installments = `ou ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inst.TotalValuePlusInterestRate)} em ${inst.NumberOfInstallments}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inst.Value)}`;
-                     }
-                   }
-                }
+            try {
+              let jsonText = "";
+              if (stateScript.textContent.includes('window.__STATE__ = ')) {
+                jsonText = stateScript.textContent.split('window.__STATE__ = ')[1].split(';')[0];
+              } else {
+                // Tenta capturar o que estiver entre chaves se a atribuição for diferente
+                const match = stateScript.textContent.match(/\{.*\}/s);
+                if (match) jsonText = match[0];
               }
 
-              return { name, img, cashPrice, installments, link };
-            });
+              if (jsonText) {
+                const state = JSON.parse(jsonText);
+                
+                // Em vez de procurar por Product:, procuramos por qualquer objeto que tenha productName e linkText
+                const allKeys = Object.keys(state);
+                const productObjects = allKeys.filter(k => state[k] && state[k].productName && state[k].linkText);
+                
+                products = productObjects.map(k => {
+                  const p = state[k];
+                  const name = p.productName;
+                  const link = '/' + p.linkText + '/p';
+                  
+                  let img = '';
+                  let cashPrice = 'Sob consulta';
+                  let installments = '';
+
+                  // Tenta encontrar o SKU e as imagens de forma genérica no estado
+                  // Procuramos por chaves que referenciem este produto
+                  const productId = p.productId;
+                  const skuKey = allKeys.find(key => key.includes(`Product:${productId}`) && key.includes('items') && key.includes('.0'));
+                  
+                  if (skuKey && state[skuKey]) {
+                    const sku = state[skuKey];
+                    
+                    // Imagem
+                    if (sku.images && sku.images.length > 0) {
+                      const imgRef = sku.images[0].id;
+                      if (state[imgRef]) img = state[imgRef].imageUrl || '';
+                    }
+
+                    // Preço (Seller -> CommertialOffer)
+                    const sellerKey = allKeys.find(key => key.includes(skuKey) && key.includes('sellers') && key.includes('.0'));
+                    if (sellerKey && state[sellerKey]) {
+                      const commertialOfferRef = state[sellerKey].commertialOffer?.id;
+                      if (commertialOfferRef && state[commertialOfferRef]) {
+                        const offer = state[commertialOfferRef];
+                        if (offer.SpotPrice || offer.Price) {
+                          cashPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(offer.SpotPrice || offer.Price);
+                        }
+                        if (offer.Installments && offer.Installments.length > 0) {
+                          const inst = offer.Installments.reduce((prev, current) => (prev.NumberOfInstallments > current.NumberOfInstallments) ? prev : current);
+                          installments = `ou ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inst.TotalValuePlusInterestRate)} em ${inst.NumberOfInstallments}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inst.Value)}`;
+                        }
+                      }
+                    }
+                  }
+
+                  return { name, img, cashPrice, installments, link };
+                });
+              }
+            } catch (e) {
+              console.error("Erro ao processar __STATE__:", e);
+            }
           }
         }
         
         if (products.length === 0) {
-          emptyMsg.innerText = 'Nenhum produto encontrado. O site pode estar bloqueando o acesso ou a estrutura mudou.';
+          emptyMsg.innerHTML = `
+            Nenhum produto encontrado.<br>
+            <span style="font-size: 10px; opacity: 0.6; font-weight: 400; margin-top: 10px; display: block;">
+              Dica: Verifique se a URL está correta ou tente novamente. Sites VTEX às vezes demoram a responder via proxy.
+            </span>
+          `;
           emptyMsg.style.display = 'block';
           return;
         }
 
+        // Limpa duplicatas por nome (VTEX às vezes repete no estado)
+        const uniqueProducts = [];
+        const seenNames = new Set();
         products.forEach(p => {
+          if (p.name && !seenNames.has(p.name)) {
+            seenNames.add(p.name);
+            uniqueProducts.push(p);
+          }
+        });
+
+        uniqueProducts.forEach(p => {
           if (!p.name) return;
           
           let finalLink = p.link;

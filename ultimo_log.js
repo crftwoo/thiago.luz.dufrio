@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Fix: Ajustado proxy e lógica de extração (fallback via window.__STATE__) para o Scraper ClimaRio.', dateIso: '2026-04-29T11:58:35-03:00' };
+const LATEST_LOG = { message: 'Fix: Melhorada a agressividade da extração do window.__STATE__ do VTEX para garantir resultados na ClimaRio.', dateIso: '2026-04-29T12:04:23-03:00' };
