@@ -337,7 +337,7 @@
     const loader = document.getElementById('loader');
     const emptyMsg = document.getElementById('emptyMsg');
 
-    const PROXY = "https://corsproxy.io/?";
+    const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
 
     async function fetchClimaRio() {
       const url = urlInput.value.trim();
@@ -354,43 +354,96 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        // Seletores identificados
+        let products = [];
+
+        // TENTATIVA 1: Seletores de DOM (caso o proxy renderize ou o HTML venha populado)
         const items = Array.from(doc.querySelectorAll('.vtex-product-summary-2-x-container'));
+        if (items.length > 0) {
+          products = items.map(item => {
+            const name = item.querySelector('.vtex-product-summary-2-x-productNameContainer span')?.innerText || '';
+            const img = item.querySelector('img.vtex-product-summary-2-x-imageNormal')?.src || '';
+            const cashPrice = item.querySelector('.vtex-product-price-1-x-spotPrice')?.innerText || '';
+            const installments = item.querySelector('.vtex-product-price-1-x-installments')?.innerText || '';
+            let link = item.querySelector('a.vtex-product-summary-2-x-clearLink')?.getAttribute('href') || '#';
+            return { name, img, cashPrice, installments, link };
+          });
+        }
+
+        // TENTATIVA 2: Extração via __STATE__ (VTEX IO Standard)
+        if (products.length === 0) {
+          const scripts = Array.from(doc.querySelectorAll('script'));
+          const stateScript = scripts.find(s => s.innerText.includes('window.__STATE__'));
+          if (stateScript) {
+            const jsonText = stateScript.innerText.split('window.__STATE__ = ')[1].split(';')[0];
+            const state = JSON.parse(jsonText);
+            
+            // Filtra chaves que começam com Product:
+            const productKeys = Object.keys(state).filter(k => k.startsWith('Product:'));
+            products = productKeys.map(k => {
+              const p = state[k];
+              const name = p.productName;
+              const link = '/' + p.linkText + '/p';
+              
+              // Busca imagem e preço no estado (objetos relacionados)
+              // Em VTEX IO, as imagens e preços costumam estar em chaves separadas referenciadas por ID
+              let img = '';
+              let cashPrice = 'Sob consulta';
+              let installments = '';
+
+              // Tenta achar a imagem
+              const itemsRef = p.items?.[0]?.id;
+              if (itemsRef) {
+                const itemData = state[`Product:${p.productId}.items(null).0`];
+                if (itemData && itemData.images?.[0]?.id) {
+                   const imgData = state[itemData.images[0].id];
+                   img = imgData?.imageUrl || '';
+                }
+                
+                // Tenta achar o preço no seller
+                const sellerRef = state[`$Product:${p.productId}.items(null).0.sellers.0`];
+                if (sellerRef && sellerRef.commertialOffer?.id) {
+                   const offer = state[sellerRef.commertialOffer.id];
+                   if (offer) {
+                     cashPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(offer.SpotPrice || offer.Price);
+                     if (offer.Installments && offer.Installments.length > 0) {
+                        // Pega a maior parcela (geralmente a última do array)
+                        const inst = offer.Installments.reduce((prev, current) => (prev.NumberOfInstallments > current.NumberOfInstallments) ? prev : current);
+                        installments = `ou ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inst.TotalValuePlusInterestRate)} em ${inst.NumberOfInstallments}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inst.Value)}`;
+                     }
+                   }
+                }
+              }
+
+              return { name, img, cashPrice, installments, link };
+            });
+          }
+        }
         
-        if (items.length === 0) {
-          emptyMsg.innerText = 'Nenhum produto encontrado. Verifique se o link é válido.';
+        if (products.length === 0) {
+          emptyMsg.innerText = 'Nenhum produto encontrado. O site pode estar bloqueando o acesso ou a estrutura mudou.';
           emptyMsg.style.display = 'block';
           return;
         }
 
-        items.forEach(item => {
-          const name = item.querySelector('.vtex-product-summary-2-x-productNameContainer span')?.innerText || 'Produto sem nome';
-          const img = item.querySelector('img.vtex-product-summary-2-x-imageNormal')?.src || '';
-          const cashPrice = item.querySelector('.vtex-product-price-1-x-spotPrice')?.innerText || 'Sob consulta';
-          const installments = item.querySelector('.vtex-product-price-1-x-installments')?.innerText || '';
-          const link = item.querySelector('a.vtex-product-summary-2-x-clearLink')?.href || '#';
-
-          // Ajuste de link relativo do proxy
-          let finalLink = link;
-          if (link.includes('corsproxy.io')) {
-             const u = new URL(link);
-             finalLink = u.searchParams.get('') || link;
-          }
+        products.forEach(p => {
+          if (!p.name) return;
+          
+          let finalLink = p.link;
           if (finalLink.startsWith('/') || !finalLink.startsWith('http')) {
-            finalLink = 'https://www.climario.com.br' + (finalLink.startsWith('/') ? '' : '/') + finalLink;
+            finalLink = 'https://www.climario.com.br' + (finalLink.startsWith('/') ? '' : '/') + finalLink.replace(/^\//, '');
           }
 
           const card = document.createElement('div');
           card.className = 'product-card';
           card.innerHTML = `
             <div class="img-wrap">
-              <img src="${img}" alt="${name}" onerror="this.src='https://placehold.co/400x400?text=Sem+Imagem'">
+              <img src="${p.img}" alt="${p.name}" onerror="this.src='https://placehold.co/400x400?text=Sem+Imagem'">
             </div>
             <div class="card-info">
-              <div class="product-name" title="${name}">${name}</div>
+              <div class="product-name" title="${p.name}">${p.name}</div>
               <div class="price-wrap">
-                <div class="price-spot">${cashPrice}</div>
-                <div class="price-installments">${installments}</div>
+                <div class="price-spot">${p.cashPrice}</div>
+                <div class="price-installments">${p.installments}</div>
               </div>
               <a href="${finalLink}" target="_blank" class="btn-view">Ver no Site</a>
             </div>

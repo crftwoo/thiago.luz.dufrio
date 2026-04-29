@@ -1,1 +1,1 @@
-Adicionada nova ferramenta Scraper ClimaRio para extração direta de produtos via URL e atualizado o Hub.
+Fix: Ajustado proxy e lógica de extração (fallback via window.__STATE__) para o Scraper ClimaRio.
