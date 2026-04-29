@@ -563,6 +563,7 @@
       // Outras
       { nome: "COTAÇÃO EXPRESS", desc: "Orçamento rápido para infra-estrutura de ar condicionado.", arquivo: "cotacoes.html", icone: svgCotar, color: "#8b5cf6", slug: "cotacao", category: "outros" },
       { nome: "EXTRAÇÃO DE CÓDIGOS", desc: "Extração de códigos que constam quantidade em estoque.", arquivo: "itens-quantidade.html", icone: svgFiltro, color: "#d946ef", slug: "extracao", category: "outros" },
+      { nome: "SCRAPER CLIMARIO", desc: "Extração direta de produtos do site ClimaRio via URL.", arquivo: "scraper-climario.html", icone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><polyline points="8 11 10 13 14 9"/></svg>`, color: "#f59e0b", slug: "scraper-climario", category: "ar" },
       { nome: "BAIXAR PROJETO", desc: "Baixar projeto e arquivos da extensão.", arquivo: "https://github.com/crftwoo/thiago.luz.dufrio/archive/refs/heads/main.zip", icone: svgDownload, color: "#94a3b8", isDownload: true, slug: "download", category: "outros" }
     ];
 
@@ -628,9 +629,15 @@
     const updatesData = {
       "updates": [
         {
+          "date": "29/04/2026",
+          "time": "11:53",
+          "title": "Nova Ferramenta: Scraper ClimaRio",
+          "description": "Desenvolvido extrator direto para o site ClimaRio. A ferramenta permite colar um link de busca e renderizar cards com foto, nome, preços e link original em tempo real."
+        },
+        {
           "date": "28/04/2026",
           "time": "15:37",
-          "title": "Adicionado Scraper ClimaRio",
+          "title": "Adicionado Scraper ClimaRio (Core)",
           "description": "Implementada raspagem de dados para o site ClimaRio utilizando a estrutura VTEX IO. Agora a ferramenta extrai preços PIX e parcelamento em tempo real para todos os links da planilha."
         },
         {

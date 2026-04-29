@@ -1,1 +1,1 @@
-Remoção total da Clima Rio concluída. Arquivos de teste excluídos e card removido do dashboard principal (index.html). Workspace limpo. Log 18:00.
+Adicionada nova ferramenta Scraper ClimaRio para extração direta de produtos via URL e atualizado o Hub.
