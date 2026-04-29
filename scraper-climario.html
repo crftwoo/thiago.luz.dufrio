@@ -2,21 +2,20 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Scraper ClimaRio - Extrator de Produtos</title>
+  <title>Scraper ClimaRio - Oficial</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --bg: #050505;
-      --card-bg: rgba(18, 18, 28, 0.85);
+      --card-bg: rgba(18, 18, 28, 0.9);
       --card-border: rgba(255, 255, 255, 0.08);
-      --accent: #f59e0b; /* Laranja ClimaRio */
+      --accent: #f59e0b;
       --green: #00e676;
-      --blue: #4facfe;
       --text: #ffffff;
       --muted: #7a7a9a;
-      --radius: 20px;
+      --radius: 24px;
     }
     body {
       font-family: "Outfit", sans-serif;
@@ -31,269 +30,116 @@
       filter: blur(130px);
       z-index: 0;
       pointer-events: none;
-      opacity: 0.22;
-      animation: auroraAnim 18s infinite alternate ease-in-out;
+      opacity: 0.15;
+      animation: auroraAnim 20s infinite alternate ease-in-out;
     }
-    .a1 { width: 700px; height: 700px; background: #f59e0b; top: -15%; left: -15%; }
-    .a2 { width: 600px; height: 600px; background: #7c3aed; bottom: -15%; right: -10%; animation-duration: 24s; }
-    @keyframes auroraAnim {
-      0% { transform: scale(1) translate(0,0); }
-      100% { transform: scale(1.4) translate(60px,-60px); }
-    }
+    .a1 { width: 800px; height: 800px; background: #f59e0b; top: -20%; left: -10%; }
+    .a2 { width: 700px; height: 700px; background: #3b82f6; bottom: -20%; right: -10%; animation-duration: 30s; }
+    @keyframes auroraAnim { 0% { transform: scale(1) translate(0,0); } 100% { transform: scale(1.3) translate(100px,-100px); } }
 
     .btn-back {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      z-index: 999;
-      background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 30px;
-      text-decoration: none;
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: 0.2s;
+      position: fixed; top: 20px; left: 20px; z-index: 1000;
+      background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1); color: #fff;
+      padding: 10px 20px; border-radius: 40px; text-decoration: none;
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1px; display: flex; align-items: center; gap: 10px; transition: 0.3s;
     }
-    .btn-back:hover {
-      background: rgba(255, 255, 255, 0.12);
-      transform: translateY(-1px);
-    }
+    .btn-back:hover { background: rgba(255,255,255,0.15); transform: translateX(-5px); }
 
     .container {
-      position: relative;
-      z-index: 1;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 80px 24px 100px;
+      position: relative; z-index: 1; max-width: 1300px; margin: 0 auto;
+      padding: 100px 24px 120px;
     }
 
-    .page-header {
-      text-align: center;
-      margin-bottom: 48px;
-    }
-    .page-header h1 {
-      font-size: 38px;
-      font-weight: 900;
-      letter-spacing: -1.5px;
-      text-transform: uppercase;
+    .header-area { text-align: center; margin-bottom: 60px; }
+    .header-area h1 {
+      font-size: 48px; font-weight: 900; letter-spacing: -2px;
+      text-transform: uppercase; font-style: italic;
       background: linear-gradient(135deg, #f59e0b, #fbbf24);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 10px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
     }
-    .page-header p {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+    .header-area p {
+      font-size: 14px; color: var(--muted); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 3px;
     }
 
-    /* Input Area */
-    .input-wrap {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 30px;
-      border-radius: var(--radius);
-      backdrop-filter: blur(20px);
-      margin-bottom: 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    .search-box {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      padding: 40px; border-radius: var(--radius); backdrop-filter: blur(30px);
+      margin-bottom: 50px; display: flex; flex-direction: column; gap: 20px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.4);
     }
-    .input-label {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--accent);
+    .input-group { position: relative; }
+    .url-input {
+      width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border);
+      padding: 20px 24px; border-radius: 16px; color: #fff; font-family: inherit;
+      font-size: 15px; outline: none; transition: 0.3s;
     }
-    .input-field {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--card-border);
-      padding: 16px;
-      border-radius: 12px;
-      color: #fff;
-      font-family: inherit;
-      font-size: 14px;
-      width: 100%;
-      outline: none;
-      transition: border-color 0.3s;
+    .url-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1); }
+    
+    .btn-action {
+      background: var(--accent); color: #000; border: none; padding: 20px;
+      border-radius: 16px; font-weight: 900; font-size: 16px; text-transform: uppercase;
+      letter-spacing: 1px; cursor: pointer; transition: 0.4s;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
     }
-    .input-field:focus {
-      border-color: var(--accent);
-    }
-    .btn-render {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      padding: 16px;
-      border-radius: 12px;
-      font-weight: 900;
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-    .btn-render:hover {
-      background: #fbbf24;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
-    }
-    .btn-render:disabled {
-      background: #444;
-      color: #888;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
+    .btn-action:hover { background: #fbbf24; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(245, 158, 11, 0.3); }
+    .btn-action:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
 
-    /* Grid Area */
     .results-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 24px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 30px;
     }
 
-    .product-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      backdrop-filter: blur(16px);
-      display: flex;
-      flex-direction: column;
-      transition: 0.3s;
+    .card {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: var(--radius); overflow: hidden; backdrop-filter: blur(20px);
+      display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    .product-card:hover {
-      transform: translateY(-5px);
-      border-color: rgba(245, 158, 11, 0.4);
-      box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-    }
+    .card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
 
-    .img-wrap {
-      width: 100%;
-      aspect-ratio: 1;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+    .card-img {
+      width: 100%; aspect-ratio: 1; background: #fff;
+      display: flex; align-items: center; justify-content: center; padding: 30px;
+      position: relative; border-bottom: 1px solid var(--card-border);
     }
-    .img-wrap img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
+    .card-img img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.5s; }
+    .card:hover .card-img img { transform: scale(1.1); }
 
-    .card-info {
-      padding: 24px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+    .card-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+    .card-title {
+      font-size: 16px; font-weight: 700; line-height: 1.5; color: #fff;
+      margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical; overflow: hidden; height: 72px;
     }
-    .product-name {
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.4;
-      margin-bottom: 16px;
-      color: #fff;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      height: 63px;
+    
+    .price-box {
+      margin-top: auto; background: rgba(255,255,255,0.03);
+      padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);
     }
-    .price-wrap {
-      margin-top: auto;
-      background: rgba(0,0,0,0.3);
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.04);
-    }
-    .price-spot {
-      font-size: 22px;
-      font-weight: 900;
-      color: var(--green);
-      margin-bottom: 4px;
-    }
-    .price-installments {
-      font-size: 13px;
-      color: var(--muted);
-      font-weight: 600;
-    }
-    .btn-view {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      color: #fff;
-      text-decoration: none;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 16px;
-      transition: 0.2s;
-    }
-    .btn-view:hover {
-      background: rgba(245, 158, 11, 0.1);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
+    .price-cash { font-size: 26px; font-weight: 900; color: var(--green); letter-spacing: -1px; }
+    .price-label { font-size: 11px; color: var(--green); text-transform: uppercase; font-weight: 800; margin-left: 4px; }
+    .price-parc { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 6px; }
 
-    /* Loading / Messages */
-    .loader {
-      display: none;
-      text-align: center;
-      padding: 40px;
+    .card-btn {
+      display: block; width: 100%; padding: 14px; background: rgba(255,255,255,0.06);
+      border: 1px solid var(--card-border); border-radius: 12px; color: #fff;
+      text-decoration: none; text-align: center; font-size: 12px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 1.5px; margin-top: 18px; transition: 0.3s;
     }
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba(245, 158, 11, 0.1);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
+    .card-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    .loading-area { display: none; text-align: center; padding: 60px; }
+    .spin {
+      width: 50px; height: 50px; border: 5px solid rgba(245, 158, 11, 0.1);
+      border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;
+      margin: 0 auto 25px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .empty-msg {
-      text-align: center;
-      padding: 100px 20px;
-      color: var(--muted);
-      font-weight: 600;
-      font-size: 16px;
-    }
-
-    @media (max-width: 768px) {
-      .container { padding: 60px 16px; }
-      .page-header h1 { font-size: 28px; }
-      .results-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-      .product-name { font-size: 13px; height: 55px; }
-      .price-spot { font-size: 18px; }
-    }
-    @media (max-width: 480px) {
-      .results-grid { grid-template-columns: 1fr; }
-    }
+    .msg { text-align: center; padding: 80px 20px; color: var(--muted); font-size: 18px; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -302,203 +148,193 @@
   <div class="aurora a2"></div>
 
   <a href="index.html" class="btn-back">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    Voltar ao Hub
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Painel Dufrio
   </a>
 
   <div class="container">
-    <div class="page-header">
+    <div class="header-area">
       <h1>Scraper ClimaRio</h1>
-      <p>Extração automática de produtos e preços</p>
+      <p>Extração Inteligente de Dados</p>
     </div>
 
-    <div class="input-wrap">
-      <div class="input-label">URL da Busca ClimaRio</div>
-      <input type="text" id="urlInput" class="input-field" placeholder="Cole o link da busca aqui..." value="https://www.climario.com.br/ar-condicionado?initialMap=c&initialQuery=ar-condicionado&map=category-1,category-2,category-3&order=OrderByPriceASC&query=/ar-condicionado/ar-condicionado-hi-wall-inverter/9-000-btu-h&searchState">
-      <button id="renderBtn" class="btn-render">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-        Renderizar Produtos
+    <div class="search-box">
+      <div class="input-group">
+        <input type="text" id="urlInput" class="url-input" placeholder="Cole o link da ClimaRio aqui..." value="https://www.climario.com.br/ar-condicionado?initialMap=c&initialQuery=ar-condicionado&map=category-1,category-2,category-3&order=OrderByPriceASC&query=/ar-condicionado/ar-condicionado-hi-wall-inverter/9-000-btu-h&searchState">
+      </div>
+      <button id="renderBtn" class="btn-action">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+        Renderizar Ofertas
       </button>
     </div>
 
-    <div id="loader" class="loader">
-      <div class="spinner"></div>
-      <p style="font-weight: 800; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; font-size: 11px;">Processando site da ClimaRio...</p>
+    <div id="loader" class="loading-area">
+      <div class="spin"></div>
+      <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 12px; color: var(--accent); font-weight: 800;">Consultando Inventário ClimaRio...</p>
     </div>
 
-    <div id="resultsGrid" class="results-grid"></div>
-    <div id="emptyMsg" class="empty-msg">Insira uma URL e clique em renderizar para ver os resultados.</div>
+    <div id="results" class="results-grid"></div>
+    <div id="status" class="msg">Pronto para extrair. Insira a URL e clique no botão.</div>
   </div>
 
   <script>
-    const urlInput = document.getElementById('urlInput');
-    const renderBtn = document.getElementById('renderBtn');
-    const resultsGrid = document.getElementById('resultsGrid');
-    const loader = document.getElementById('loader');
-    const emptyMsg = document.getElementById('emptyMsg');
+    // Proxies sugeridos para evitar bloqueios
+    const PROXIES = [
+      "https://api.allorigins.win/get?url=",
+      "https://frigelar-proxy.crftwo.workers.dev/?url=",
+      "https://cors-anywhere.herokuapp.com/"
+    ];
 
-    const PROXY = "https://frigelar-proxy.crftwo.workers.dev/?url=";
+    async function tryFetch(targetUrl) {
+      // Tenta primeiro o worker dedicado (mais rápido se estiver online)
+      try {
+        const resp = await fetch(PROXIES[1] + encodeURIComponent(targetUrl));
+        if (resp.ok) return await resp.text();
+      } catch(e) {}
 
-    async function fetchClimaRio() {
-      const url = urlInput.value.trim();
+      // Fallback para AllOrigins
+      try {
+        const resp = await fetch(PROXIES[0] + encodeURIComponent(targetUrl));
+        const json = await resp.json();
+        return json.contents;
+      } catch(e) {}
+
+      throw new Error("Falha em todos os proxies.");
+    }
+
+    async function runScraper() {
+      const url = document.getElementById('urlInput').value.trim();
+      const results = document.getElementById('results');
+      const loader = document.getElementById('loader');
+      const status = document.getElementById('status');
+      const btn = document.getElementById('renderBtn');
+
       if (!url) return;
 
-      renderBtn.disabled = true;
+      btn.disabled = true;
       loader.style.display = 'block';
-      resultsGrid.innerHTML = '';
-      emptyMsg.style.display = 'none';
+      results.innerHTML = '';
+      status.style.display = 'none';
 
       try {
-        const response = await fetch(PROXY + encodeURIComponent(url));
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
+        const html = await tryFetch(url);
+        const doc = new DOMParser().parseFromString(html, 'text/html');
 
         let products = [];
 
-        // TENTATIVA 1: Seletores de DOM (caso o proxy renderize ou o HTML venha populado)
-        const items = Array.from(doc.querySelectorAll('.vtex-product-summary-2-x-container'));
+        // 1. TENTATIVA VIA DOM (Classes exatas dos prints do usuário)
+        // O container de cada produto no VTEX IO costuma ser um <a> com a classe clearLink
+        const items = doc.querySelectorAll('a[class*="vtex-product-summary-2-x-clearLink"]');
+        
         if (items.length > 0) {
-          products = items.map(item => {
-            const name = item.querySelector('.vtex-product-summary-2-x-productNameContainer span')?.innerText || '';
-            const img = item.querySelector('img.vtex-product-summary-2-x-imageNormal')?.src || '';
-            const cashPrice = item.querySelector('.vtex-product-price-1-x-spotPrice')?.innerText || '';
-            const installments = item.querySelector('.vtex-product-price-1-x-installments')?.innerText || '';
-            let link = item.querySelector('a.vtex-product-summary-2-x-clearLink')?.getAttribute('href') || '#';
-            return { name, img, cashPrice, installments, link };
+          items.forEach(item => {
+            // Nome: vtex-product-summary-2-x-productBrand
+            const name = item.querySelector('[class*="vtex-product-summary-2-x-productBrand"]')?.innerText;
+            
+            // Imagem: vtex-product-summary-2-x-imageNormal
+            let img = item.querySelector('img[class*="vtex-product-summary-2-x-imageNormal"]')?.src;
+            if (!img) img = item.querySelector('img[class*="vtex-product-summary-2-x-image"]')?.src;
+
+            // Preço à vista: vtex-product-price-1-x-spotPriceValue
+            const cash = item.querySelector('[class*="vtex-product-price-1-x-spotPriceValue"]')?.innerText;
+
+            // Parcelamento: vtex-product-price-1-x-installments
+            const parc = item.querySelector('[class*="vtex-product-price-1-x-installments"]')?.innerText;
+
+            const link = item.href;
+
+            if (name && cash) {
+              products.push({ name, img, cash, parc, link });
+            }
           });
         }
 
-        // TENTATIVA 2: Extração via __STATE__ (VTEX IO Standard) - Lógica Robusta
+        // 2. FALLBACK VIA __STATE__ (Caso o HTML venha "vazio" mas com o script de estado)
         if (products.length === 0) {
-          const scripts = Array.from(doc.querySelectorAll('script'));
-          const stateScript = scripts.find(s => s.textContent.includes('__STATE__'));
-          
+          const stateScript = Array.from(doc.querySelectorAll('script')).find(s => s.textContent.includes('__STATE__'));
           if (stateScript) {
-            try {
-              let jsonText = "";
-              if (stateScript.textContent.includes('window.__STATE__ = ')) {
-                jsonText = stateScript.textContent.split('window.__STATE__ = ')[1].split(';')[0];
-              } else {
-                // Tenta capturar o que estiver entre chaves se a atribuição for diferente
-                const match = stateScript.textContent.match(/\{.*\}/s);
-                if (match) jsonText = match[0];
-              }
-
-              if (jsonText) {
-                const state = JSON.parse(jsonText);
+            const raw = stateScript.textContent;
+            const jsonStr = raw.includes('window.__STATE__ = ') ? raw.split('window.__STATE__ = ')[1].split(';')[0] : raw.match(/\{.*\}/s)?.[0];
+            
+            if (jsonStr) {
+              const state = JSON.parse(jsonStr);
+              const keys = Object.keys(state).filter(k => k.startsWith('Product:') && state[k].productName);
+              
+              products = keys.map(k => {
+                const p = state[k];
+                const id = p.productId;
+                const skuKey = Object.keys(state).find(sk => sk.includes(`Product:${id}`) && sk.includes('items.0'));
+                const sku = state[skuKey] || {};
                 
-                // Em vez de procurar por Product:, procuramos por qualquer objeto que tenha productName e linkText
-                const allKeys = Object.keys(state);
-                const productObjects = allKeys.filter(k => state[k] && state[k].productName && state[k].linkText);
+                let img = '';
+                if (sku.images?.[0]?.id) img = state[sku.images[0].id]?.imageUrl;
+
+                const sellerKey = Object.keys(state).find(sk => sk.includes(skuKey || id) && sk.includes('sellers.0'));
+                const offer = state[state[sellerKey]?.commertialOffer?.id] || {};
                 
-                products = productObjects.map(k => {
-                  const p = state[k];
-                  const name = p.productName;
-                  const link = '/' + p.linkText + '/p';
-                  
-                  let img = '';
-                  let cashPrice = 'Sob consulta';
-                  let installments = '';
+                let cash = 'Consulte';
+                if (offer.SpotPrice || offer.Price) {
+                  cash = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(offer.SpotPrice || offer.Price);
+                }
 
-                  // Tenta encontrar o SKU e as imagens de forma genérica no estado
-                  // Procuramos por chaves que referenciem este produto
-                  const productId = p.productId;
-                  const skuKey = allKeys.find(key => key.includes(`Product:${productId}`) && key.includes('items') && key.includes('.0'));
-                  
-                  if (skuKey && state[skuKey]) {
-                    const sku = state[skuKey];
-                    
-                    // Imagem
-                    if (sku.images && sku.images.length > 0) {
-                      const imgRef = sku.images[0].id;
-                      if (state[imgRef]) img = state[imgRef].imageUrl || '';
-                    }
+                let parc = '';
+                if (offer.Installments?.length > 0) {
+                  const best = offer.Installments.reduce((a, b) => (a.NumberOfInstallments > b.NumberOfInstallments) ? a : b);
+                  parc = `ou ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(best.TotalValuePlusInterestRate)} em ${best.NumberOfInstallments}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(best.Value)}`;
+                }
 
-                    // Preço (Seller -> CommertialOffer)
-                    const sellerKey = allKeys.find(key => key.includes(skuKey) && key.includes('sellers') && key.includes('.0'));
-                    if (sellerKey && state[sellerKey]) {
-                      const commertialOfferRef = state[sellerKey].commertialOffer?.id;
-                      if (commertialOfferRef && state[commertialOfferRef]) {
-                        const offer = state[commertialOfferRef];
-                        if (offer.SpotPrice || offer.Price) {
-                          cashPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(offer.SpotPrice || offer.Price);
-                        }
-                        if (offer.Installments && offer.Installments.length > 0) {
-                          const inst = offer.Installments.reduce((prev, current) => (prev.NumberOfInstallments > current.NumberOfInstallments) ? prev : current);
-                          installments = `ou ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inst.TotalValuePlusInterestRate)} em ${inst.NumberOfInstallments}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inst.Value)}`;
-                        }
-                      }
-                    }
-                  }
-
-                  return { name, img, cashPrice, installments, link };
-                });
-              }
-            } catch (e) {
-              console.error("Erro ao processar __STATE__:", e);
+                return {
+                  name: p.productName,
+                  img: img,
+                  cash: cash,
+                  parc: parc,
+                  link: 'https://www.climario.com.br/' + p.linkText + '/p'
+                };
+              });
             }
           }
         }
-        
+
         if (products.length === 0) {
-          emptyMsg.innerHTML = `
-            Nenhum produto encontrado.<br>
-            <span style="font-size: 10px; opacity: 0.6; font-weight: 400; margin-top: 10px; display: block;">
-              Dica: Verifique se a URL está correta ou tente novamente. Sites VTEX às vezes demoram a responder via proxy.
-            </span>
-          `;
-          emptyMsg.style.display = 'block';
-          return;
+          status.innerText = "Nenhum produto detectado. O site pode ter bloqueado a requisição.";
+          status.style.display = 'block';
+        } else {
+          // Remove duplicatas por nome
+          const unique = products.reduce((acc, current) => {
+            const x = acc.find(item => item.name === current.name);
+            if (!x) return acc.concat([current]);
+            else return acc;
+          }, []);
+
+          unique.forEach(p => {
+            const el = document.createElement('div');
+            el.className = 'card';
+            el.innerHTML = `
+              <div class="card-img"><img src="${p.img}" onerror="this.src='https://placehold.co/300?text=ClimaRio'"></div>
+              <div class="card-body">
+                <div class="card-title" title="${p.name}">${p.name}</div>
+                <div class="price-box">
+                  <div class="price-cash">${p.cash}<span class="price-label">à vista</span></div>
+                  <div class="price-parc">${p.parc}</div>
+                </div>
+                <a href="${p.link}" target="_blank" class="card-btn">Ver na Loja</a>
+              </div>
+            `;
+            results.appendChild(el);
+          });
         }
 
-        // Limpa duplicatas por nome (VTEX às vezes repete no estado)
-        const uniqueProducts = [];
-        const seenNames = new Set();
-        products.forEach(p => {
-          if (p.name && !seenNames.has(p.name)) {
-            seenNames.add(p.name);
-            uniqueProducts.push(p);
-          }
-        });
-
-        uniqueProducts.forEach(p => {
-          if (!p.name) return;
-          
-          let finalLink = p.link;
-          if (finalLink.startsWith('/') || !finalLink.startsWith('http')) {
-            finalLink = 'https://www.climario.com.br' + (finalLink.startsWith('/') ? '' : '/') + finalLink.replace(/^\//, '');
-          }
-
-          const card = document.createElement('div');
-          card.className = 'product-card';
-          card.innerHTML = `
-            <div class="img-wrap">
-              <img src="${p.img}" alt="${p.name}" onerror="this.src='https://placehold.co/400x400?text=Sem+Imagem'">
-            </div>
-            <div class="card-info">
-              <div class="product-name" title="${p.name}">${p.name}</div>
-              <div class="price-wrap">
-                <div class="price-spot">${p.cashPrice}</div>
-                <div class="price-installments">${p.installments}</div>
-              </div>
-              <a href="${finalLink}" target="_blank" class="btn-view">Ver no Site</a>
-            </div>
-          `;
-          resultsGrid.appendChild(card);
-        });
-
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-        emptyMsg.innerText = 'Ocorreu um erro ao tentar acessar o site. Tente novamente mais tarde.';
-        emptyMsg.style.display = 'block';
+      } catch(e) {
+        console.error(e);
+        status.innerText = "Erro crítico ao acessar o site. Tente novamente em instantes.";
+        status.style.display = 'block';
       } finally {
-        renderBtn.disabled = false;
         loader.style.display = 'none';
+        btn.disabled = false;
       }
     }
 
-    renderBtn.addEventListener('click', fetchClimaRio);
+    document.getElementById('renderBtn').addEventListener('click', runScraper);
   </script>
 </body>
 </html>

@@ -1,1 +1,1 @@
-Fix: Melhorada a agressividade da extração do window.__STATE__ do VTEX para garantir resultados na ClimaRio.
+Sucesso: Scraper ClimaRio finalizado com classes oficiais e redundância de proxies.
