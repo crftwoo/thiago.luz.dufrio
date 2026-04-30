@@ -1,1 +1,1 @@
-Hotfix Definitive: Mudança para extração via Regex do raw HTML para contornar limitações do DOMParser com arquivos grandes do VTEX IO.
+Redesign Premium: Novo index-modernizado.html com GSAP ScrollTrigger, design cinematografico, scroll horizontal magnetico, cursor glow, JSON-LD/LLMO semantico e CSS/JS modular separado.
