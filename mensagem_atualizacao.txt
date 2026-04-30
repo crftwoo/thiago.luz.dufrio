@@ -1,1 +1,1 @@
-Hotfix Definitive: Mudança para extração via Regex do raw HTML para contornar limitações do DOMParser com arquivos grandes do VTEX IO.
+Nova Home Premium: cria index-premium.html com GSAP, LLMO, tracking e visual B2B moderno para teste.
