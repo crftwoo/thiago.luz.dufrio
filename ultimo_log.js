@@ -1,1 +1,1 @@
-const LATEST_LOG = { message: 'Nova Home Premium: cria index-premium.html com GSAP, LLMO, tracking e visual B2B moderno para teste.', dateIso: '2026-04-30T17:19:39-03:00' };
+const LATEST_LOG = { message: 'Nova Home Premium: integra index-premium.html e preserva redesign modernizado remoto com GSAP, LLMO e tracking.', dateIso: '2026-04-30T17:20:50-03:00' };

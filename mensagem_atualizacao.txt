@@ -1,1 +1,1 @@
-Nova Home Premium: cria index-premium.html com GSAP, LLMO, tracking e visual B2B moderno para teste.
+Nova Home Premium: integra index-premium.html e preserva redesign modernizado remoto com GSAP, LLMO e tracking.
