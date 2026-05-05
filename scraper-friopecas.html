@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Scraper FrioPeças - Laboratório</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #050505;
+      --card-bg: rgba(18, 18, 28, 0.9);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #2563eb;
+      --green: #00e676;
+      --text: #ffffff;
+      --muted: #7a7a9a;
+      --radius: 24px;
+    }
+    body { font-family: "Outfit", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+    .aurora { position: fixed; border-radius: 50%; filter: blur(130px); z-index: 0; pointer-events: none; opacity: 0.15; animation: auroraAnim 20s infinite alternate ease-in-out; }
+    .a1 { width: 800px; height: 800px; background: #2563eb; top: -20%; left: -10%; }
+    .a2 { width: 700px; height: 700px; background: #06b6d4; bottom: -20%; right: -10%; animation-duration: 30s; }
+    @keyframes auroraAnim { 0% { transform: scale(1) translate(0,0); } 100% { transform: scale(1.3) translate(100px,-100px); } }
+    .btn-back { position: fixed; top: 20px; left: 20px; z-index: 1000; background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px 20px; border-radius: 40px; text-decoration: none; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+    .btn-back:hover { background: rgba(255,255,255,0.15); transform: translateX(-5px); }
+    .container { position: relative; z-index: 1; max-width: 1300px; margin: 0 auto; padding: 100px 24px 120px; }
+    .header-area { text-align: center; margin-bottom: 60px; }
+    .header-area h1 { font-size: 48px; font-weight: 900; letter-spacing: -2px; text-transform: uppercase; font-style: italic; background: linear-gradient(135deg, #2563eb, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+    .header-area p { font-size: 14px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 3px; }
+    .search-box { background: var(--card-bg); border: 1px solid var(--card-border); padding: 40px; border-radius: var(--radius); backdrop-filter: blur(30px); margin-bottom: 50px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
+    .input-group { position: relative; }
+    .input-label { font-size: 11px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; display: block; }
+    .url-input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); padding: 20px 24px; border-radius: 16px; color: #fff; font-family: inherit; font-size: 14px; outline: none; transition: 0.3s; }
+    .url-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+    .source-tag { font-size: 10px; color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; display: block; }
+    .btn-action { background: var(--accent); color: #fff; border: none; padding: 20px; border-radius: 16px; font-weight: 900; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.4s; display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .btn-action:hover { background: #1d4ed8; transform: translateY(-3px); box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3); }
+    .btn-action:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; }
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); overflow: hidden; backdrop-filter: blur(20px); display: flex; flex-direction: column; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(37, 99, 235, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+    .card-img { width: 100%; aspect-ratio: 1; background: #fff; display: flex; align-items: center; justify-content: center; padding: 30px; position: relative; border-bottom: 1px solid var(--card-border); }
+    .card-img img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.5s; }
+    .card:hover .card-img img { transform: scale(1.1); }
+    .card-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+    .card-title { font-size: 16px; font-weight: 700; line-height: 1.5; color: #fff; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; height: 72px; }
+    .price-box { margin-top: auto; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
+    .price-cash { font-size: 26px; font-weight: 900; color: var(--green); letter-spacing: -1px; }
+    .price-label { font-size: 11px; color: var(--green); text-transform: uppercase; font-weight: 800; margin-left: 4px; }
+    .price-parc { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 6px; }
+    .card-btn { display: block; width: 100%; padding: 14px; background: rgba(255,255,255,0.06); border: 1px solid var(--card-border); border-radius: 12px; color: #fff; text-decoration: none; text-align: center; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 18px; transition: 0.3s; }
+    .card-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .loading-area { display: none; text-align: center; padding: 60px; }
+    .spin { width: 50px; height: 50px; border: 5px solid rgba(37, 99, 235, 0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 25px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .msg { text-align: center; padding: 80px 20px; color: var(--muted); font-size: 18px; font-weight: 600; }
+    .lab-tag { display: inline-block; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(37, 99, 235, 0.4); color: var(--accent); padding: 6px 14px; border-radius: 30px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 18px; }
+  </style>
+</head>
+<body>
+
+  <div class="aurora a1"></div>
+  <div class="aurora a2"></div>
+
+  <a href="index.html" class="btn-back">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Painel Dufrio
+  </a>
+
+  <div class="container">
+    <div class="header-area">
+      <span class="lab-tag">Laboratório · Hi-Wall 9000 BTU Frio</span>
+      <h1>Scraper FrioPeças</h1>
+      <p>Aprendendo a extrair</p>
+    </div>
+
+    <div class="search-box">
+      <div class="input-group">
+        <span class="input-label">URL base (Hi-Wall 9000 Só Frio · planilha)</span>
+        <input type="text" id="urlInput" class="url-input" placeholder="Carregando link da planilha…">
+        <span id="sourceTag" class="source-tag">Sincronizando planilha…</span>
+      </div>
+      <button id="renderBtn" class="btn-action" disabled>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+        Renderizar Ofertas
+      </button>
+    </div>
+
+    <div id="loader" class="loading-area">
+      <div class="spin"></div>
+      <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 12px; color: var(--accent); font-weight: 800;">Consultando inventário FrioPeças…</p>
+    </div>
+
+    <div id="results" class="results-grid"></div>
+    <div id="status" class="msg">Pronto para extrair. Aguardando link da planilha.</div>
+  </div>
+
+  <script>
+    // ============================================================
+    // CONFIG DA LOJA — único lugar que muda entre os 4 laboratórios
+    // ============================================================
+    const STORE = {
+      slug: "friopecas",
+      label: "FrioPeças",
+      sheetMatch: "friopec",                   // norm() do Site na planilha
+      baseUrl:  "https://www.friopecas.com.br" // fallback p/ links relativos
+    };
+
+    const SHEET_URL = "https://opensheet.elk.sh/1ml7XpwZfzM4ElRJb4G62b93VMqUw3jeprTtgxdigiD8/Sheet1";
+
+    const PROXIES = [
+      "https://api.codetabs.com/v1/proxy?quest=",
+      "https://api.allorigins.win/get?url=",
+      "https://frigelar-proxy.crftwo.workers.dev/?url="
+    ];
+
+    // ------------------------------------------------------------
+    // Carrega o link da planilha (Hi-Wall 9000 Frio para essa loja)
+    // ------------------------------------------------------------
+    const norm = (s) => String(s || "").toLowerCase().replace(/[\s\-_.]/g, "");
+    const normCiclo = (c) => String(c || "").toLowerCase().trim().replace(/^só\s+/, "");
+
+    async function loadSheetLink() {
+      const tag = document.getElementById("sourceTag");
+      const input = document.getElementById("urlInput");
+      const btn = document.getElementById("renderBtn");
+      try {
+        const r = await fetch(SHEET_URL);
+        const data = await r.json();
+        const row = data.find(i =>
+          i && i.Site && norm(i.Site).includes(STORE.sheetMatch) &&
+          String(i.Tipo).toLowerCase() === "hiwall" &&
+          String(i.BTUs) === "9000" &&
+          normCiclo(i.Ciclo) === "frio"
+        );
+        if (row && row.Link) {
+          input.value = row.Link;
+          tag.innerText = `✓ Link carregado: ${row.Site} · ${row.Tipo} · ${row.BTUs} · ${row.Ciclo}`;
+          tag.style.color = "var(--green)";
+          btn.disabled = false;
+          document.getElementById("status").innerText = "Pronto para extrair. Clique em Renderizar.";
+        } else {
+          tag.innerText = "⚠ Nenhuma linha 'Hiwall 9000 Frio' para esta loja na planilha.";
+          tag.style.color = "#f59e0b";
+          input.placeholder = "Cole manualmente uma URL da loja…";
+          btn.disabled = false;
+        }
+      } catch (e) {
+        console.error("Falha ao ler planilha:", e);
+        tag.innerText = "⚠ Falha ao ler planilha — cole o link manualmente.";
+        tag.style.color = "#f59e0b";
+        btn.disabled = false;
+      }
+    }
+
+    // ------------------------------------------------------------
+    // Fetch via cascata de proxies (mesmo padrão do scraper-climario)
+    // ------------------------------------------------------------
+    async function tryFetch(targetUrl) {
+      try {
+        const resp = await fetch(PROXIES[0] + encodeURIComponent(targetUrl));
+        if (resp.ok) return await resp.text();
+      } catch(e) {}
+      try {
+        const resp = await fetch(PROXIES[1] + encodeURIComponent(targetUrl));
+        const json = await resp.json();
+        if (json && json.contents) return json.contents;
+      } catch(e) {}
+      try {
+        const resp = await fetch(PROXIES[2] + encodeURIComponent(targetUrl));
+        if (resp.ok) return await resp.text();
+      } catch(e) {}
+      throw new Error("Falha em todos os proxies.");
+    }
+
+    // ------------------------------------------------------------
+    // Extração — tentativa primária: VTEX __STATE__ via regex
+    // ------------------------------------------------------------
+    function extractFromVtexState(html) {
+      const stateMatch = html.match(/__STATE__\s*=\s*(\{.*?\});/s) || html.match(/__STATE__\s*=\s*(\{.*?\})<\/script>/s);
+      if (!stateMatch) return [];
+      let state;
+      try { state = JSON.parse(stateMatch[1]); } catch(e) { return []; }
+
+      const productKeys = Object.keys(state).filter(k => k.startsWith("Product:") && state[k].productName);
+      return productKeys.map(k => {
+        const p = state[k];
+        const productId = p.productId;
+        const skuKey = Object.keys(state).find(sk => sk.includes(`Product:${productId}`) && sk.includes("items.0"));
+        const sku = state[skuKey] || {};
+        let img = "";
+        if (sku.images?.[0]?.id) img = state[sku.images[0].id]?.imageUrl;
+        const sellerKey = Object.keys(state).find(sk => sk.includes(skuKey || productId) && sk.includes("sellers.0"));
+        const offer = state[state[sellerKey]?.commertialOffer?.id] || {};
+        let cash = "Consulte o site";
+        if (offer.SpotPrice || offer.Price) {
+          cash = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(offer.SpotPrice || offer.Price);
+        }
+        let parc = "";
+        if (offer.Installments?.length > 0) {
+          const best = offer.Installments.reduce((a, b) => (a.NumberOfInstallments > b.NumberOfInstallments) ? a : b);
+          parc = `ou ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(best.TotalValuePlusInterestRate)} em ${best.NumberOfInstallments}x de ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(best.Value)}`;
+        }
+        return {
+          name: p.productName,
+          img,
+          cash,
+          parc,
+          link: STORE.baseUrl + "/" + p.linkText + "/p"
+        };
+      });
+    }
+
+    // ------------------------------------------------------------
+    // Fallback genérico — DOM seletores VTEX padrão
+    // ------------------------------------------------------------
+    function extractFromDom(html) {
+      const products = [];
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const items = doc.querySelectorAll('a[class*="vtex-product-summary-2-x-clearLink"]');
+      items.forEach(item => {
+        const name = item.querySelector('[class*="vtex-product-summary-2-x-productBrand"]')?.innerText;
+        const img = item.querySelector('img[class*="vtex-product-summary-2-x-imageNormal"]')?.src || item.querySelector('img[class*="vtex-product-summary-2-x-image"]')?.src;
+        const cash = item.querySelector('[class*="vtex-product-price-1-x-spotPriceValue"]')?.innerText;
+        const parc = item.querySelector('[class*="vtex-product-price-1-x-installments"]')?.innerText;
+        const link = item.href?.startsWith("http") ? item.href : (STORE.baseUrl + (item.getAttribute("href") || ""));
+        if (name && cash) products.push({ name, img, cash, parc, link });
+      });
+      return products;
+    }
+
+    // ------------------------------------------------------------
+    // Main
+    // ------------------------------------------------------------
+    async function runScraper() {
+      const url = document.getElementById("urlInput").value.trim();
+      const results = document.getElementById("results");
+      const loader = document.getElementById("loader");
+      const status = document.getElementById("status");
+      const btn = document.getElementById("renderBtn");
+
+      if (!url) return;
+
+      btn.disabled = true;
+      loader.style.display = "block";
+      results.innerHTML = "";
+      status.style.display = "none";
+
+      try {
+        const html = await tryFetch(url);
+        let products = extractFromVtexState(html);
+        if (products.length === 0) products = extractFromDom(html);
+
+        if (products.length === 0) {
+          status.innerText = `Nenhum produto detectado na ${STORE.label}. O site pode usar estrutura não-VTEX, hidratação client-side ou bloqueio anti-bot. Próximo passo: inspecionar HTML retornado.`;
+          status.style.display = "block";
+        } else {
+          const unique = products.reduce((acc, current) => {
+            if (!acc.find(item => item.name === current.name)) acc.push(current);
+            return acc;
+          }, []);
+          unique.forEach(p => {
+            const el = document.createElement("div");
+            el.className = "card";
+            el.innerHTML = `
+              <div class="card-img"><img src="${p.img || ""}" onerror="this.src='https://placehold.co/300?text=${encodeURIComponent(STORE.label)}'"></div>
+              <div class="card-body">
+                <div class="card-title" title="${p.name}">${p.name}</div>
+                <div class="price-box">
+                  <div class="price-cash">${p.cash}<span class="price-label">à vista</span></div>
+                  <div class="price-parc">${p.parc || ""}</div>
+                </div>
+                <a href="${p.link}" target="_blank" class="card-btn">Ver na ${STORE.label}</a>
+              </div>`;
+            results.appendChild(el);
+          });
+        }
+      } catch(e) {
+        console.error(e);
+        status.innerText = "Erro crítico ao acessar o site. Tente novamente em instantes.";
+        status.style.display = "block";
+      } finally {
+        loader.style.display = "none";
+        btn.disabled = false;
+      }
+    }
+
+    document.getElementById("renderBtn").addEventListener("click", runScraper);
+    loadSheetLink();
+  </script>
+</body>
+</html>
